@@ -362,6 +362,7 @@ def test_root_html_assets_are_served_locally(service):
 def test_workplace_policy_source_is_local_and_separate_from_regulations(service):
     client, _, settings = service
     assert client.get("/policies/workplace-eating").status_code == 404
+    assert client.get("/policies/workplace-belongings").status_code == 404
     directory = settings.root / "rules" / "sources"
     directory.mkdir(parents=True)
     text = "User-provided workplace policy: Cashiers must not eat at the work table during work."
@@ -370,6 +371,7 @@ def test_workplace_policy_source_is_local_and_separate_from_regulations(service)
     assert response.status_code == 200 and response.text == text
     assert response.headers["content-type"].startswith("text/plain")
     assert response.headers["cache-control"] == "no-store"
+    assert client.get("/policies/workplace-belongings").text == text
     assert client.get("/policies/api-key.txt").status_code == 404
 
 

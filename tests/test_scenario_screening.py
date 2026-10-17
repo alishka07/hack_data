@@ -207,3 +207,35 @@ def test_real_registry_prompt_keeps_existing_multimodal_context_headroom():
     assert len(scenarios) == 10 and len(prompt) < 4500
     for line in prompt.split("Checklist DATA:\n", 1)[1].splitlines():
         assert len(line.split(": ", 1)[1]) <= 220
+
+
+@pytest.mark.parametrize("evidence", [
+    "A sandwich rests on the cashier work table; the cashier is not eating.",
+    "Identifiable food is on the operating cashier desk without consumption.",
+    "A snack is placed on the cashier work surface while the cashier works.",
+])
+def test_food_presence_candidate_does_not_require_eating(evidence):
+    from worker.scenarios import load_scenarios
+
+    scenarios = load_scenarios(ROOT)
+    identifier = "personal_food_at_workstation"
+    assert not scenario_absence_only(identifier, evidence)
+    rows = collect_scenario_candidates(
+        response(observation(item_id=identifier, visible_evidence=evidence)), frames(), scenarios)
+    assert len(rows) == 1 and rows[0]["type_id"] == identifier
+    assert rows[0]["confirmed"] is False
+
+
+@pytest.mark.parametrize("evidence", [
+    "No food is visible on the cashier work table.",
+    "The cashier works at the desk, but no food or snack is present.",
+    "Food is not visible on the work surface.",
+])
+def test_explicitly_absent_food_does_not_create_a_food_presence_proposal(evidence):
+    from worker.scenarios import load_scenarios
+
+    identifier = "personal_food_at_workstation"
+    assert scenario_absence_only(identifier, evidence)
+    assert collect_scenario_candidates(
+        response(observation(item_id=identifier, visible_evidence=evidence)), frames(),
+        load_scenarios(ROOT)) == []

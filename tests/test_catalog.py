@@ -1,5 +1,6 @@
 """Catalog policy and episode separation use synthetic metadata only."""
 from pathlib import Path
+import json
 
 import pytest
 
@@ -37,14 +38,14 @@ def test_unmapped_vault_review_does_not_invent_a_clause_or_automatic_finding():
     assert item["id"] not in load_rules(ROOT)
 
 
-def test_eating_policy_is_an_automatic_event_with_explicit_user_provenance():
+def test_food_presence_policy_is_an_automatic_event_with_explicit_user_provenance():
     item = next(item for item in load_catalog(ROOT)["items"]
-                if item["id"] == "cashier_eating_at_workstation")
+                if item["id"] == "personal_food_at_workstation")
     rule = load_rules(ROOT)[item["id"]]
     assert item["basis"] == rule["basis"] == "workplace_policy"
     assert item["legal_status"] == rule["legal_review_status"] == "user_provided_workplace_policy_not_public_law"
     assert item["document"] == rule["document"] == "User-provided workplace policy"
-    assert item["source_url"] == rule["source_url"] == "/policies/workplace-eating"
+    assert item["source_url"] == rule["source_url"] == "/policies/workplace-belongings"
     assert rule["source_id"] == "user_workplace_policy" and rule["auto_emit"] is True
     assert item["scoring_kind"] == "event_occurrence" and item["initial_score"] == 0
     assert item["automation"] == "automatic_when_supported"
@@ -52,6 +53,24 @@ def test_eating_policy_is_an_automatic_event_with_explicit_user_provenance():
     assessment = next(row for row in rows if row["item_id"] == item["id"])
     assert assessment["confirmed_finding"] is True and assessment["confirmed_occurrences"] == 1
     assert episodes[0]["evidence_refs"] == [{"filename": "event-one.jpg", "timestamp_sec": 1.0}]
+
+
+def test_food_presence_replaces_eating_without_broadening_personal_property_law():
+    catalog = {item["id"]: item for item in load_catalog(ROOT)["items"]}
+    rules = load_rules(ROOT)
+    food = rules["personal_food_at_workstation"]
+    assert "cashier_eating_at_workstation" not in catalog
+    assert "cashier_eating_at_workstation" not in rules
+    legacy = next(rule for rule in json.loads((ROOT / "rules/registry.json").read_text(encoding="utf-8"))["rules"]
+                  if rule["id"] == "cashier_eating_at_workstation")
+    assert legacy["enabled"] is False and legacy["auto_emit"] is False
+    assert set(food["required_checks"]) == {
+        "food_item_visually_identified", "food_on_cashier_work_surface",
+        "workstation_work_context_visible", "relevant_context_visible"}
+    assert food["action_checks"] == ["food_item_visually_identified", "food_on_cashier_work_surface"]
+    assert "Food presence" in food["summary"] and "are not required" in food["summary"]
+    assert catalog["personal_belongings_in_cash_unit"]["automation"] == "manual"
+    assert "Medicines, medical devices" in catalog["personal_belongings_in_cash_unit"]["exceptions"][0]
 
 
 def test_review_proposals_do_not_change_initial_scores_or_confirm_findings():

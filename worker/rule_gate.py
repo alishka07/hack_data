@@ -83,28 +83,27 @@ def exceptions_excluded(answer: dict, rule: dict, frames: list[FrameRef]) -> boo
 
 
 def policy_evidence_supported(answer: dict, rule: dict, frames: list[FrameRef]) -> bool:
-    """Require a temporal eating action linked to the same visible operator.
+    """Link identifiable food and its work-table location in a cited source.
 
-    Multiple crops of one source image do not constitute multiple observations.
-    This validates supplied citations; it does not replace visual verification.
+    A single readable source image can establish presence. Eating and a temporal
+    consumption sequence are not required by the user's current policy.
     """
     if rule.get("basis") != "workplace_policy":
         return True
-    if rule.get("id") != "cashier_eating_at_workstation":
+    if rule.get("id") != "personal_food_at_workstation":
         return False
     references = answer.get("check_frames", {})
-    food = references.get("food_consumption_visibly_observed", [])
-    operator = references.get("person_operating_cashier_workstation", [])
-    evidence = answer.get("evidence_indices", [])
-    if (not all(isinstance(indices, list) for indices in (food, operator, evidence))
-            or any(type(index) is not int or not 0 <= index < len(frames)
-                   or not _valid_frame(frames[index]) for indices in (food, operator, evidence) for index in indices)):
+    fields = rule.get("required_checks", [])
+    if not isinstance(references, dict) or not fields:
         return False
-    food_sources = {frames[index].index for index in food}
-    food_times = {frames[index].timestamp for index in food}
-    return (len(food_sources) >= 2 and len(food_times) >= 2
-            and bool(food_sources & {frames[index].index for index in operator})
-            and bool(food_sources & {frames[index].index for index in evidence}))
+    citations = [references.get(name, []) for name in fields]
+    evidence = answer.get("evidence_indices", [])
+    if (not all(isinstance(indices, list) and indices for indices in [*citations, evidence])
+            or any(type(index) is not int or not 0 <= index < len(frames)
+                   or not _valid_frame(frames[index]) for indices in [*citations, evidence] for index in indices)):
+        return False
+    shared = set.intersection(*({frames[index].index for index in indices} for indices in citations))
+    return bool(shared & {frames[index].index for index in evidence})
 
 
 def factual_description(rule: dict, event_time: float) -> str:

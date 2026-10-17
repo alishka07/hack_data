@@ -1,5 +1,7 @@
 # Eating at the cashier workstation
 
+This is the historical pipeline 5.3 behavior. The user replaced it with the [food-as-personal-belongings policy in 5.4](workplace-belongings.md). Eating is no longer required for new analyses, and this eating-only rule is disabled.
+
 Pipeline 5.3 implements the user's instruction that cashiers must not eat at the work table during work. Rule `cashier_eating_at_workstation` is an automatic event under the explicitly recorded [user-provided workplace policy](../rules/sources/workplace-eating.md). It is not attributed to a public regulation.
 
 All timeline windows screen for identifiable eating. A proposal then receives separate action and context verification. A supported finding requires visible food consumption across at least two distinct source images and times, linked to the same visible workstation operator, with the relevant work context established. Repeated crops of one image cannot satisfy the temporal requirement. The source may show an operating cashier desk without an active client transaction; a break area or unresolved work context cannot establish applicability.

@@ -1,16 +1,16 @@
 {
-  "version": "2026-10-18-v5.3",
-  "review_notice": "Three public-clause categories and one user-provided workplace-policy category are eligible for automatic findings after applicability and exception checks. Eating at an operating cashier workstation is a workplace-policy violation, not an independently verified public-law claim. Loose-cash counting omission is review-only because sparse samples cannot establish a missing procedure. Other observable events remain an unconfirmed review queue.",
+  "version": "2026-10-18-v5.4",
+  "review_notice": "Three public-clause categories and one user-provided workplace-policy category are eligible for automatic findings after applicability and exception checks. Identifiable food on an operating cashier work table counts as personal belongings at the workplace under the user-provided policy; visible eating is not required. This is not an independently verified public-law claim. Loose-cash counting omission is review-only because sparse samples cannot establish a missing procedure. Other observable events remain an unconfirmed review queue.",
   "sources": [
     {
       "id": "user_workplace_policy",
       "document": "User-provided workplace policy",
-      "title": "Cashiers must not eat at their workstation during work",
-      "source_url": "/policies/workplace-eating",
-      "effective_version": "User instruction supplied 2026-10-18",
+      "title": "Food on the cashier work table counts as personal belongings at the workplace",
+      "source_url": "/policies/workplace-belongings",
+      "effective_version": "User instruction revised 2026-10-18",
       "reviewed_at": "2026-10-18",
       "review_record": "rules/sources/workplace-eating.md",
-      "provenance": "The user explicitly instructed that eating at the cashier workplace/table during work is a violation. This is an application workplace policy; no statutory clause or independent employer document is claimed."
+      "provenance": "The user revised the workplace policy on 2026-10-18: food on the cashier work table counts as personal belongings at the workplace and is a violation, without requiring eating. This is an application workplace policy; no statutory clause or independent employer document is claimed."
     },
     {
       "id": "nbk_231_2019",
@@ -302,13 +302,13 @@
       "type": "cashier_eating_at_workstation",
       "label": "Cashier eating at the workstation during work",
       "basis": "workplace_policy",
-      "enabled": true,
+      "enabled": false,
       "source_id": "user_workplace_policy",
       "document": "User-provided workplace policy",
       "paragraph": "Eating at the cashier workstation",
       "source_url": "/policies/workplace-eating",
       "effective_version": "User instruction supplied 2026-10-18",
-      "summary": "Under the user-provided workplace policy, a cashier must not eat at the operating cashier workstation/table during work. Require a clearly visible food-consumption sequence such as identified food brought to the mouth and bitten or chewed, together with the person operating the cashier workstation and a visible working context such as a staffed cash desk with work activity. A single hand-to-face gesture, drinking alone, food merely present, medicine, a break-room setting, or an unresolved off-duty context does not establish this violation. Do not infer shift schedules from appearance.",
+      "summary": "Legacy eating-specific rule superseded by personal_food_at_workstation under the user policy revision of 2026-10-18. Existing saved findings retain their original meaning; new analyses assess identifiable food on the cashier work table without requiring consumption.",
       "applicability": [
         "The person visibly operates the cashier workstation; role follows workstation activity, not appearance or identity.",
         "The relevant table or counter is a cashier workstation, with visible working context such as a staffed cash desk and work activity.",
@@ -336,10 +336,53 @@
         "A hand near the face without identifiable food and a consumption sequence.",
         "A person eating in a break room or an unresolved nonworking context."
       ],
+      "legal_review_status": "superseded_user_workplace_policy",
+      "auto_emit": false,
+      "automation": "disabled_superseded",
+      "context_requirement": "Referenced before/action/after observations must establish food consumption by the cashier at an operating workstation. Work context must be visible; shift schedules and off-duty status are not inferred. All exceptions require affirmative, referenced exclusion before a finding."
+    },
+    {
+      "id": "personal_food_at_workstation",
+      "type": "personal_food_at_workstation",
+      "label": "Personal belongings at the workplace: food on the cashier work table",
+      "basis": "workplace_policy",
+      "enabled": true,
+      "source_id": "user_workplace_policy",
+      "document": "User-provided workplace policy",
+      "paragraph": "Personal food belongings at the cashier workstation",
+      "source_url": "/policies/workplace-belongings",
+      "effective_version": "User instruction revised 2026-10-18",
+      "summary": "Under the user-provided workplace policy, clearly identifiable food or a snack on the cashier work table is personal belongings at the workplace and is a violation. Food presence on the operating work surface is enough; eating, chewing, hand-to-mouth motion, ownership inference and a consumption sequence are not required. Establish a cashier work surface in use with visible working context. Do not classify an ambiguous container, a cup with unknown contents, an empty wrapper, medicine, cash or work equipment as food. Food outside the cashier work surface, in a designated break area, or in an unresolved nonworking context does not establish this violation.",
+      "applicability": [
+        "A food item or snack is visually identifiable in the referenced evidence.",
+        "The identified food rests on the cashier work table or work surface; its location is visually supported.",
+        "The relevant table is an operating cashier workstation with visible working context, such as a staffed cash desk with work activity."
+      ],
+      "exceptions": [
+        "The object is ambiguous or is work equipment, cash, medicine or a medical device rather than clearly identifiable food.",
+        "Only a cup or container with unknown contents, or an empty wrapper or plate without identifiable food, is visible.",
+        "The food is outside the cashier work surface, in a designated break area, or the working context is not established."
+      ],
+      "required_checks": [
+        "food_item_visually_identified",
+        "food_on_cashier_work_surface",
+        "workstation_work_context_visible",
+        "relevant_context_visible"
+      ],
+      "action_checks": [
+        "food_item_visually_identified",
+        "food_on_cashier_work_surface"
+      ],
+      "disabled_examples": [
+        "An unidentified package or bag on the table.",
+        "A medicine container, medical device, cash or workplace equipment.",
+        "A cup with unknown contents or an empty wrapper alone.",
+        "Food in a break room or outside the cashier work surface."
+      ],
       "legal_review_status": "user_provided_workplace_policy_not_public_law",
       "auto_emit": true,
       "automation": "automatic_when_supported",
-      "context_requirement": "Referenced before/action/after observations must establish food consumption by the cashier at an operating workstation. Work context must be visible; shift schedules and off-duty status are not inferred. All exceptions require affirmative, referenced exclusion before a finding."
+      "context_requirement": "Referenced evidence must show identifiable food on the operating cashier work table with visible working context. A clear frame may establish food presence and its location; no eating sequence is required. Do not infer shift schedules or personal ownership. All exceptions require affirmative, referenced exclusion before a finding."
     }
   ]
 }

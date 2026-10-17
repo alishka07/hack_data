@@ -15,7 +15,7 @@ def test_curated_visual_coverage_and_unmapped_source_are_explicit():
     expected = {"previous_transaction_cash_exposed", "previous_cash_stored",
                 "cash_intake_without_client_presence", "backoffice_processing_control",
                 "keys_stamps_secure_handling", "vault_cash_segregation_storage",
-                "personal_belongings_in_cash_unit", "cashier_eating_at_workstation"}
+                "personal_belongings_in_cash_unit", "personal_food_at_workstation"}
     assert expected <= set(scenario_type_ids(scenarios))
     assert scenarios["previous_cash_stored"]["alias_of"] == "previous_transaction_cash_exposed"
     assert scenarios["vault_cash_segregation_storage"]["legal_source"] is None
@@ -23,16 +23,17 @@ def test_curated_visual_coverage_and_unmapped_source_are_explicit():
     assert scenarios["backoffice_processing_control"]["legal_source"]["paragraph"] == "42"
 
 
-def test_eating_scenario_preserves_positive_consumption_and_work_context_requirements():
-    scenario = load_scenarios(ROOT)["cashier_eating_at_workstation"]
-    assert scenario["visual_cues"] == ["food_consumption"]
+def test_food_presence_scenario_needs_food_location_and_work_context_without_eating():
+    scenario = load_scenarios(ROOT)["personal_food_at_workstation"]
+    assert scenario["visual_cues"] == ["food_at_workstation"]
     assert set(scenario["visual_checks"]) == {
-        "food_consumption_visibly_observed", "person_operating_cashier_workstation",
+        "food_item_visually_identified", "food_on_cashier_work_surface",
         "workstation_work_context_visible", "relevant_context_visible"}
     assert scenario["legal_source"] is None and scenario["related_legal_rule_ids"] == []
     assert scenario["disposition"] == "review_only"
-    assert "bitten or chewed" in scenario["check_descriptions"]["food_consumption_visibly_observed"]
+    assert "without eating" in scenario["check_descriptions"]["food_on_cashier_work_surface"]
     assert "break room" in scenario["check_descriptions"]["workstation_work_context_visible"]
+    assert "medicine" in scenario["check_descriptions"]["food_item_visually_identified"]
 
 
 def test_all_visual_cues_are_valid_observations_without_new_transaction_conclusions():

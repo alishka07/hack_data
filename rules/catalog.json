@@ -1,25 +1,24 @@
 {
-  "version": "2026-10-18-v5.3",
-  "scope": "Bounded candidate catalog for teller/cash-unit CCTV and supporting manual checks, including the explicitly user-provided workplace eating policy; not all bank-law violations. No private video or label descriptions used.",
+  "version": "2026-10-18-v5.4",
+  "scope": "Bounded candidate catalog for teller/cash-unit CCTV and supporting manual checks, including the explicitly user-provided workplace personal-food policy; not all bank-law violations. No private video or label descriptions used.",
   "scoring_note": "Continuous scoring 2.0: an event starts at 0 and rises to max(previous score, 100 * source-grounded model occurrence confidence); a required procedure starts at 100 and falls to min(previous score, 100 * (1 - source-grounded model confidence in correct completion)). Model self-confidence is uncalibrated, not a measured probability. Source-linked window estimates may update before the separate rule gate, including with unknown applicability; missing evidence leaves the prior score unchanged. Twelve visible checks (4 automatic event checks, including one user-provided workplace policy, and 8 review-only procedures) are assessed in existing window calls; 22 manual checks retain their initial scores unless external evidence is supplied. New observed episode starts create fresh assessments; windows without established episode boundaries are isolated. The summary retains the highest remaining estimate across relevant assessed episodes, including pending procedures; correlated frames are never added. Initial values and unresolved scores do not establish occurrence, omission, compliance or applicability. Evidenced not-applicable items are excluded; related event/procedure views must not be counted as independent breaches.",
-  "source_note": "32 entries retain their prior_primary_review provenance from 2026-10-17. One vault storage review item has no curated legal clause mapping and is explicitly unmapped_review_only. One eating-at-workstation event follows the user's explicit workplace policy supplied 2026-10-18 and is not a public-law claim. No new legal clause is represented as verified.",
+  "source_note": "32 entries retain their prior_primary_review provenance from 2026-10-17. One vault storage review item has no curated legal clause mapping and is explicitly unmapped_review_only. One food-as-personal-belongings event follows the user's explicit workplace policy revised 2026-10-18 and is not a public-law claim. No new legal clause is represented as verified.",
   "items": [
     {
-      "id": "cashier_eating_at_workstation",
-      "label": "Cashier eating at the workstation during work",
+      "id": "personal_food_at_workstation",
+      "label": "Personal belongings at the workplace: food on the cashier work table",
       "basis": "workplace_policy",
       "scoring_kind": "event_occurrence",
       "initial_score": 0,
-      "paragraph": "Eating at the cashier workstation",
+      "paragraph": "Personal food belongings at the cashier workstation",
       "document": "User-provided workplace policy",
-      "source_url": "/policies/workplace-eating",
-      "trigger": "Visible food consumption by the person operating the cashier workstation during an established working context.",
-      "required_evidence": "Referenced food-to-mouth and bite/chew consumption sequence, the person's cashier workstation activity, visible work context and relevant before/action/after views.",
+      "source_url": "/policies/workplace-belongings",
+      "trigger": "Clearly identifiable food on the operating cashier work table, treated as personal belongings under the user-provided policy; eating is not required.",
+      "required_evidence": "Source-referenced identifiable food, its placement on the cashier work surface, and visible working context. Food presence is enough; consumption need not be observed.",
       "exceptions": [
-        "Drinking alone does not establish eating.",
-        "Food presence, handling, opening or movement without consumption does not establish eating.",
-        "Face touching, medicine taking and ambiguous hand-to-face gestures do not establish food consumption.",
-        "Break areas, persons outside the workstation and unestablished working context are outside this policy finding."
+        "Ambiguous objects, cash, work equipment, medicine and medical devices do not establish identifiable food.",
+        "A cup or container with unknown contents, or an empty wrapper or plate alone, does not establish food presence.",
+        "Food outside the cashier work surface, in a designated break area, or with unknown working context does not establish this policy violation."
       ],
       "automation": "automatic_when_supported",
       "legal_status": "user_provided_workplace_policy_not_public_law",

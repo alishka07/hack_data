@@ -37,6 +37,20 @@ def _negative_only_evidence(identifier: str, evidence: str) -> bool:
     This is a conservative proposal filter, never a compliance decision. In
     particular, absent customers must not suppress a visible cash-counting cue.
     """
+    if identifier == "personal_food_at_workstation":
+        # The current policy concerns presence, even when no eating occurs.
+        # Do not turn an unidentified object or a cup into identifiable food.
+        lowered = evidence.lower()
+        lowered = re.sub(r"\bempty\s+(?:food\s+)?(?:wrapper|plate|package|packet)\b", "", lowered)
+        food = r"food|snacks?|sandwich(?:es)?|bread|biscuits?|cookies?|cakes?|fruit|bananas?|apples?|chocolate|candy|chips|meal"
+        denied = re.search(
+            r"\b(?:no|not|without)\s+(?:identifiable\s+|visible\s+)?(?:" + food + r")\b"
+            r"|\b(?:" + food + r")\b\s+(?:is\s+|are\s+)?(?:not\s+(?:visible|present|identifiable)|absent|unobserved)\b",
+            lowered)
+        ambiguous = re.search(
+            r"\b(?:unknown|unidentified|unidentifiable|ambiguous)\b.{0,35}\b(?:object|item|food|contents)\b"
+            r"|\b(?:possibly|perhaps|resembl(?:es|ing)|might be|may be|could be)\b.{0,35}\b(?:" + food + r")\b", lowered)
+        return bool(denied or ambiguous) or not bool(re.search(r"\b(?:" + food + r")\b", lowered))
     if identifier == "cashier_eating_at_workstation":
         # Food presence and hand-to-face gestures must not become consumption
         # merely because the model supplied affirmative structured checks.
@@ -92,6 +106,7 @@ def scenario_absence_only(identifier: str, text: str) -> bool:
 # Cues describe physical observations. Authorization, ownership, room designation
 # and completion of an unobserved procedure remain downstream unknowns.
 SCENARIO_CUES = {
+    "personal_food_at_workstation": "Identifiable food or a snack visibly on the operating cashier work table; eating is not required. Unknown objects and cup contents remain unknown.",
     "cashier_eating_at_workstation": "Cashier visibly takes bites or consumes food at the work table; food presence, drinking and face touching are insufficient.",
     "active_intake_departure": "Cash received, followed by actual workstation exit before visible service completion.",
     "cash_intake_without_client_presence": "Cash acceptance/counting while a fully visible customer position is empty.",

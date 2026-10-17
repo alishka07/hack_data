@@ -244,7 +244,7 @@ def main(argv=None) -> int:
     parser.add_argument("--sample", choices=("shortest", "longest", "balanced"), default="shortest")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--key-file", type=Path, default=ROOT / "data/api-key.txt")
-    parser.add_argument("--pipeline-version", default="5.3")
+    parser.add_argument("--pipeline-version", default="5.4")
     parser.add_argument("--max-detection-images", type=int, default=3, help="Validate N unique declared JPEGs per sample; 0 checks all")
     args = parser.parse_args(argv)
     records, checks = [], {}

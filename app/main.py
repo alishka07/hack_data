@@ -317,6 +317,7 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         application.mount("/static", StaticFiles(directory=web), name="static")
 
     @application.get("/policies/workplace-eating", include_in_schema=False)
+    @application.get("/policies/workplace-belongings", include_in_schema=False)
     def workplace_eating_policy():
         path = settings.root / "rules" / "sources" / "workplace-eating.md"
         if not path.is_file():

@@ -27,7 +27,7 @@ from worker.localization import collect_detections, deduplicate_detections
 from worker.video import AnalysisError, Budget, FrameCache, FrameRef, nearest_index, probe_video, window_targets
 
 
-PIPELINE_VERSION = "5.3"
+PIPELINE_VERSION = "5.4"
 VERIFICATION_FINISH_RESERVE_SEC = 25.
 
 
@@ -192,7 +192,7 @@ class Pipeline:
         metadata = getattr(runtime, "metadata", None)
         self.runtime_metadata = metadata() if callable(metadata) else {"backend": "injected", "model_id": "injected"}
         if "max_frames" in self.runtime_metadata and self.runtime_metadata["max_frames"] != 8:
-            raise AnalysisError("model_input_budget", "Pipeline 5.3 requires FORTE_VLM_MAX_FRAMES=8 for complete screening")
+            raise AnalysisError("model_input_budget", "Pipeline 5.4 requires FORTE_VLM_MAX_FRAMES=8 for complete screening")
         self.thresholds = ThresholdPolicy(str(self.runtime_metadata.get("model_id", self.runtime_metadata.get("model", "unknown"))), PIPELINE_VERSION)
 
     def run(self, job: dict, progress: Callable[[str, float, str], None]) -> tuple[dict, dict, dict]:
@@ -538,11 +538,12 @@ class Pipeline:
             action_prompt += "\nReturn confidence from 0 to 1 that all required visible action predicates jointly hold; do not force certainty to 0 or 1."
             if rule.get("basis") == "workplace_policy":
                 action_prompt += ("\nWorkplace policy action DATA: " + rule["summary"]
-                                  + " Food consumption must be visible across at least two distinct source times. "
-                                  "Cite both in food_consumption_visibly_observed and cite the same operator's "
-                                  "workstation relationship. Evidence must include an actual food-consumption frame. "
-                                  "Food sitting on the table, drinking, taking medicine, touching the face, or an "
-                                  "unresolved hand-to-mouth motion is insufficient. Do not infer eating from cup contents.")
+                                  + " Identifiable food or a snack merely present on the cashier work table is "
+                                  "prohibited personal belongings under this user policy; eating is NOT required. "
+                                  "One readable image can establish presence. Cite the same source image for food "
+                                  "identification and its work-table location; evidence_indices must include it. "
+                                  "An unidentified object, empty wrapper, work equipment or medicine is not food. "
+                                  "Do not infer food or drink contents from a cup or an unidentifiable package.")
             action = ask(action_prompt, dense, verification_schema(action_rule, len(dense)), budget, 512)
             action_calls += int(not action.get("_host_unverified") or action.get("_host_request_attempted"))
             def frame_sources(frames):
@@ -618,11 +619,13 @@ class Pipeline:
                               "do not force it to 0 or 1. Unverified episode DATA: " + candidate.observation
                               + "\n" + exception_prompt(rule))
             if rule.get("basis") == "workplace_policy":
-                context_prompt += ("\nThis is the user-provided workplace policy, not a public legal clause. "
-                                   "Establish the cashier's work-table context and food consumption across at least "
-                                   "two distinct source times, with citations. An active client transaction is not "
-                                   "required; the staffed cashier workstation and work context must be visible. "
-                                   "A break room, off-duty context or uncertain work context cannot establish applicability.")
+                context_prompt += ("\nThis is the user-provided personal-belongings policy, not a public legal clause. "
+                                   "Clearly identifiable food on the operating cashier work table is sufficient; "
+                                   "no eating, chewing, handling, ownership inference or active client transaction "
+                                   "is required. Cite a common supplied source image in all four required checks "
+                                   "and evidence_indices showing the food, its table location and the working context. "
+                                   "A single readable image can establish this static condition. A break area, "
+                                   "unidentified object or uncertain work context cannot establish applicability.")
             context_answer = ask(context_prompt + "\nUnverified notes whose source frames are supplied: "
                                                + json.dumps(shown_facts(context), ensure_ascii=False),
                                                context, verification_schema(rule, len(context), include_exceptions=True), budget, 1024)
@@ -670,7 +673,8 @@ class Pipeline:
                                           "visible_evidence": [{"check": name, "frames": [attempt.get("refined_context_frames", attempt["context_frames"])[i] for i in indices]}
                                                                for name, indices in context_answer.get("check_frames", {}).items()
                                                                if context_answer["checks"].get(name) == "yes"]}
-            if not surrounding or material_source_gap or scene_cut:
+            static_food_policy = rule.get("basis") == "workplace_policy" and rule["id"] == "personal_food_at_workstation"
+            if not static_food_policy and (not surrounding or material_source_gap or scene_cut):
                 review(candidate, ["insufficient_before_after" if not surrounding else "scene_change_context" if scene_cut else "source_timestamp_gap"])
             elif supported_verification(context_answer, rule, context) and exceptions_excluded(context_answer, rule, context) and not fusion["accepted"]:
                 review(candidate, ["below_calibrated_threshold"])
@@ -678,8 +682,10 @@ class Pipeline:
                 evidence_started = time.perf_counter()
                 action_indices = sorted(set(action["evidence_indices"]), key=lambda i: abs(dense[i].timestamp - candidate.anchor))
                 if rule.get("basis") == "workplace_policy":
-                    food_sources = {dense[i].index for i in action["check_frames"]["food_consumption_visibly_observed"]}
-                    action_indices = [i for i in action_indices if dense[i].index in food_sources]
+                    food_table_sources = set.intersection(*(
+                        {dense[i].index for i in action["check_frames"][check]}
+                        for check in rule["action_checks"]))
+                    action_indices = [i for i in action_indices if dense[i].index in food_table_sources]
                 selected, event_time = select_evidence(dense, action_indices, context, context_answer["evidence_indices"], candidate.anchor)
                 originals = refs.get([frame.timestamp for frame in selected], 0)
                 import cv2
@@ -770,7 +776,7 @@ class Pipeline:
                    "detections": detections,
                    "detection_summary": {"items": len(detections), "source_frames": len(detection_evidence),
                                          "method": perception.get("backend", "cpu_perception"), "sampled_only": True, "calibrated": False},
-                   "limitations": ["All curated visual scenarios are screened; three legal categories and the user-provided workplace eating policy can emit supported findings; other visible scenarios require review",
+                   "limitations": ["All curated visual scenarios are screened; three legal categories and the user-provided personal-food belongings policy can emit supported findings; other visible scenarios require review",
                                     "Continuous scores are uncalibrated model estimates; manual and unobserved checks retain initial scores",
                                     "Procedure estimates require the correct protocol, not a generic action; uncertain boundaries remain window-scoped",
                                     "Unmapped or unconfirmed events remain in the review queue, outside the jury verdict",
@@ -792,7 +798,7 @@ class Pipeline:
                                 + [{"filename": e["filename"]} for item in queue for e in item["evidence_frames"]]
                                 + list(detection_evidence.values())),
                    "versions": {"pipeline": PIPELINE_VERSION, "scoring": "2.1", "catalog": self.catalog["version"],
-                                "model": self.runtime_metadata.get("model_id", "unknown"), "rules": "2026-10-18-v5.3"}}
+                                "model": self.runtime_metadata.get("model_id", "unknown"), "rules": "2026-10-18-v5.4"}}
         details["case_decision"] = build_case_decision(final, queue, attempts, details["coverage"], assessments)
         reasons = {}
         for item in queue:

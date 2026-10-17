@@ -1,28 +1,29 @@
 {
-  "version": "2026-10-18-v5.3",
+  "version": "2026-10-18-v5.4",
   "semantics": "Fixed visual review taxonomy. Scenario observations are proposals; the independent rule registry controls automatic public-clause and explicitly user-provided workplace-policy findings. No example video, filename, timestamp or verdict is included.",
   "scenarios": [
     {
-      "id": "cashier_eating_at_workstation",
-      "label": "Cashier eating at the workstation during work",
+      "id": "personal_food_at_workstation",
+      "label": "Personal belongings at the workplace: food on the cashier work table",
       "visual_checks": [
-        "food_consumption_visibly_observed",
-        "person_operating_cashier_workstation",
+        "food_item_visually_identified",
+        "food_on_cashier_work_surface",
         "workstation_work_context_visible",
         "relevant_context_visible"
       ],
       "check_descriptions": {
-        "food_consumption_visibly_observed": "Identifiable food is brought to the mouth and visibly bitten or chewed in sequence; drinking, face touching and food presence alone do not qualify.",
-        "person_operating_cashier_workstation": "The eater visibly operates the cashier desk/table; identify the role by workstation activity, not appearance.",
-        "workstation_work_context_visible": "The relevant table is visibly a cashier workstation in use, with staff activity; a break room or unresolved off-duty context does not qualify.",
-        "relevant_context_visible": "Readable referenced before/action/after views show the food-consumption sequence and its relationship to the operating workstation."
+        "food_item_visually_identified": "A food item or snack is clearly identifiable; an ambiguous package, unknown cup contents, empty wrapper, medicine, cash or work equipment is insufficient.",
+        "food_on_cashier_work_surface": "The identified food is visibly on the cashier work table or work surface. Food presence qualifies without eating, chewing or hand-to-mouth motion.",
+        "workstation_work_context_visible": "The relevant surface is visibly an operating cashier workstation with staff work activity; a break room or unresolved nonworking context does not qualify.",
+        "relevant_context_visible": "Readable source-referenced views establish the food item, its location on the work surface and the operating workstation context; a consumption sequence is not required."
       },
       "visual_cues": [
-        "food_consumption"
+        "food_at_workstation"
       ],
       "unknowns": [
-        "A single hand-to-face pose, medicine taking, drinking alone or food merely present cannot establish eating.",
-        "Workstation role and working context require visible support; actual shift schedules are not inferred.",
+        "Food presence on the operating cashier work table is the target; eating and personal ownership need not be observed.",
+        "Ambiguous containers, unknown cup contents, empty wrappers, medicine and work equipment must not be called food.",
+        "Cashier workstation and working context require visible support; break areas and actual shift schedules are not inferred.",
         "The prohibition is a user-provided workplace policy, not a verified public-law clause."
       ],
       "related_legal_rule_ids": [],

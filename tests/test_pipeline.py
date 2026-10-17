@@ -298,7 +298,7 @@ def test_uncertain_context_gets_targeted_refinement(synthetic_video, tmp_path):
     assert len(result["violations"]) == 2
     assert timings["refinement_passes"] == 2
     assert runtime.call_order[0] == "action"
-    assert details["versions"]["pipeline"] == "5.3"
+    assert details["versions"]["pipeline"] == "5.4"
 
 
 def test_action_uncertainty_is_refined_before_context_rejection(synthetic_video, tmp_path):

@@ -1,4 +1,6 @@
-# Scenario-first video review, version 5.3
+# Scenario-first video review, version 5.4
+
+Version 5.4 replaces the eating-only rule with the user's [personal-food belongings policy](workplace-belongings.md). Clearly identifiable food on the operating cashier work table is sufficient for a workplace-policy violation; no eating or consumption sequence is required. Food identity, table location and work context must share a cited source frame. A single readable frame can establish this static condition. The older eating rule is disabled for new analyses; saved results are preserved.
 
 Version 5.3 adds the [workplace eating policy](workplace-eating.md). Supported food consumption by the operator at the cashier work table can emit a workplace-policy violation with source timestamps and JPEG evidence. Two distinct source times, visible work context, and explicit alternative-action checks are required. The source is the user's policy; the three public-regulation gates retain their existing requirements. Older completed jobs retain their original results.
 
