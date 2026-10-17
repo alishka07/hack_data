@@ -640,9 +640,16 @@
       const short = reasons[0] || reviewExplanation(item);
       if (short) name.append(node("p", "case-reason-short", short.length > 110 ? short.slice(0, 107) + "…" : short));
       const labels = {confirmed:"Violation",review_required:"Needs review",rejected:"Not supported"};
-      const outcome = node("td"), moment = node("td", "case-time"), detailCell = node("td");
+      const outcome = node("td"), probability = node("td", "case-probability"), moment = node("td", "case-time"), detailCell = node("td");
       const active = needsCaseReview(item), supported = item.status === "confirmed";
       outcome.append(node("span", "case-status " + (supported ? "confirmed" : active ? "pending" : "rejected"), supported ? labels.confirmed : active ? labels.review_required : labels.rejected));
+      const estimate = confidenceText(item.probability);
+      probability.append(node("span", "case-probability-value", estimate === null ? "Not assessed" : estimate));
+      if (estimate !== null) {
+        probability.title = "Uncalibrated model estimate that the stated check is true; not a measured probability.";
+        const scope = ({joint_checks:"All rule checks",action_only:"Visible action only",procedure_completion:"Procedure completed",event_occurrence:"Event occurs"})[item.probability_scope];
+        if (scope) probability.append(node("span", "case-probability-scope", scope));
+      }
       if (typeof item.timecode_sec === "number" && Number.isFinite(item.timecode_sec) && item.timecode_sec >= 0) {
         const time = node("button", "time-button", "▶ " + formatTime(item.timecode_sec)); time.type = "button";
         time.setAttribute("aria-label", "Seek to " + caseTitle(item.type_id) + " at " + sampleTime(item.timecode_sec));
@@ -650,7 +657,7 @@
       } else moment.textContent = "—";
       const detail = node("details", "case-details");
       const summary = node("summary", "", "View"), detailRow = node("tr", "case-detail-row"), detailBody = node("td", "case-detail-body");
-      detailBody.colSpan = 4; detailRow.id = "case-detail-" + index;
+      detailBody.colSpan = 5; detailRow.id = "case-detail-" + index;
       summary.setAttribute("aria-controls", detailRow.id); detail.append(summary);
       display(detailRow, false);
       detail.addEventListener("toggle", () => display(detailRow, detail.open));
@@ -677,7 +684,7 @@
       }
       if (reasons.length) { const list = node("ul", "case-reasons"); list.append(...reasons.map(reason => node("li", "", reason))); detailBody.append(list); }
       if (!checks.length && !reasons.length && !item.observed_action) detailBody.append(node("p", "case-observation", "No additional check details were saved."));
-      detailCell.append(detail); card.append(name, outcome, moment, detailCell);
+      detailCell.append(detail); card.append(name, outcome, probability, moment, detailCell);
       detailRow.append(detailBody);
       return [card, detailRow];
     }));

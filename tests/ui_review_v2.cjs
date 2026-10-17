@@ -35,8 +35,8 @@ const detections = [
   {id:"invalid",label:"Invalid box",kind:"cash",confidence:.9,timestamp_sec:10,source_index:300,bbox:[.8,.2,.4,.6]},
 ];
 const caseDecision = {status:"review_required",title:"Review required",summary:"An observed action needs transaction-context review.",counts:{confirmed:0,review_required:1,rejected:1,candidates:2,visual_gaps:0,unresolved_assessments:1},cases:[
-  {type_id:"active_intake_departure",status:"review_required",requires_review:true,timecode_sec:10,observed_action:"Synthetic action <img src=x>",checks:[{stage:"action",name:"workstation_departure",status:"yes",evidence_refs:[{source_index:300,timestamp_sec:10}]},{stage:"context",name:"unfinished_intake",status:"unknown",evidence_refs:[]}],reasons:["Transaction context remains unknown."]},
-  {type_id:"previous_transaction_cash_exposed",status:"rejected",requires_review:false,timecode_sec:null,checks:[{stage:"action",name:"cash_exposed",status:"no",evidence_refs:[]}],reasons:["The required action is not supported."]}
+  {type_id:"active_intake_departure",status:"review_required",requires_review:true,timecode_sec:10,probability:.74,probability_scope:"action_only",probability_calibrated:false,observed_action:"Synthetic action <img src=x>",checks:[{stage:"action",name:"workstation_departure",status:"yes",evidence_refs:[{source_index:300,timestamp_sec:10}]},{stage:"context",name:"unfinished_intake",status:"unknown",evidence_refs:[]}],reasons:["Transaction context remains unknown."]},
+  {type_id:"previous_transaction_cash_exposed",status:"rejected",requires_review:false,timecode_sec:null,probability:.12,probability_scope:"joint_checks",probability_calibrated:false,checks:[{stage:"action",name:"cash_exposed",status:"no",evidence_refs:[]}],reasons:["The required action is not supported."]}
 ]};
 const hostQueue = [{...queue[0],type_id:"active_intake_departure",timecode_sec:10,visual_scenario_supported:true},{...queue[1],type_id:"previous_transaction_cash_exposed"}];
 const details = {coverage:{duration_sec:142.533,windows_completed:18,windows_planned:18,max_sample_gap_sec:0.25,source_frames_total:4273,context_windows_used:4,visibility_gaps:[]},review_queue:hostQueue,limitations:["Synthetic visibility limitation."],catalog_version:catalog.version,assessments,assessment_episodes:assessmentEpisodes,detections,case_decision:caseDecision,findings:[{type_id:"example_supported_type",timecode_sec:10,rule_name:"Synthetic official rule",paragraph:"22",rule_url:"https://adilet.zan.kz/rus/docs/V1900019680#z114"}]};
@@ -49,6 +49,12 @@ ids.incompleteStatus = "01234567-0123-4123-8123-012345678902";
 ids.incompleteCount = "01234567-0123-4123-8123-012345678903";
 ids.eating = "01234567-0123-4123-8123-012345678904";
 ids.unsafePolicy = "01234567-0123-4123-8123-012345678905";
+ids.probability = "01234567-0123-4123-8123-012345678906";
+const probabilityDetails = {assessments:[{...assessments[0],item_id:"active_intake_departure",score:99,model_confidence:.99}],case_decision:{status:"review_required",cases:[
+  ...[0,1,null,true,"0.9",NaN,-.01,1.01].map((probability,index) => ({...caseDecision.cases[0],episode_id:"separate-episode-" + index,timecode_sec:index,probability,probability_scope:index === 0 ? "event_occurrence" : "joint_checks"})),
+  {...caseDecision.cases[0],episode_id:"procedure-episode",probability:.82,probability_scope:"procedure_completion"},
+  {...caseDecision.cases[0],episode_id:"legacy-episode",probability:undefined,probability_scope:undefined}
+]}};
 let unsafePolicyUrl = "javascript:alert(1)";
 const eatingDetails = {findings:[{type_id:"cashier_eating_at_workstation",timecode_sec:12.5,basis:"workplace_policy",rule_name:"User-provided workplace policy",paragraph:"Eating at the cashier workstation",rule_url:"/policies/workplace-eating"}],case_decision:{status:"confirmed",cases:[]}};
 const incompleteDetails = {processing_status:"review_incomplete",coverage:{...details.coverage,verification_complete:false,unverified_candidate_count:3},case_decision:{status:"no_supported_violation",cases:[]},review_queue:[{...hostQueue[0],status:"diagnostic",requires_review:false,reason_codes:["verification_budget_exhausted"]}]};
@@ -143,7 +149,7 @@ const pageErrors = [];
           const incomplete = id === ids.incompleteMarker ? {coverage:{verification_complete:false},case_decision:{cases:[]}} : id === ids.incompleteStatus ? {processing_status:"review_incomplete",case_decision:{cases:[]}} : id === ids.incompleteCount ? {coverage:{unverified_candidate_count:3},case_decision:{cases:[]}} : incompleteDetails;
           return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:incomplete}});
         }
-        const jobDetails = id===ids.dense?denseDetails:id===ids.dismissed?dismissedDetails:id===ids.visibility?{...dismissedDetails,coverage:{visibility_gaps:[{start_sec:1,end_sec:3}],unresolved_verification_count:0}}:id===ids.gap?{...dismissedDetails,coverage:{visibility_gaps:[],unresolved_verification_count:3}}:id===ids.empty?{...dismissedDetails,case_decision:{status:"review_required",counts:{review_required:99},cases:[]}}:id===ids.old?{}:id===ids.legacy?{review_queue:queue}:id===ids.clear?{detections:[],case_decision:{status:"no_supported_violation",cases:[]}}:id===ids.uncertain?{assessments:[{...assessments[2],automation:"review_only",assessment:"unresolved",unscoped_unknown_observation_count:1}]}:id===ids.manual?{assessments:[assessments[2]]}:details;
+        const jobDetails = id===ids.probability?probabilityDetails:id===ids.dense?denseDetails:id===ids.dismissed?dismissedDetails:id===ids.visibility?{...dismissedDetails,coverage:{visibility_gaps:[{start_sec:1,end_sec:3}],unresolved_verification_count:0}}:id===ids.gap?{...dismissedDetails,coverage:{visibility_gaps:[],unresolved_verification_count:3}}:id===ids.empty?{...dismissedDetails,case_decision:{status:"review_required",counts:{review_required:99},cases:[]}}:id===ids.old?{}:id===ids.legacy?{review_queue:queue}:id===ids.clear?{detections:[],case_decision:{status:"no_supported_violation",cases:[]}}:id===ids.uncertain?{assessments:[{...assessments[2],automation:"review_only",assessment:"unresolved",unscoped_unknown_observation_count:1}]}:id===ids.manual?{assessments:[assessments[2]]}:details;
         return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:jobDetails}});
       }
       return route.fulfill({status:404,body:"Synthetic route unavailable"});
@@ -184,12 +190,14 @@ const pageErrors = [];
     assert.equal(await technicalDisclosure.evaluate(element => element.open),false,"Raw API and technical details should be collapsed by default");
     assert.equal(await page.locator("#jury-verdict").isVisible(),false);
     assert.equal(await page.locator(".case-card").count(),2);
-    assert.deepEqual(await page.locator("#case-decision-section thead th").allTextContents(),["Check","Result","Time","Details"]);
+    assert.deepEqual(await page.locator("#case-decision-section thead th").allTextContents(),["Check","Result","Probability","Time","Details"]);
     for (const row of await page.locator(".case-card").all()) {
       assert.equal(await row.evaluate(element => element.tagName),"TR");
-      assert.equal(await row.locator("th,td").count(),4);
+      assert.equal(await row.locator("th,td").count(),5);
       assert.equal(await row.locator(".case-details").evaluate(element => element.open),false);
     }
+    assert.match(await page.locator(".case-probability").nth(0).textContent(),/^74%.*Visible action only/);
+    assert.match(await page.locator(".case-probability").nth(1).textContent(),/^12%.*All rule checks/,"A rejected proposal's estimate must not be inverted into confidence that the rejection is true");
     assert.equal(await page.locator(".case-detail-row").count(),2);
     for (const row of await page.locator(".case-detail-row").all()) assert.equal(await row.isVisible(),false);
     const detectionsDisclosure = page.locator("#detections-section").locator("xpath=ancestor-or-self::details[1]");
@@ -202,7 +210,7 @@ const pageErrors = [];
     assert.equal(await page.locator(".case-details").first().evaluate(element => element.open),true);
     await page.locator(".case-detail-row").first().waitFor({state:"visible"});
     assert.equal(await page.locator(".case-detail-row").first().isVisible(),true);
-    assert.equal(await page.locator(".case-detail-body").first().getAttribute("colspan"),"4","Expanded checks need the full result table width");
+    assert.equal(await page.locator(".case-detail-body").first().getAttribute("colspan"),"5","Expanded checks need the full result table width");
     assert.equal(await page.locator(".check-status.yes").isVisible(),true);
     await page.locator(".case-details > summary").nth(1).click();
     assert.equal(await page.locator(".case-card .time-button").count(),1,"Null case timestamps must not turn into zero-second seek controls");
@@ -286,6 +294,9 @@ const pageErrors = [];
     for (const row of await page.locator(".case-detail-row").all()) await row.waitFor({state:"hidden"});
     await page.setViewportSize({width:375,height:812});
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1),"Mobile layout must not overflow horizontally");
+    const mobileTime = await page.locator(".case-card .time-button").first().boundingBox();
+    const mobileView = await page.locator(".case-card .case-details > summary").first().boundingBox();
+    assert(mobileTime && mobileView && mobileTime.x + mobileTime.width + 3 <= mobileView.x,"The probability column must preserve a readable gap between mobile Time and Details controls");
     await page.evaluate(() => window.scrollTo(0,0));
     const mobileVerdict = await page.locator("#verdict-card").boundingBox();
     assert(mobileVerdict && mobileVerdict.y >= 0 && mobileVerdict.y < 812,"The completed decision must appear in the first mobile viewport");
@@ -310,6 +321,15 @@ const pageErrors = [];
     assert.equal(await page.locator("#verdict-title").textContent(),"Needs review","Older jobs with an unconfirmed queue must not display a clean headline");
     assert.equal(await page.locator("#case-decision-section").isVisible(),true);
     assert.equal(await page.locator(".case-card").count(),2,"Older review queues should remain actionable in the main case table");
+    for (const cell of await page.locator(".case-probability").all()) assert.equal(await cell.textContent(),"Not assessed","A legacy result must not acquire a fabricated probability");
+    await open(ids.probability);
+    const probabilityCells = page.locator(".case-probability");
+    assert.equal(await probabilityCells.count(),10);
+    assert.match(await probabilityCells.nth(0).textContent(),/^0%.*Event occurs/,"Zero is a valid model estimate");
+    assert.match(await probabilityCells.nth(1).textContent(),/^100%.*All rule checks/);
+    for (const index of [2,3,4,5,6,7,9]) assert.equal(await probabilityCells.nth(index).textContent(),"Not assessed","Unknown or invalid values must not borrow the same check's separate episode estimate: " + index);
+    assert.match(await probabilityCells.nth(8).textContent(),/^82%.*Procedure completed/,"Required-procedure confidence must identify completion as the target");
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1),"The probability column must fit the mobile viewport");
     await open(ids.clear);
     assert.equal(await page.locator("#verdict-title").textContent(),"No violation detected");
     assert.match(await page.locator("#detections").textContent(),/No items were localized/);

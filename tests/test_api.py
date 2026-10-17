@@ -133,6 +133,38 @@ def test_active_job_discovery_recovers_expired_analysis(service):
     assert store.get_job(job_id)["error_code"] == "deadline_exceeded"
 
 
+def test_saved_review_probability_uses_retained_verification_without_changing_verdict(service):
+    client, store, settings = service
+    headers = {"X-API-Key": "synthetic-test-key"}
+    job_id = _upload(client).json()["job_id"]
+    case = {"type_id": "event", "episode_id": "one", "timecode_sec": 1.,
+            "status": "review_required", "requires_review": True, "reasons": ["Context needs review"]}
+    details = {"case_decision": {"status": "review_required", "cases": [case]}, "findings": [], "assessments": []}
+    result = {"verdict": "no_violation", "violations": []}
+    store.complete_job(job_id, result, details)
+    directory = settings.data_dir / "jobs" / job_id
+    directory.mkdir(parents=True)
+    response = client.get(f"/api/ui/jobs/{job_id}", headers=headers)
+    assert response.json()["details"]["case_decision"]["cases"][0]["probability"] is None
+    answer = {"decision": "supported", "visibility": "clear", "confidence": .74,
+              "checks": {"seen": "yes"}, "check_frames": {"seen": [0]}, "evidence_indices": [0]}
+    frames = [{"source_index": 30, "timestamp_sec": 1.}]
+    attempt = {**case, "action": answer, "action_frames": frames,
+               "context": {**answer, "confidence": .6}, "context_frames": frames}
+    (directory / "verification.json").write_text(json.dumps([attempt]), encoding="utf-8")
+    response = client.get(f"/api/ui/jobs/{job_id}", headers=headers)
+    updated = response.json()["details"]["case_decision"]["cases"][0]
+    assert updated["probability"] == .6 and updated["probability_scope"] == "joint_checks"
+    assert updated["probability_calibrated"] is False
+    assert {key: updated[key] for key in case} == case
+    assert response.json()["result"] == result
+    assert json.loads(store.get_job(job_id)["details_json"]) == details
+    assert client.get(f"/api/v1/jobs/{job_id}", headers=headers).json() == {
+        "job_id": job_id, "status": "done", **result}
+    (directory / "verification.json").write_text("incomplete JSON", encoding="utf-8")
+    assert client.get(f"/api/ui/jobs/{job_id}", headers=headers).json()["details"]["case_decision"]["cases"][0]["probability"] is None
+
+
 def test_unready_worker_does_not_accept_video(service):
     client, store, settings = service
     store.heartbeat_worker("test-worker", False, "warming up")

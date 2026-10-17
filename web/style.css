@@ -42,10 +42,14 @@ h1 { font-size: 30px; letter-spacing: -1px; }
 .case-results-table thead { color: var(--muted); background: var(--soft); }
 .case-results-table th, .case-results-table td { padding: 12px 8px; vertical-align: top; border-bottom: 1px solid var(--border); font-size: 12px; }
 .case-results-table thead th { font-size: 10px; font-weight: 650; }
-.case-results-table thead th:nth-child(1) { width: 44%; }
-.case-results-table thead th:nth-child(2) { width: 23%; }
-.case-results-table thead th:nth-child(3) { width: 16%; }
-.case-results-table thead th:nth-child(4) { width: 17%; }
+.case-results-table thead th:nth-child(1) { width: 34%; }
+.case-results-table thead th:nth-child(2) { width: 18%; }
+.case-results-table thead th:nth-child(3) { width: 21%; }
+.case-results-table thead th:nth-child(4) { width: 13%; }
+.case-results-table thead th:nth-child(5) { width: 14%; }
+.case-probability { font-variant-numeric: tabular-nums; line-height: 1.5; overflow-wrap: anywhere; }
+.case-probability-value { font-weight: 650; }
+.case-probability-scope { display: block; margin-top: 4px; font-size: 10px; line-height: 1.4; color: var(--muted); }
 .case-results-table .case-card { border: 0; margin: 0; padding: 0; }
 .case-results-table .check-name { font-weight: 650; line-height: 1.5; overflow-wrap: anywhere; }
 .case-reason-short { margin-top: 5px; font-size: 10px; font-weight: 400; color: var(--muted); line-height: 1.5; }
@@ -118,6 +122,11 @@ footer { max-width: 1240px; padding: 18px max(3vw, 20px); }
   .case-decision-section { padding: 15px 12px; }
   .case-results-table th, .case-results-table td { font-size: 10px; padding: 10px 4px; }
   .case-results-table thead th { font-size: 9px; }
+  .case-results-table thead th:nth-child(1) { width: 31%; }
+  .case-results-table thead th:nth-child(2) { width: 18%; }
+  .case-results-table thead th:nth-child(3) { width: 21%; }
+  .case-results-table thead th:nth-child(4) { width: 17%; }
+  .case-results-table thead th:nth-child(5) { width: 13%; }
   .case-reason-short { font-size: 9px; }
   .case-results-table .case-status { font-size: 9px; padding: 3px 4px; }
   .case-results-table .time-button { font-size: 9px; padding: 4px 2px; }

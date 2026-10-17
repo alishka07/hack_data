@@ -95,6 +95,117 @@ def _assessment_reason(row: Mapping) -> str | None:
     return None
 
 
+def _confidence(value) -> float | None:
+    return float(value) if _number(value) and 0 <= value <= 1 else None
+
+
+def _mapping_rows(value) -> list[Mapping]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return []
+    return [row for row in value if isinstance(row, Mapping)]
+
+
+def _source_reference(reference: Mapping) -> bool:
+    return (isinstance(reference, Mapping) and _number(reference.get("timestamp_sec"))
+            and reference["timestamp_sec"] >= 0
+            and ((type(reference.get("source_index")) is int and reference["source_index"] >= 0)
+                 or isinstance(reference.get("filename"), str) and bool(reference["filename"])
+                 or isinstance(reference.get("frame_id"), str) and bool(reference["frame_id"])))
+
+
+def _pass_confidence(answer: Mapping, frames: Sequence[Mapping]) -> float | None:
+    """A source-linked estimate, including zero, never a status-derived score."""
+    confidence = _confidence(answer.get("confidence"))
+    checks = answer.get("checks", {})
+    if (confidence is None or answer.get("_host_unverified")
+            or answer.get("visibility") not in {"clear", "partial"}
+            or not isinstance(checks, Mapping) or not any(value == "yes" or value == "no" for value in checks.values())
+            or "invalid_confidence" in answer.get("semantic_issues", [])):
+        return None
+    evidence_indices = answer.get("evidence_indices", [])
+    indices = list(evidence_indices) if isinstance(evidence_indices, (list, tuple)) else []
+    references_by_check = answer.get("check_frames", {})
+    if isinstance(references_by_check, Mapping):
+        for references in references_by_check.values():
+            if isinstance(references, (list, tuple)):
+                indices.extend(references)
+    if not any(type(index) is int and 0 <= index < len(frames)
+               and _source_reference(frames[index]) for index in indices):
+        return None
+    return confidence
+
+
+def enrich_case_probabilities(cases: Sequence[Mapping], attempts: Sequence[Mapping],
+                              findings: Sequence[Mapping], catalog_assessments: Sequence[Mapping] = ()) -> list[dict]:
+    """Append uncalibrated evidence estimates without rebuilding saved decisions.
+
+    The joint estimate conservatively uses the smaller of two available pass
+    confidences. It is a model estimate, not an empirically measured probability.
+    A rejected decision does not imply that its confidence can be inverted.
+    """
+    cases = _mapping_rows(cases)
+    trials = {_key(row): row for row in _mapping_rows(attempts)}
+    finding_records: dict[tuple, list[Mapping]] = {}
+    case_keys = [_key(case) for case in cases]
+    for finding in _mapping_rows(findings):
+        key = _key(finding)
+        if key not in case_keys and "candidate_timecode_sec" not in finding:
+            matches = [candidate for candidate in case_keys if candidate[:2] == key[:2]
+                       and _number(candidate[2]) and _number(finding.get("start_sec"))
+                       and _number(finding.get("end_sec")) and _number(finding.get("timecode_sec"))
+                       and finding["start_sec"] <= candidate[2] <= finding["end_sec"]]
+            if matches:
+                key = min(matches, key=lambda candidate: abs(candidate[2] - finding["timecode_sec"]))
+        finding_records.setdefault(key, []).append(finding)
+    catalog_records = {}
+    for row in _mapping_rows(catalog_assessments):
+        supplied_references = _mapping_rows(row.get("evidence_refs"))
+        references = [ref for ref in supplied_references if _source_reference(ref)]
+        if (not references or row.get("assessment") in {None, "unassessed", "unresolved"}
+                or row.get("automation") not in {None, "automatic_when_supported", "review_only"}
+                or row.get("applicability") == "not_applicable"):
+            continue
+        timestamps = [ref.get("timestamp_sec") for ref in supplied_references if _number(ref.get("timestamp_sec"))]
+        key = (row.get("item_id"), row.get("episode_id", ""), min(timestamps))
+        catalog_records[key] = row
+    result = []
+    for case in cases:
+        key = _key(case)
+        probability, scope = None, None
+        if case.get("status") == "confirmed":
+            for finding in finding_records.get(key, []):
+                confidence = _confidence(finding.get("model_confidence"))
+                if confidence is not None and any(_source_reference(ref) for ref in _mapping_rows(finding.get("evidence_frames"))):
+                    probability, scope = confidence, "joint_checks"
+                    break
+        if probability is None and key in trials:
+            trial = trials[key]
+            def pass_confidence(stage):
+                try:
+                    answer, frames = _effective_pass(trial, stage)
+                    return _pass_confidence(answer, frames)
+                except (AttributeError, TypeError, ValueError):
+                    # Malformed legacy diagnostic payloads cannot manufacture
+                    # a probability or prevent the saved result being shown.
+                    return None
+            action_confidence = pass_confidence("action")
+            context_confidence = pass_confidence("context")
+            if action_confidence is not None:
+                probability, scope = action_confidence, "action_only"
+                if context_confidence is not None:
+                    probability, scope = min(action_confidence, context_confidence), "joint_checks"
+        if probability is None and key not in trials and not finding_records.get(key):
+            row = catalog_records.get(key)
+            if row:
+                confidence = _confidence(row.get("model_confidence"))
+                catalog_scope = {"required_procedure": "procedure_completion", "event_occurrence": "event_occurrence"}.get(row.get("scoring_kind"))
+                if confidence is not None and catalog_scope:
+                    probability, scope = confidence, catalog_scope
+        result.append({**case, "probability": probability, "probability_scope": scope,
+                       "probability_calibrated": False})
+    return result
+
+
 def build_case_decision(findings: Sequence[Mapping], review_queue: Sequence[Mapping],
                         attempts: Sequence[Mapping], coverage: Mapping,
                         catalog_assessments: Sequence[Mapping] = ()) -> dict:
@@ -222,4 +333,5 @@ def build_case_decision(findings: Sequence[Mapping], review_queue: Sequence[Mapp
     else:
         status, title = "no_supported_violation", "No supported violation"
         summary = "No supported violation was found in the sampled frames. This does not certify compliance."
+    cases = enrich_case_probabilities(cases, attempts, findings, catalog_assessments)
     return {"status": status, "title": title, "summary": summary, "counts": counts, "reason_codes": reasons, "cases": cases}

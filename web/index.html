@@ -54,7 +54,8 @@
           <div id="details-warning" class="message message-error" role="alert" hidden></div>
           <section id="case-decision-section" class="case-decision-section card" hidden aria-labelledby="case-decision-title">
             <div class="catalog-heading"><h3 id="case-decision-title">Results</h3><span id="case-decision-count" class="catalog-version"></span></div>
-            <div class="case-table-wrap"><table class="case-results-table"><caption class="visually-hidden">Results and evidence by check</caption><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Time</th><th scope="col">Details</th></tr></thead><tbody id="case-decisions"></tbody></table></div>
+            <p id="case-probability-note" class="coverage-note">Probabilities are uncalibrated model estimates. “Visible action only” does not confirm a violation.</p>
+            <div class="case-table-wrap"><table class="case-results-table" aria-describedby="case-probability-note"><caption class="visually-hidden">Results, estimated probabilities and evidence by check</caption><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Probability</th><th scope="col">Time</th><th scope="col">Details</th></tr></thead><tbody id="case-decisions"></tbody></table></div>
           </section>
           <div id="findings-heading" class="findings-heading" hidden><h2>Violation evidence</h2><span id="finding-count"></span></div><div id="findings"></div>
           <details id="detections-section" class="detections-section card disclosure" hidden aria-labelledby="detections-title"><summary><span id="detections-title">Detected items</span><span id="detection-count" class="catalog-version"></span></summary><div class="disclosure-body"><p class="coverage-note">Estimated boxes at sampled moments.</p><div id="detections" class="detections-grid"></div></div></details>

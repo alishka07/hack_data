@@ -249,10 +249,30 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
     @application.get("/api/ui/jobs/{job_id}", dependencies=auth)
     def ui_job(job_id: str):
         job = lookup(job_id)
+        details = _json(job["details_json"], {})
+        decision = details.get("case_decision") if isinstance(details, dict) else None
+        cases = decision.get("cases") if isinstance(decision, dict) else None
+        if (job["status"] == "done" and isinstance(cases, list)
+                and any(isinstance(case, dict) and "probability" not in case for case in cases)):
+            # Older saved reviews already retain verifier confidence on disk.
+            # Add its display estimate without re-running inference or changing
+            # the saved verdict, findings, case status, or review requirements.
+            attempts = []
+            path = settings.data_dir / "jobs" / job_id / "verification.json"
+            try:
+                if path.is_file() and path.stat().st_size <= 8 * 1024 * 1024:
+                    value = json.loads(path.read_text(encoding="utf-8"))
+                    if isinstance(value, list) and all(isinstance(row, dict) for row in value):
+                        attempts = value
+            except (OSError, ValueError):
+                pass
+            from worker.decision import enrich_case_probabilities
+            details = {**details, "case_decision": {**decision, "cases": enrich_case_probabilities(
+                cases, attempts, details.get("findings", []), details.get("assessments", []))}}
         return {"job_id": job_id, "status": job["status"], "stage": job["internal_stage"],
                 "progress": job["progress"], "message": job["message"], "original_name": job["original_name"],
                 "created_at": job["created_at"], "deadline_at": job["deadline_at"],
-                "result": _json(job["result_json"], None), "details": _json(job["details_json"], {}),
+                "result": _json(job["result_json"], None), "details": details,
                 "timings": _json(job["timings_json"], {}),
                 "error": {"code": job["error_code"], "message": job["error_message"]} if job["error_code"] else None}
 
