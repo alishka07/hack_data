@@ -1,0 +1,30 @@
+Included runtime sources and weights
+
+RT-DETR / RT-DETRv2
+  Upstream: https://github.com/lyuwenyu/RT-DETR
+  Code: runtime/RT-DETR-main/rtdetrv2_pytorch/src and configs
+  License: Apache-2.0, full text in runtime/RT-DETR-main/LICENSE
+  COCO checkpoint: rtdetrv2_r50vd_6x_coco_ema.pth
+  Local adapter: run_local.py; offline checkpoint loading and device selection.
+  models/equipment/best.pth is a local four-class fine-tune of this architecture.
+  It is experimental and does not establish the accuracy of banking decisions.
+
+ByteTrack
+  Upstream: https://github.com/ifzhang/ByteTrack
+  License: MIT, full text in runtime/ByteTrack-main/LICENSE
+  Included: tracking subset, not YOLOX detector/training packages.
+  Local changes: minimal yolox/__init__.py; NumPy float64 compatibility;
+  matching.py uses local bbox.py in place of the Cython extension, preserving
+  inclusive-pixel IoU; run_rtdetr_bytetrack.py is the local RT-DETR adapter
+  with full-video processing, timeline metadata and browser-compatible export.
+
+Grounding DINO tiny
+  Model: https://huggingface.co/IDEA-Research/grounding-dino-tiny
+  License: Apache-2.0; model card and tokenizer files accompany the weights.
+  Full Apache license: runtime/GroundingDINO-local/LICENSE
+  Local adapter: detect_local.py, Transformers offline inference.
+  Transformers and Tokenizers are installed from their packages, not bundled.
+
+Videos, extracted frames, scene-specific reference images and annotated
+training sets are not included in this source/weights distribution.
+Dependencies installed by pip retain their respective licenses.

@@ -19,7 +19,7 @@ def main():
     selection.add_argument('--video',type=Path)
     selection.add_argument('--all',action='store_true')
     parser.add_argument('--videos',type=Path,default=ROOT/'videos')
-    parser.add_argument('--weights',type=Path,default=ROOT/'training/rtdetr_custom_final/best.pth')
+    parser.add_argument('--weights',type=Path,default=ROOT/'models/equipment/best.pth')
     parser.add_argument('--output',type=Path,default=ROOT/'results/trained_objects')
     parser.add_argument('--interval',type=float,default=1.0)
     parser.add_argument('--threshold',type=float,default=None,help='Override all fitted class thresholds; default uses calibration.json')

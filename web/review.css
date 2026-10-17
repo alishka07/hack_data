@@ -1,0 +1,108 @@
+/* Review desk: video and evidence stay together; controls remain quiet. */
+.review-studio {
+  --ink: #142a38; --burgundy: #087f83; --line: #d9e3e7;
+  --paper: #eaf0f2; --gray: #59707e; --green: #237653;
+  background: #eaf0f2; color: var(--ink);
+  font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
+}
+.review-studio .page-header {max-width:1800px; padding:25px 32px; align-items:center; border-bottom:1px solid #cedbdf; background:#fff; margin-bottom:0; gap:22px}
+.review-studio .page-title h1 {font-family:Bahnschrift,"Segoe UI",sans-serif;font-size:25px;letter-spacing:-.6px;font-weight:600}
+.review-studio .page-title p {color:#59707e;font-size:12px;margin-top:6px}
+.review-studio .brand-mark {width:34px;height:34px;transform:rotate(-4deg);border:2px solid #087f83;border-radius:10px;background:#e5f4f2}
+.review-studio .brand-mark span {background:#087f83}
+.review-studio .page-header>a {font-size:12px;text-decoration:none;color:#45616f}
+.review-studio .local-badge {font-size:11px;color:#297759;background:#eaf7f0;border:0;border-radius:20px}
+.review-studio .workbench {max-width:1800px;margin:0 auto;grid-template-columns:248px minmax(0,1fr);gap:26px;padding:26px 32px}
+.review-studio .control-rail {gap:22px}
+.review-studio .upload-panel {background:#142a38;color:#fff;border:0;padding:21px;border-radius:16px}
+.review-studio .upload-panel h2 {font-size:17px;font-weight:600}
+.review-studio .dropzone {border:1px dashed #67828e;background:#1d3847;color:#fff;border-radius:9px;padding:26px 9px;margin-top:18px}
+.review-studio .dropzone svg {width:37px;height:37px;color:#7bd9d3}
+.review-studio .file-label {color:#fff;font-size:15px}
+.review-studio .dropzone p,.review-studio .dropzone small,.review-studio .local-note,.review-studio .automatic-check p {color:#b8cbd4;font-size:11px}
+.review-studio .automatic-check {background:none;border:0;padding:16px 0 0}
+.review-studio .automatic-check strong {color:#e8f4f7;font-size:12px}
+.review-studio .automatic-check p {line-height:1.6}
+.review-studio .selected-file {color:#142a38;background:#f3f8fa}
+.review-studio .button {border-radius:7px;font-weight:600;min-height:38px;transition:background .15s,border-color .15s}
+.review-studio .button-primary {background:#087f83;border-color:#087f83;color:#fff}
+.review-studio .button-primary:hover:not(:disabled) {background:#06676b;border-color:#06676b}
+.review-studio .history-panel {padding:3px 0;border:0;background:transparent}
+.review-studio .history-panel h2 {font-size:13px}
+.review-studio .history-list {max-height:470px}
+.review-studio .history-list button {border-radius:7px;padding:12px;border-color:transparent;background:transparent}
+.review-studio .history-list button:hover,.review-studio .history-list button.active {background:#fff;border-color:#cbdce0}
+.review-studio .job-panel {border:0;border-radius:16px;box-shadow:0 3px 15px #233c4808;overflow:hidden}
+.review-studio .job-header {padding:24px 28px 18px}
+.review-studio .job-header h2 {font-family:Bahnschrift,"Segoe UI",sans-serif;font-size:23px;font-weight:600}
+.review-studio .review-summary {background:#fff;padding:24px 28px 12px;border:0}
+.review-studio .review-summary h3 {font-size:21px;font-weight:600;letter-spacing:-.3px}
+.review-studio #review-summary-text {font-size:13px;line-height:1.65;max-width:80ch}
+.review-studio .review-disclaimer {font-size:11px;color:#7f5f42;background:#fbf3e9;border:0;padding:5px 9px;border-radius:4px}
+.review-toolbar {padding:16px 28px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.view-switch {display:flex;gap:3px;padding:4px;background:#edf2f4;border-radius:9px}
+.view-switch button {font:inherit;font-size:12px;border:0;border-radius:6px;padding:9px 14px;background:transparent;color:#526975;font-weight:600}
+.view-switch button[aria-pressed=true] {background:#fff;color:#142a38;box-shadow:0 1px 4px #142a3814}
+#frame-total {font-variant-numeric:tabular-nums;margin-left:6px;color:#637987}
+#save-results {font-size:12px;padding:9px 14px;width:auto;margin:0;flex:0 0 auto}
+.save-status {padding:0 28px;color:#237653;font-size:12px;margin:0 0 10px}
+.save-status:empty {display:none}
+.review-studio .review-layout {grid-template-columns:minmax(260px,1.1fr) minmax(280px,1fr);gap:24px;padding:0 28px 24px;align-items:start}
+.review-studio .review-layout>.player-column {position:sticky;top:20px;order:0}
+.review-studio .history-list {overflow:auto}
+.review-studio .player-heading {margin:2px 0 12px;align-items:center}
+.review-studio .player-heading h3 {font-size:13px;font-weight:600}
+.review-studio .player-shell {border-radius:12px;background:#142a38;min-height:300px;border:1px solid #263c49}
+.review-studio .player-shell video {max-height:min(66vh,650px);min-height:300px;background:#142a38}
+.review-studio .preview-note {font-size:11px;line-height:1.6}
+.review-studio .evidence-context {background:#eaf7f5;color:#176b6b;border-left:3px solid #087f83;padding:11px 12px;border-radius:0 5px 5px 0;font-size:12px;line-height:1.6}
+.review-studio .events-panel {border:0;padding:0;background:none;min-width:0}
+.review-studio .events-panel>.section-heading {padding:3px 0 15px}
+.review-studio .events-panel h3 {font-size:13px}
+.review-studio .event-list {max-height:760px;overflow:auto;padding:0 6px 4px 0;scrollbar-width:thin}
+.review-studio .event-item {cursor:pointer;background:#f6f9fa;border:1px solid #dce6e9;border-left:3px solid #bcced4;border-radius:0 9px 9px 0;padding:17px;margin:0 0 12px;box-shadow:none}
+.review-studio .event-item:hover {border-color:#9bbfbe;background:#f2f9f8}
+.review-studio .event-item.selected {background:#eff9f7;border-color:#b5dbd5;border-left-color:#087f83;box-shadow:none}
+.review-studio .event-time {font-variant-numeric:tabular-nums;font-size:14px;color:#08777a}
+.review-studio .event-review-label {font-size:10px;color:#86613c;background:#f7edde;border:0;border-radius:4px}
+.review-studio .event-item h4 {margin:10px 0 7px;font-size:15px;line-height:1.4}
+.event-title-button {font:inherit;text-align:left;color:inherit;border:0;padding:0;background:none;font-weight:650;line-height:inherit;cursor:pointer}
+.event-title-button:hover {color:#087f83}
+.review-studio .event-description {font-size:12px;line-height:1.65;color:#425e6c}
+.review-studio .episode-steps {font-size:11px;margin:12px 0;line-height:1.65;color:#546d79}
+.review-studio .event-evidence {gap:12px;margin-top:14px}
+.review-studio .event-thumbnail {width:78px;flex:0 0 78px;border-radius:6px;border:1px solid #cad9de}
+.review-studio .event-thumbnail img {width:100%;height:104px;object-fit:contain;background:#e2ebee}
+.review-studio .event-evidence p {font-size:11px;line-height:1.6}
+.review-studio .event-action {font-size:11px;background:#fff;border-color:#bfd6d8;color:#126f72;min-height:32px}
+.review-studio .coverage-section {padding:24px 28px;border-top:1px solid #d9e3e7;margin:0}
+.review-studio .coverage-section h3 {font-size:15px}
+.review-studio .rule-coverage {grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.review-studio .coverage-item {box-shadow:none;border-radius:6px}
+.review-studio .frames-section {margin:0;padding:2px 28px 28px}
+.review-studio .frames-section h3 {font-size:17px}
+.review-studio .frames-section p {margin-top:7px;font-size:12px}
+.review-studio .thumbnail-strip {display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;overflow:visible;padding:20px 0}
+.review-studio .thumbnail-button {width:auto;min-width:0;border-radius:8px;background:#f4f8fa}
+.review-studio .thumbnail-button img {width:100%;height:190px;object-fit:contain;object-position:center;background:#dfe9ed}
+.review-studio .thumbnail-button span {padding:9px 12px;font-size:12px;font-weight:600}
+.review-studio .thumbnail-button:hover {border-color:#087f83}
+.review-studio .download-section {margin:0 28px;padding:15px 0;border-bottom:0}
+.review-studio .raw-observations {margin:0 28px 18px}
+.review-studio .limitations {background:#f2f6f8;margin:0 28px 28px;border-radius:8px}
+.review-studio .empty-state {min-height:640px;border:0;border-radius:16px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px;gap:30px}
+.review-studio .empty-screen {width:240px;height:180px;background:#e3f1f0;border-radius:28px 28px 8px 28px;color:#087f83;transform:rotate(-3deg)}
+.review-studio .empty-copy {max-width:470px;text-align:center}
+.review-studio .empty-copy h2 {font:600 28px Bahnschrift,"Segoe UI",sans-serif;letter-spacing:-.6px}
+.review-studio .empty-copy p {font-size:14px;line-height:1.7;color:#536e7c}
+.review-studio .scope-note {text-align:left;margin-top:25px;background:#f1f6f8;border:0;border-radius:8px}
+.review-studio dialog {width:min(94vw,1000px);max-width:1000px;border-radius:14px;background:#f5f9fa}
+.review-studio dialog::backdrop {background:#102633db;backdrop-filter:blur(5px)}
+.review-studio dialog img {max-height:calc(92vh - 140px);width:100%;object-fit:contain;background:#203744}
+.frame-navigation {display:flex;align-items:center;justify-content:space-between;padding:12px 18px;color:#526b79;font-size:12px}
+.review-studio :focus-visible {outline:3px solid #278e99;outline-offset:3px}
+.review-studio [hidden] {display:none!important}
+@media(min-width:1550px){.review-studio .workbench{grid-template-columns:270px minmax(0,1fr)}.review-studio .review-layout{grid-template-columns:minmax(300px,1.1fr) minmax(340px,1fr)}}
+@media(max-width:1150px){.review-studio .workbench{grid-template-columns:220px minmax(0,1fr);padding:20px;gap:18px}.review-studio .review-layout{grid-template-columns:1fr}.review-studio .review-layout>.player-column{position:static}.review-studio .player-shell video{max-height:540px}.review-studio .event-list{max-height:600px}.review-studio .page-header{flex-wrap:wrap;padding:20px}.review-studio .page-header .local-badge{display:none}}
+@media(max-width:760px){.review-studio .workbench{display:flex;flex-direction:column;padding:12px;gap:16px}.review-studio .control-rail{width:100%}.review-studio .history-list{max-height:155px}.review-studio .upload-panel{padding:18px}.review-studio .dropzone{padding:18px}.review-studio .page-header{gap:12px}.review-studio .page-title{flex:1}.review-studio .page-title h1{font-size:21px}.review-studio .page-header>a{font-size:11px}.review-studio .review-layout,.review-studio .review-summary,.review-studio .coverage-section,.review-studio .frames-section{padding-left:16px;padding-right:16px}.review-toolbar{padding:12px 16px}.review-studio .rule-coverage{grid-template-columns:1fr}.review-studio .empty-state{min-height:390px;padding:28px}.review-studio .empty-copy h2{font-size:24px}.review-studio .page-footer{padding:18px;display:block}.review-studio .thumbnail-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.review-studio .thumbnail-button img{height:180px}.review-studio .event-list{max-height:none}}
+@media(prefers-reduced-motion:reduce){.review-studio *{scroll-behavior:auto!important;transition:none!important}}

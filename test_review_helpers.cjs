@@ -1,0 +1,14 @@
+const assert = require('node:assert/strict');
+const {eventTarget,exportResult}=require('./web/review_helpers.js');
+const videos=[{key:'desk',sampled:true},{key:'people',sampled:false,source_start_sec:0,source_end_sec:30}];
+assert.equal(eventTarget({start_sec:12,mode:'desk',playback_sec:6},videos,()=>true).time,12);
+assert.equal(eventTarget({start_sec:12,mode:'desk',playback_sec:6},videos,()=>true).video.key,'people');
+assert.equal(eventTarget({start_sec:40,mode:'desk',playback_sec:6},videos,()=>true).time,6);
+assert.equal(eventTarget({start_sec:0,mode:'desk',playback_sec:0},videos,()=>true).time,0);
+assert.equal(eventTarget({start_sec:0,mode:'desk',playback_sec:null},[],()=>true),null);
+const mapped=[{key:'people',sampled:false,source_timeline:[[0,0],[.5,.4],[.9,.8]]}];
+assert.equal(eventTarget({start_sec:.51},mapped,()=>true).time,.4);
+const payload=exportResult({id:'abc',name:'clip.mov',status:'completed',video:{fps:25}}, {events:[],rule_coverage:[{status:'not_checked'}]});
+assert.equal(JSON.parse(JSON.stringify(payload)).results.rule_coverage[0].status,'not_checked');
+assert.equal(payload.video.name,'clip.mov');
+console.log('8 review timeline/export assertions passed');

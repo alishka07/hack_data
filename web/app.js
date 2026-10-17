@@ -2,7 +2,7 @@
 
 (() => {
   const $ = (id) => document.getElementById(id);
-  const state = { file: null, config: null, job: null, results: null, jobs: [], timer: null, xhr: null, generation: 0, page: 0, video: null };
+  const state = { file: null, config: null, job: null, results: null, jobs: [], timer: null, xhr: null, generation: 0, page: 0, video: null, seekVersion: 0, frames: [], frameIndex: -1, frameLimit: 24, resultView: "events" };
   const ACTIVE = new Set(["queued", "running"]);
   const STATUS = { queued: "В очереди", running: "Обрабатывается", completed: "Готово", partial: "Готово частично", failed: "Ошибка обработки", cancelled: "Остановлено", interrupted: "Прервано", uploading: "Загрузка" };
   const MODES = { trained: "Объекты кассы", desk: "Предметы на столе", people: "Люди и перемещения", source: "Исходное видео" };
@@ -253,6 +253,7 @@
     return safeURL(video.mp4_url) || safeURL(video.url);
   }
   function setVideo(video, seekTime, scrollToPlayer = true) {
+    const seekVersion = ++state.seekVersion;
     const player = $("result-video"); const url = playbackURL(video);
     if (!url) return;
     const change = !state.video || state.video.key !== video.key || player.getAttribute("src") !== url;
@@ -269,7 +270,7 @@
       : video.key === "source" ? "Исходная запись. Отметки объектов доступны в других режимах."
       : `Один кадр каждые ${interval.toLocaleString("ru-RU")} с. Это выборочное превью; время наблюдений указано по исходной записи.`;
     if (Number.isFinite(seekTime)) {
-      const seek = () => { player.currentTime = Math.max(0, Math.min(seekTime, Number.isFinite(player.duration) ? Math.max(0, player.duration - 0.01) : seekTime)); };
+      const seek = () => { if (seekVersion !== state.seekVersion) return; player.currentTime = Math.max(0, Math.min(seekTime, Number.isFinite(player.duration) ? Math.max(0, player.duration - 0.01) : seekTime)); };
       if (!change && player.readyState >= 1) seek(); else player.addEventListener("loadedmetadata", seek, { once: true });
       if (scrollToPlayer) player.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
     }
@@ -347,21 +348,25 @@
   }
   function eventVideo(event) {
     const videos = state.results && state.results.videos || [];
-    return videos.find(video => video.key === event.mode && playbackURL(video)) ||
-      (event.mode === "visual_states" ? videos.find(video => video.key === "people" && !video.sampled && playbackURL(video)) : null);
+    const target = ReviewHelpers.eventTarget(event, videos, playbackURL);
+    return target && target.video;
   }
   function openFrame(url, caption) {
     const safe = safeURL(url); if (!safe) return;
     $("frame-caption").textContent = caption; $("frame-image").src = safe;
+    state.frameIndex = state.frames.findIndex(frame => safeURL(frame.url) === safe);
+    $("frame-position").textContent = state.frameIndex >= 0 ? `${state.frameIndex + 1} / ${state.frames.length}` : "Кадр эпизода";
+    $("previous-frame").disabled = state.frameIndex <= 0;
+    $("next-frame").disabled = state.frameIndex < 0 || state.frameIndex >= state.frames.length - 1;
     if (!$("frame-dialog").open) $("frame-dialog").showModal();
   }
   function selectEvent(event, item, scrollToPlayer = true) {
     [...$("event-list").children].forEach(row => row.classList.toggle("selected", row === item));
     $("evidence-context").textContent = `${eventTime(event)} — ${event.title || "Эпизод для проверки"}`;
     visible($("evidence-context"), true);
-    const video = eventVideo(event);
-    if (video && event.playback_sec != null && Number.isFinite(Number(event.playback_sec))) {
-      setVideo(video, Number(event.playback_sec), scrollToPlayer);
+    const target = ReviewHelpers.eventTarget(event, state.results.videos || [], playbackURL);
+    if (target) {
+      setVideo(target.video, target.time, scrollToPlayer);
     } else if (scrollToPlayer && event.thumbnail_url) {
       openFrame(event.thumbnail_url, `${eventTime(event)} — ${event.title || "Кадр эпизода"}`);
     }
@@ -380,7 +385,10 @@
       const item = element("li", null, "event-item"); item.dataset.eventId = String(event.id || index);
       const heading = element("div", null, "event-heading");
       heading.append(element("strong", eventTime(event), "event-time"), element("span", event.confidence_label || "Требует проверки", "event-review-label"));
-      item.append(heading, element("h4", event.title || "Возможное нарушение"));
+      const title = element("h4"); const titleButton = element("button", event.title || "Возможное нарушение", "event-title-button");
+      titleButton.type = "button"; titleButton.addEventListener("click", () => selectEvent(event, item)); title.append(titleButton);
+      item.append(heading, title);
+      item.addEventListener("click", click => { if (!click.target.closest("button,a,summary,details,input")) selectEvent(event, item); });
       if (event.description) item.append(element("p", event.description, "event-description"));
       if (Array.isArray(event.steps) && event.steps.length) {
         const section = element("div", null, "episode-steps");
@@ -406,7 +414,7 @@
       }
       if (event.evidence_text) { const text = element("div"); text.append(element("strong", "Основание"), element("p", event.evidence_text)); evidence.append(text); }
       if (evidence.childElementCount) item.append(evidence);
-      const video = eventVideo(event); const canSeek = Boolean(video && event.playback_sec != null && Number.isFinite(Number(event.playback_sec)));
+      const canSeek = Boolean(eventVideo(event));
       const action = element("button", canSeek ? "Показать в видео" : thumbnail ? "Открыть кадр" : "Кадр недоступен", "button button-small event-action");
       action.type = "button"; action.disabled = !canSeek && !thumbnail; action.addEventListener("click", () => selectEvent(event, item)); item.append(action);
       if (Array.isArray(event.limitations) && event.limitations.length) {
@@ -463,19 +471,22 @@
   }
   function renderThumbnails(thumbnails) {
     $("thumbnail-strip").replaceChildren();
-    const usable = thumbnails.filter(item => safeURL(item.url));
-    const picked = usable.length > 60 ? Array.from({ length: 60 }, (_, index) => usable[Math.floor(index * (usable.length - 1) / 59)]) : usable;
+    const fps = Number(state.job && state.job.video && state.job.video.fps);
+    const eventFrames = (state.results.events || []).filter(e => e.thumbnail_url).map(e => ({url:e.thumbnail_url,timestamp_sec:fps > 0 && e.source_frame != null ? Number(e.source_frame)/fps : e.start_sec,mode:e.mode,caption:e.title}));
+    state.frames = [...new Map([...eventFrames, ...thumbnails].filter(item => safeURL(item.url)).map(item => [safeURL(item.url),item])).values()].sort((a,b) => Number(a.timestamp_sec)-Number(b.timestamp_sec));
+    const picked = state.frames.slice(0,state.frameLimit);
+    $("frame-total").textContent = String(state.frames.length);
+    visible($("frames-empty"), !state.frames.length); visible($("more-frames"), state.frameLimit < state.frames.length);
     picked.forEach(item => {
       const button = element("button", null, "thumbnail-button"); button.type = "button";
       const img = element("img"); img.src = safeURL(item.url); img.alt = `Кадр ${timeLabel(item.timestamp_sec)}, ${MODES[item.mode] || "объекты"}`; img.loading = "lazy";
       button.append(img, element("span", timeLabel(item.timestamp_sec)));
       button.addEventListener("click", () => {
-        $("frame-caption").textContent = `${timeLabel(item.timestamp_sec)} — ${MODES[item.mode] || "Кадр с отметками"}`;
-        $("frame-image").src = safeURL(item.url); $("frame-dialog").showModal();
+        openFrame(item.url,`${timeLabel(item.timestamp_sec)} — ${item.caption || MODES[item.mode] || "Кадр с отметками"}`);
       });
       $("thumbnail-strip").append(button);
     });
-    visible($("frames-section"), picked.length > 0);
+    visible($("frames-section"), state.resultView === "frames");
   }
   function renderDownloads(results) {
     $("download-links").replaceChildren();
@@ -499,12 +510,12 @@
       const url = safeURL(item.url); if (!url || seen.has(url)) return; seen.add(url);
       const a = element("a", item.label || "Скачать файл", "button"); a.href = url; a.download = "";
       if (/\/report\/(?:review\.html|violations\.(?:csv|json))$/i.test(new URL(url).pathname)) {
-        $("download-links").append(a);
+        $("log-download-links").append(a); visible($("diagnostic-downloads"), true);
       } else { $("log-download-links").append(a); visible($("diagnostic-downloads"), true); }
     });
     if (state.job) {
       const all = element("a", "Все результаты ZIP", "button download-all");
-      all.href = `/api/jobs/${encodeURIComponent(state.job.id)}/archive`; all.download = ""; $("download-links").append(all);
+      all.href = `/api/jobs/${encodeURIComponent(state.job.id)}/archive`; all.download = ""; $("log-download-links").append(all); visible($("diagnostic-downloads"), true);
     }
   }
   function renderTable() {
@@ -578,6 +589,34 @@
   $("reset-filters").addEventListener("click", () => { ["filter-class", "filter-status", "filter-mode"].forEach(id => { $(id).value = ""; }); state.page = 0; renderTable(); });
   $("previous-page").addEventListener("click", () => { state.page--; renderTable(); });
   $("next-page").addEventListener("click", () => { state.page++; renderTable(); });
+  function switchResultView(view) {
+    state.resultView = view;
+    visible($("event-view"), view === "events"); visible($("frames-section"), view === "frames");
+    $("show-events").setAttribute("aria-pressed", String(view === "events"));
+    $("show-frames").setAttribute("aria-pressed", String(view === "frames"));
+  }
+  function advanceFrame(delta) {
+    const frame = state.frames[state.frameIndex + delta]; if (!frame) return;
+    openFrame(frame.url,`${timeLabel(frame.timestamp_sec)} — ${frame.caption || MODES[frame.mode] || "Кадр записи"}`);
+  }
+  $("show-events").addEventListener("click", () => switchResultView("events"));
+  $("show-frames").addEventListener("click", () => switchResultView("frames"));
+  $("more-frames").addEventListener("click", () => { state.frameLimit += 24; renderThumbnails(state.results.thumbnails || []); });
+  $("previous-frame").addEventListener("click", () => advanceFrame(-1));
+  $("next-frame").addEventListener("click", () => advanceFrame(1));
+  $("frame-dialog").addEventListener("keydown", event => {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") { event.preventDefault(); advanceFrame(event.key === "ArrowLeft" ? -1 : 1); }
+  });
+  $("save-results").addEventListener("click", () => {
+    if (!state.job || !state.results) return;
+    const payload = ReviewHelpers.exportResult(state.job,state.results);
+    const blob = new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"});
+    const url = URL.createObjectURL(blob); const link = document.createElement("a");
+    link.href = url; link.download = `results-${state.job.id.slice(0,8)}.json`;
+    document.body.append(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url),60000);
+    $("save-status").textContent = "JSON подготовлен и передан браузеру для сохранения.";
+  });
   $("close-frame").addEventListener("click", () => $("frame-dialog").close());
   $("frame-dialog").addEventListener("click", event => { if (event.target === $("frame-dialog")) $("frame-dialog").close(); });
   $("result-video").addEventListener("error", () => { if ($("result-video").hasAttribute("src")) { $("preview-note").textContent = "Браузер не смог воспроизвести превью. Скачайте MP4 или откройте отдельные кадры ниже."; } });

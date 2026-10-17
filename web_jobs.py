@@ -238,7 +238,7 @@ class JobManager:
         selected = {key: bool(options.get(key, False)) for key in ('trained', 'desk', 'people')}
         if not any(selected.values()):
             raise ValueError('Выберите хотя бы один вид анализа.')
-        selected['visual_states'] = True
+        selected['visual_states'] = (CASE / 'training/visual_states_v2/model.json').is_file()
         # The measured close-up experiment was expensive and did not yet improve
         # cash detection. Keep it opt-in until quality/speed have been validated.
         selected['dense_review'] = selected['desk'] and os.environ.get('CASE_ENABLE_DENSE_REVIEW') == '1'
@@ -674,7 +674,10 @@ def collect_results(job_dir: Path, job: dict) -> dict:
             report = _read_json(video.with_suffix('.json'), {})
             if not report or not video.is_file():
                 continue
-            output['videos'].append(video_entry(video, key, sampled=False))
+            output['videos'].append(video_entry(video, key, sampled=False,
+                source_start_sec=max(0, report.get('first_timestamp_sec') or 0),
+                source_end_sec=report.get('last_timestamp_sec'),
+                source_timeline=report.get('source_timeline', [])))
             output['people'] = {
                 'track_ids': report.get('track_ids', []), 'frames': report.get('frames', 0),
                 'source_frames': job.get('video', {}).get('frames'),

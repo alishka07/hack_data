@@ -19,7 +19,7 @@ import time
 from interaction_refinement import crop_box_to_source, resolve_crop, sha256, write_json
 
 ROOT = Path(__file__).resolve().parent
-MODEL_ROOT = ROOT.parent / 'GroundingDINO-local'
+MODEL_ROOT = ROOT / 'runtime' / 'GroundingDINO-local'
 VERSION = 'dense-roi-1'
 PROMPTS = {
     'targets': 'banknotes. an identity card. a paper document.',

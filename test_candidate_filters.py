@@ -48,7 +48,10 @@ class CandidateFilterTests(unittest.TestCase):
         self.assertEqual(result["review"], [])
 
     def test_actual_x1_nested_safe_boxes_leave_no_unambiguous_counter_there(self):
-        fixture = json.loads((Path(__file__).parent / "regression_inputs" / "X1_10_pipeline_raw.json").read_text(encoding="utf-8"))
+        path = Path(__file__).parent / "regression_inputs" / "X1_10_pipeline_raw.json"
+        if not path.is_file():
+            self.skipTest("Optional private case fixture is not included in the portable repository")
+        fixture = json.loads(path.read_text(encoding="utf-8"))
         self.assertEqual(fixture["timestamp_sec"], 10.0)
         result = filter_candidates(fixture["raw_detections"], tuple(fixture["image_size"]))
         # Right-hand cabinet hypotheses are all ambiguous. This deliberately

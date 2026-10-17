@@ -25,7 +25,7 @@ from calibrate_threshold import (counts_at_threshold, fit_thresholds, nms,
 from candidate_filters import canonical_label
 
 ROOT = Path(__file__).resolve().parent
-DINO_ROOT = ROOT.parent / 'GroundingDINO-local'
+DINO_ROOT = ROOT / 'runtime' / 'GroundingDINO-local'
 VERSION = '1.1'
 # Newly initialized cash heads can produce useful rankings below .05. Keep the
 # same low floor for all models; operating thresholds are still fitted on val.

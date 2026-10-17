@@ -316,7 +316,7 @@ def main():
         videos = discover(args.videos)
     if not videos or any(not p.is_file() for p in videos):
         parser.error('No valid video files found')
-    backend = ROOT.parent / 'GroundingDINO-local'
+    backend = ROOT / 'runtime' / 'GroundingDINO-local'
     if not (backend / 'weights' / 'model.safetensors').is_file():
         parser.error(f'Missing local Grounding DINO weights: {backend / "weights"}')
     args.output.mkdir(parents=True, exist_ok=True)

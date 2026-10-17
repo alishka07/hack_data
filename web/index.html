@@ -6,15 +6,16 @@
   <meta name="theme-color" content="#202D43">
   <title>Проверка видео кассы</title>
   <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/review.css">
+  <script defer src="/static/review_helpers.js"></script>
   <script defer src="/static/app.js"></script>
 </head>
-<body>
+<body class="review-studio">
   <a class="skip-link" href="#workspace">К результатам</a>
   <header class="page-header">
     <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
-    <div class="page-title"><h1>Проверка видео кассы</h1><p>Возможные нарушения и моменты для просмотра</p></div>
+    <div class="page-title"><h1>Проверка видео кассы</h1><p>От наблюдения — к конкретному моменту записи</p></div>
     <a href="/annotations" class="text-button">Все видео и разметка</a>
-    <a href="/static/cash_pilot_report.html" class="text-button">Проверка модели банкнот</a>
     <span class="local-badge"><span aria-hidden="true"></span>Обработка на этом компьютере</span>
   </header>
   <div id="connection-alert" class="connection-alert" role="alert" hidden></div>
@@ -63,7 +64,9 @@
         <div id="result-loading" class="result-loading" hidden>Готовим результаты…</div>
         <div id="results" hidden>
           <header class="review-summary"><div class="section-heading"><h3>Возможные нарушения</h3><span id="event-count" class="event-count"></span></div><p id="review-summary-text"></p><span class="review-disclaimer">Эпизоды требуют проверки человеком</span></header>
-          <div class="review-layout">
+          <div class="review-toolbar"><div class="view-switch" role="group" aria-label="Вид результатов"><button id="show-events" type="button" aria-pressed="true">Видео и события</button><button id="show-frames" type="button" aria-pressed="false">Скриншоты <span id="frame-total"></span></button></div><button id="save-results" class="button button-primary" type="button">Сохранить результаты · JSON</button></div>
+          <p id="save-status" class="save-status" role="status"></p>
+          <div id="event-view" class="review-layout">
             <div class="player-column">
               <div class="player-heading"><h3>Видео для проверки</h3><span id="current-video-label" class="muted"></span></div>
               <div class="player-shell"><video id="result-video" controls playsinline preload="metadata" aria-label="Обработанное видео"></video><p id="no-video" hidden>Видео с отметками недоступно. Проверьте кадры и список наблюдений ниже.</p></div>
@@ -73,11 +76,11 @@
             </div>
             <section class="events-panel" aria-labelledby="events-heading"><div class="section-heading"><h3 id="events-heading">Эпизоды для просмотра</h3><span class="muted">Время в записи</span></div><p id="no-events" class="no-events" hidden></p><ol id="event-list" class="event-list"></ol></section>
           </div>
+          <section id="frames-section" class="frames-section" hidden><div class="section-heading"><div><h3>Скриншоты записи</h3><p class="muted">Нажмите на кадр, чтобы открыть его крупно. Листайте стрелками.</p></div></div><p id="frames-empty" class="muted" hidden>Для этой записи нет сохранённых скриншотов.</p><div id="thumbnail-strip" class="thumbnail-strip"></div><button id="more-frames" class="button" type="button" hidden>Показать ещё</button></section>
           <section class="coverage-section" aria-labelledby="coverage-heading"><div class="section-heading"><h3 id="coverage-heading">Какие правила проверены</h3><span id="coverage-count" class="muted"></span></div><p class="coverage-note">Статус показывает охват проверки, а не соблюдение правила.</p><ul id="rule-coverage" class="rule-coverage"></ul><p id="coverage-empty" class="muted" hidden>Для этой записи нет сведений об охвате правил. По одним объектам нельзя подтвердить или исключить нарушение.</p></section>
-          <section class="download-section" aria-labelledby="download-heading"><h3 id="download-heading">Сохранить результаты</h3><div id="download-links" class="download-links"></div><details id="diagnostic-downloads" class="diagnostic-downloads" hidden><summary>Видеокопии и данные моделей</summary><div id="log-download-links" class="download-links"></div></details></section>
+          <section class="download-section" aria-label="Дополнительные файлы"><div id="download-links" class="download-links" hidden></div><details id="diagnostic-downloads" class="diagnostic-downloads" hidden><summary>Другие форматы и видеокопии</summary><div id="log-download-links" class="download-links"></div></details></section>
           <details id="raw-observations" class="raw-observations"><summary><span>Исходные наблюдения модели</span><span id="sample-summary" class="muted"></span></summary>
           <div class="raw-overview"><aside class="object-summary" aria-label="Найденные объекты"><h3>Объекты в кадрах</h3><p>Количество кадров с объектом. Кадр учитывается отдельно в каждом режиме.</p><ul id="class-counts"></ul><div id="people-summary" class="people-summary" hidden></div><div id="closeup-summary" class="people-summary" hidden></div></aside></div>
-          <section id="frames-section" class="frames-section" hidden><div class="section-heading"><h3>Отмеченные кадры</h3><span class="muted">Время в исходной записи</span></div><div id="thumbnail-strip" class="thumbnail-strip"></div></section>
           <section class="observations" aria-labelledby="observation-heading">
             <div class="section-heading"><h3 id="observation-heading">Наблюдения</h3><span id="observation-total" class="muted"></span></div>
             <p class="observations-note">Каждая строка — объект на одном кадре. Уверенность модели не является доказательством нарушения.</p>
@@ -92,6 +95,6 @@
     </section>
   </main>
   <footer class="page-footer">Локальная проверка записей кассы <span>Результаты модели требуют проверки человеком</span></footer>
-  <dialog id="frame-dialog"><div class="dialog-header"><strong id="frame-caption"></strong><button id="close-frame" class="icon-button" type="button" aria-label="Закрыть кадр">×</button></div><img id="frame-image" alt="Кадр с отметками найденных объектов"></dialog>
+  <dialog id="frame-dialog" aria-label="Просмотр скриншотов"><div class="dialog-header"><strong id="frame-caption"></strong><button id="close-frame" class="icon-button" type="button" aria-label="Закрыть кадр">×</button></div><img id="frame-image" alt="Кадр с отметками найденных объектов"><div class="frame-navigation"><button id="previous-frame" class="button" type="button" aria-label="Предыдущий скриншот">← Назад</button><span id="frame-position"></span><button id="next-frame" class="button" type="button" aria-label="Следующий скриншот">Далее →</button></div></dialog>
 </body>
 </html>

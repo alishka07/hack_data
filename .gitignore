@@ -34,3 +34,10 @@ venv/
 *.key
 credentials*.json
 token*.json
+!.gitattributes
+!models/**/*.pth
+!runtime/**/*.pth
+!runtime/**/*.safetensors
+.venv*/
+/runtime/GroundingDINO-local/compat/
+!runtime/GroundingDINO-local/weights/tokenizer*.json

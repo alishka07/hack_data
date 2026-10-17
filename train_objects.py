@@ -19,7 +19,7 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parent
-REPO = ROOT.parent / "RT-DETR-main" / "rtdetrv2_pytorch"
+REPO = ROOT / "runtime" / "RT-DETR-main" / "rtdetrv2_pytorch"
 BASE_WEIGHTS = REPO / "weights" / "rtdetrv2_r50vd_6x_coco_ema.pth"
 
 

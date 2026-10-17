@@ -81,10 +81,10 @@ def parse_options(raw: str) -> dict:
 
 def capabilities():
     return {
-        'trained': (CASE/'training/rtdetr_custom_final/best.pth').is_file(),
-        'desk': (CASE.parent/'GroundingDINO-local/weights/model.safetensors').is_file(),
-        'people': (CASE.parent/'RT-DETR-main/rtdetrv2_pytorch/weights/rtdetrv2_r50vd_6x_coco_ema.pth').is_file()
-                  and (CASE.parent/'ByteTrack-main/run_rtdetr_bytetrack.py').is_file(),
+        'trained': (CASE/'models/equipment/best.pth').is_file(),
+        'desk': (CASE/'runtime/GroundingDINO-local/weights/model.safetensors').is_file(),
+        'people': (CASE/'runtime/RT-DETR-main/rtdetrv2_pytorch/weights/rtdetrv2_r50vd_6x_coco_ema.pth').is_file()
+                  and (CASE/'runtime/ByteTrack-main/run_rtdetr_bytetrack.py').is_file(),
     }
 
 

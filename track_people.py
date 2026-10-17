@@ -22,7 +22,7 @@ def main():
     os.environ.setdefault('MKL_NUM_THREADS', '2')
     video = resolve_video(args.video)
     output = args.output or ROOT / 'results' / 'people' / (video.stem + '.mp4')
-    sys.path.insert(0, str(ROOT.parent / 'ByteTrack-main'))
+    sys.path.insert(0, str(ROOT / 'runtime' / 'ByteTrack-main'))
     from run_rtdetr_bytetrack import run
     run(video, output, start=args.start, duration=args.duration)
 
