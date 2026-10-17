@@ -1,100 +1,84 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#202D43">
-  <title>Проверка видео кассы</title>
-  <link rel="stylesheet" href="/static/styles.css">
-  <link rel="stylesheet" href="/static/review.css">
-  <script defer src="/static/review_helpers.js"></script>
-  <script defer src="/static/app.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Forte · Cash review</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
 </head>
-<body class="review-studio">
-  <a class="skip-link" href="#workspace">К результатам</a>
-  <header class="page-header">
-    <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
-    <div class="page-title"><h1>Проверка видео кассы</h1><p>От наблюдения — к конкретному моменту записи</p></div>
-    <a href="/annotations" class="text-button">Все видео и разметка</a>
-    <span class="local-badge"><span aria-hidden="true"></span>Обработка на этом компьютере</span>
+<body>
+  <header class="topbar">
+    <a href="/" class="brand" aria-label="Forte cash review home"><span class="brand-mark" aria-hidden="true">f.</span><span>Forte<span class="brand-divider">/</span><span class="brand-product">Cash review</span></span></a>
+    <div class="service-indicator" role="status"><span id="service-dot" class="dot"></span><span id="service-label">Checking service</span></div>
   </header>
-  <div id="connection-alert" class="connection-alert" role="alert" hidden></div>
-  <main class="workbench">
-    <aside class="control-rail" aria-label="Загрузка видео">
-      <form id="upload-form" class="upload-panel">
-        <h2>Новое видео</h2>
-        <div id="dropzone" class="dropzone">
-          <svg aria-hidden="true" viewBox="0 0 48 48" fill="none"><path d="M16 17V9h21v30H11V23" stroke="currentColor" stroke-width="2"/><path d="M20 18 14 12 8 18m6-6v18M24 25h7m-7 6h7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <label for="video-file" class="file-label">Выберите видео</label>
-          <p>или перетащите файл сюда</p>
-          <input id="video-file" name="video" type="file" accept="video/*,.mov,.mp4,.mkv,.avi,.m4v,.webm" aria-describedby="file-hint">
-          <small id="file-hint">MP4, MOV, AVI, MKV, M4V, WebM</small>
-        </div>
-        <div id="selected-file" class="selected-file" hidden>
-          <div><strong id="selected-name"></strong><span id="selected-size"></span></div>
-          <button id="clear-file" class="icon-button" type="button" aria-label="Убрать выбранное видео">×</button>
-        </div>
-        <p id="file-error" class="field-error" role="alert" hidden></p>
-        <div class="automatic-check"><strong>Все доступные проверки</strong><p>Предметы, присутствие людей и состояния двери и сейфа сопоставляются по времени.</p></div>
-        <p id="capability-warning" class="capability-warning" role="alert" hidden></p>
-        <button id="process-button" class="button button-primary" type="submit" disabled>Проверить нарушения</button>
-        <p class="local-note">Видео и результаты сохраняются локально. Загрузка в облако не требуется.</p>
-      </form>
-      <section class="history-panel" aria-labelledby="history-heading">
-        <div class="section-heading"><h2 id="history-heading">Последние записи</h2><button id="refresh-history" class="text-button" type="button">Обновить</button></div>
-        <p id="history-empty" class="muted">Здесь появятся обработанные видео.</p>
-        <ul id="history-list" class="history-list"></ul>
-      </section>
-    </aside>
-    <section id="workspace" class="workspace" aria-label="Результаты анализа" tabindex="-1">
-      <div id="empty-state" class="empty-state">
-        <div class="empty-screen" aria-hidden="true"><div class="empty-frame"><svg viewBox="0 0 72 72" fill="none"><rect x="11" y="15" width="50" height="42" rx="4" stroke="currentColor" stroke-width="2"/><path d="m30 27 16 9-16 9V27Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div><span>Эпизоды, время, кадры для проверки</span></div>
-        <div class="empty-copy"><h2>Проверьте одну запись</h2><p>Загрузите видео. Здесь появятся возможные нарушения с временем и объяснением, а также список правил, которые удалось проверить.</p><div class="scope-note"><strong>Каждый вывод можно проверить по кадру</strong><p>Модель выделяет эпизоды для просмотра. Подтвердить нарушение должен человек; непроверенные правила будут указаны отдельно.</p></div></div>
-      </div>
-      <section id="job-panel" class="job-panel" hidden>
-        <header class="job-header"><div><h2 id="job-name"></h2><p id="video-meta" class="muted"></p></div><span id="job-status" class="status-pill"></span></header>
-        <div id="processing-panel" class="processing-panel" aria-live="polite" hidden>
-          <div class="progress-heading"><strong id="progress-label">Загрузка видео</strong><span id="progress-percent"></span></div>
-          <progress id="job-progress" max="1" value="0" aria-label="Ход обработки"></progress>
-          <div class="progress-footer"><span id="progress-detail">Подготовка</span><button id="cancel-button" class="text-button danger" type="button">Остановить</button></div>
-        </div>
-        <div id="job-error" class="notice notice-error" role="alert" hidden></div>
-        <ul id="stage-list" class="stage-list" aria-label="Этапы обработки"></ul>
-        <details id="stage-errors" class="stage-errors" hidden><summary>Замечания и ошибки обработки</summary><div id="stage-error-details"></div></details>
-        <div id="result-loading" class="result-loading" hidden>Готовим результаты…</div>
-        <div id="results" hidden>
-          <header class="review-summary"><div class="section-heading"><h3>Возможные нарушения</h3><span id="event-count" class="event-count"></span></div><p id="review-summary-text"></p><span class="review-disclaimer">Эпизоды требуют проверки человеком</span></header>
-          <div class="review-toolbar"><div class="view-switch" role="group" aria-label="Вид результатов"><button id="show-events" type="button" aria-pressed="true">Видео и события</button><button id="show-frames" type="button" aria-pressed="false">Скриншоты <span id="frame-total"></span></button></div><button id="save-results" class="button button-primary" type="button">Сохранить результаты · JSON</button></div>
-          <p id="save-status" class="save-status" role="status"></p>
-          <div id="event-view" class="review-layout">
-            <div class="player-column">
-              <div class="player-heading"><h3>Видео для проверки</h3><span id="current-video-label" class="muted"></span></div>
-              <div class="player-shell"><video id="result-video" controls playsinline preload="metadata" aria-label="Обработанное видео"></video><p id="no-video" hidden>Видео с отметками недоступно. Проверьте кадры и список наблюдений ниже.</p></div>
-              <p id="evidence-context" class="evidence-context" hidden></p>
-              <p id="preview-note" class="preview-note"></p>
-              <details class="video-options"><summary>Другие варианты видео</summary><div id="video-tabs" class="video-tabs" aria-label="Варианты видео"></div></details>
-            </div>
-            <section class="events-panel" aria-labelledby="events-heading"><div class="section-heading"><h3 id="events-heading">Эпизоды для просмотра</h3><span class="muted">Время в записи</span></div><p id="no-events" class="no-events" hidden></p><ol id="event-list" class="event-list"></ol></section>
+  <main>
+    <section class="intro"><div><h1>Cash desk review</h1><p class="intro-copy">Upload a video. See the result and the moments that need attention.</p></div></section>
+    <div class="workspace">
+      <aside class="upload-panel card">
+        <div class="panel-heading"><h2>Review a video</h2></div>
+        <form id="upload-form">
+          <label class="field-label" for="api-key">API key</label>
+          <div class="key-input"><input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your API key" required aria-describedby="key-help"><button id="key-visibility" class="text-button" type="button" aria-label="Show API key" aria-pressed="false">Show</button></div>
+          <p id="key-help" class="field-help">Kept in this tab only.</p>
+          <div id="drop-zone" class="drop-zone">
+            <span class="upload-icon" aria-hidden="true">↑</span><strong>Drop a MOV video</strong>
+            <label class="button button-secondary file-picker" for="video-file">Choose video</label>
+            <input id="video-file" class="visually-hidden" type="file" accept=".mov,video/quicktime" aria-describedby="file-help">
+            <span id="file-help" class="field-help">Processed locally</span>
           </div>
-          <section id="frames-section" class="frames-section" hidden><div class="section-heading"><div><h3>Скриншоты записи</h3><p class="muted">Нажмите на кадр, чтобы открыть его крупно. Листайте стрелками.</p></div></div><p id="frames-empty" class="muted" hidden>Для этой записи нет сохранённых скриншотов.</p><div id="thumbnail-strip" class="thumbnail-strip"></div><button id="more-frames" class="button" type="button" hidden>Показать ещё</button></section>
-          <section class="coverage-section" aria-labelledby="coverage-heading"><div class="section-heading"><h3 id="coverage-heading">Какие правила проверены</h3><span id="coverage-count" class="muted"></span></div><p class="coverage-note">Статус показывает охват проверки, а не соблюдение правила.</p><ul id="rule-coverage" class="rule-coverage"></ul><p id="coverage-empty" class="muted" hidden>Для этой записи нет сведений об охвате правил. По одним объектам нельзя подтвердить или исключить нарушение.</p></section>
-          <section class="download-section" aria-label="Дополнительные файлы"><div id="download-links" class="download-links" hidden></div><details id="diagnostic-downloads" class="diagnostic-downloads" hidden><summary>Другие форматы и видеокопии</summary><div id="log-download-links" class="download-links"></div></details></section>
-          <details id="raw-observations" class="raw-observations"><summary><span>Исходные наблюдения модели</span><span id="sample-summary" class="muted"></span></summary>
-          <div class="raw-overview"><aside class="object-summary" aria-label="Найденные объекты"><h3>Объекты в кадрах</h3><p>Количество кадров с объектом. Кадр учитывается отдельно в каждом режиме.</p><ul id="class-counts"></ul><div id="people-summary" class="people-summary" hidden></div><div id="closeup-summary" class="people-summary" hidden></div></aside></div>
-          <section class="observations" aria-labelledby="observation-heading">
-            <div class="section-heading"><h3 id="observation-heading">Наблюдения</h3><span id="observation-total" class="muted"></span></div>
-            <p class="observations-note">Каждая строка — объект на одном кадре. Уверенность модели не является доказательством нарушения.</p>
-            <div class="table-filters"><label>Объект<select id="filter-class"><option value="">Все объекты</option></select></label><label>Отметка<select id="filter-status"><option value="">Все отметки</option><option value="candidates">Найден</option><option value="review">Проверить</option></select></label><label>Режим<select id="filter-mode"><option value="">Все режимы</option></select></label><button id="reset-filters" class="text-button" type="button">Сбросить</button></div>
-            <div class="table-wrap"><table><thead><tr><th scope="col">Время</th><th scope="col">Объект</th><th scope="col">Уверенность</th><th scope="col">Отметка</th><th scope="col">Режим</th></tr></thead><tbody id="observation-rows"></tbody></table><p id="no-observations" class="table-empty" hidden>По этим условиям ничего не найдено.</p></div>
-            <div class="pagination"><span id="page-info"></span><div><button id="previous-page" class="button button-small" type="button">Назад</button><button id="next-page" class="button button-small" type="button">Далее</button></div></div>
+          <div id="selected-file" class="selected-file" hidden><span class="file-symbol" aria-hidden="true">▶</span><div><strong id="file-name"></strong><span id="file-size"></span></div><button id="remove-file" type="button" class="icon-button" aria-label="Remove selected video">×</button></div>
+          <button id="analyze-button" class="button button-primary" type="submit" disabled>Analyze video <span aria-hidden="true">→</span></button>
+          <p id="admission-note" class="field-help centered">Waiting for the worker.</p>
+          <div id="form-error" class="message message-error" role="alert" hidden></div>
+        </form>
+        <details class="existing-job"><summary>Open a saved review</summary><form id="open-job-form"><label class="field-label" for="job-input">Review ID</label><input id="job-input" autocomplete="off" placeholder="Paste a review ID" required><button type="submit" class="button button-secondary">Open review</button></form></details>
+        <details id="catalog-section" class="catalog-card catalog-disclosure" hidden aria-labelledby="catalog-title">
+          <summary id="catalog-title">Available checks</summary>
+          <div class="disclosure-body"><div class="catalog-heading"><p id="catalog-version" class="catalog-version"></p><button id="catalog-reload" class="text-button" type="button">Reload</button></div><p id="catalog-status" class="catalog-status" role="status"></p><div id="catalog-table-wrap" class="score-table-wrap" hidden><table class="score-table"><caption class="visually-hidden">Available checks before analysis</caption><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Estimate</th></tr></thead><tbody id="catalog-items"></tbody></table></div></div>
+        </details>
+      </aside>
+
+      <section class="review-panel" aria-label="Video review">
+        <div class="status-card card">
+          <div class="status-top"><h2 id="status-title">Choose a video</h2><span id="status-badge" class="status-badge">Ready</span></div>
+          <p id="status-description" class="muted">Results will appear here.</p>
+          <div id="progress-section" hidden><div class="progress-track" id="progress-track" role="progressbar" aria-label="Analysis progress" aria-valuemin="0" aria-valuemax="100"><div id="progress-fill"></div></div><div class="progress-meta"><span id="stage-label">Queued</span><span id="elapsed-label"></span></div></div>
+          <div id="job-controls" class="job-controls" hidden><details class="job-details"><summary>Review ID</summary><code id="job-id"></code></details><button id="poll-button" type="button" class="text-button">Pause updates</button></div>
+          <div id="poll-error" class="message message-error" role="alert" hidden></div>
+        </div>
+
+        <div id="results" hidden aria-live="polite">
+          <section id="verdict-card" class="verdict-card card"><div id="verdict-icon" class="verdict-icon" aria-hidden="true"></div><div><p class="eyebrow">Violation status</p><h2 id="verdict-title"></h2><p id="verdict-description"></p></div></section>
+          <div id="details-warning" class="message message-error" role="alert" hidden></div>
+          <section id="case-decision-section" class="case-decision-section card" hidden aria-labelledby="case-decision-title">
+            <div class="catalog-heading"><h3 id="case-decision-title">Results</h3><span id="case-decision-count" class="catalog-version"></span></div>
+            <div class="case-table-wrap"><table class="case-results-table"><caption class="visually-hidden">Results and evidence by check</caption><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Time</th><th scope="col">Details</th></tr></thead><tbody id="case-decisions"></tbody></table></div>
           </section>
+          <div id="findings-heading" class="findings-heading" hidden><h2>Violation evidence</h2><span id="finding-count"></span></div><div id="findings"></div>
+          <details id="detections-section" class="detections-section card disclosure" hidden aria-labelledby="detections-title"><summary><span id="detections-title">Detected items</span><span id="detection-count" class="catalog-version"></span></summary><div class="disclosure-body"><p class="coverage-note">Estimated boxes at sampled moments.</p><div id="detections" class="detections-grid"></div></div></details>
+          <details id="technical-details" class="technical-details card disclosure">
+            <summary>Analysis details</summary><div class="disclosure-body">
+              <section id="assessments-section" class="catalog-card assessment-card" hidden aria-labelledby="assessments-title"><div class="catalog-heading"><div><h3 id="assessments-title">Check estimates</h3><p id="assessments-version" class="catalog-version"></p></div><button id="assessment-toggle" class="text-button" type="button" hidden>Show all checks</button></div><p class="score-explanation">Model estimates support review; they are not confirmed violations.</p><div class="score-table-wrap"><table class="score-table"><caption class="visually-hidden">Assessed checks and model support</caption><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Estimate</th></tr></thead><tbody id="assessment-items"></tbody></table></div></section>
+              <section id="coverage-section" class="coverage-card" hidden aria-labelledby="coverage-title"><h3 id="coverage-title">Video coverage</h3><dl id="coverage-metrics" class="coverage-metrics"></dl></section>
+              <section id="review-queue-section" class="review-queue-section" hidden aria-labelledby="review-queue-title"><div class="review-queue-heading"><h3 id="review-queue-title">Review observations</h3><span id="review-queue-count"></span></div><div id="review-queue"></div></section>
+              <section id="review-notes-section" class="notes-card" hidden><h3>Limitations</h3><ul id="review-notes"></ul></section>
+              <p id="jury-verdict" class="jury-verdict"></p>
+            </div>
           </details>
-          <section class="limitations" aria-labelledby="limitations-heading"><h3 id="limitations-heading">Как читать результаты</h3><ul id="limitations-list"></ul></section>
+        </div>
+
+        <div class="video-card card">
+          <div id="video-empty" class="video-empty"><span class="video-empty-icon" aria-hidden="true">▷</span><p>Video preview</p></div>
+          <div id="video-stage" class="video-stage"><video id="source-video" controls muted playsinline preload="metadata" hidden aria-label="Uploaded source video"></video><div id="detection-overlay" class="detection-overlay" aria-hidden="true" hidden></div></div>
+          <div id="video-caption" class="video-caption" hidden><span id="video-name">Source video</span><span>Original video</span></div>
+          <div id="detection-controls" class="detection-controls" hidden><label><input id="show-detections" type="checkbox" checked> Show boxes</label><span id="overlay-status"></span></div>
+          <p id="video-error" class="video-error" hidden></p>
         </div>
       </section>
-    </section>
+    </div>
   </main>
-  <footer class="page-footer">Локальная проверка записей кассы <span>Результаты модели требуют проверки человеком</span></footer>
-  <dialog id="frame-dialog" aria-label="Просмотр скриншотов"><div class="dialog-header"><strong id="frame-caption"></strong><button id="close-frame" class="icon-button" type="button" aria-label="Закрыть кадр">×</button></div><img id="frame-image" alt="Кадр с отметками найденных объектов"><div class="frame-navigation"><button id="previous-frame" class="button" type="button" aria-label="Предыдущий скриншот">← Назад</button><span id="frame-position"></span><button id="next-frame" class="button" type="button" aria-label="Следующий скриншот">Далее →</button></div></dialog>
+  <footer>Local video analysis</footer>
 </body>
 </html>

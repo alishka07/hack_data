@@ -1,0 +1,428 @@
+{
+  "purpose": "Nested grouped comparison on previously inspected local videos",
+  "dataset_sha256": "590d16a3120a535b2d1cd837e18e5b8cd21557305d2137791da0f69edb155d83",
+  "protocol_sha256": "fad9963f0ce96d3d897e2ad0cfe3e1ba9cf129430c91df9f7fb49e9325ea5314",
+  "video_groups": 40,
+  "outer_folds": 5,
+  "inner_folds": 4,
+  "metrics": {
+    "baseline": {
+      "samples": 40,
+      "true_positive": 8,
+      "false_positive": 11,
+      "true_negative": 8,
+      "false_negative": 13,
+      "accuracy": 0.4,
+      "recall": 0.38095238095238093,
+      "specificity": 0.42105263157894735,
+      "balanced_accuracy": 0.40100250626566414,
+      "precision": 0.42105263157894735,
+      "f1": 0.4
+    },
+    "event": {
+      "samples": 40,
+      "true_positive": 11,
+      "false_positive": 14,
+      "true_negative": 5,
+      "false_negative": 10,
+      "accuracy": 0.4,
+      "recall": 0.5238095238095238,
+      "specificity": 0.2631578947368421,
+      "balanced_accuracy": 0.393483709273183,
+      "precision": 0.44,
+      "f1": 0.4782608695652174
+    }
+  },
+  "balanced_accuracy_gain": -0.007518796992481147,
+  "folds": [
+    {
+      "fold": 0,
+      "baseline": {
+        "selection": {
+          "regularization": 0.03,
+          "threshold": 0.00016403297248513356,
+          "training_selection_metrics": {
+            "samples": 32,
+            "true_positive": 17,
+            "false_positive": 14,
+            "true_negative": 1,
+            "false_negative": 0,
+            "accuracy": 0.5625,
+            "recall": 1.0,
+            "specificity": 0.06666666666666667,
+            "balanced_accuracy": 0.5333333333333333,
+            "precision": 0.5483870967741935,
+            "f1": 0.7083333333333334
+          }
+        },
+        "outer_metrics": {
+          "samples": 8,
+          "true_positive": 4,
+          "false_positive": 3,
+          "true_negative": 1,
+          "false_negative": 0,
+          "accuracy": 0.625,
+          "recall": 1.0,
+          "specificity": 0.25,
+          "balanced_accuracy": 0.625,
+          "precision": 0.5714285714285714,
+          "f1": 0.7272727272727273
+        }
+      },
+      "event": {
+        "selection": {
+          "regularization": 30.0,
+          "threshold": 0.49079790110021987,
+          "training_selection_metrics": {
+            "samples": 32,
+            "true_positive": 16,
+            "false_positive": 14,
+            "true_negative": 1,
+            "false_negative": 1,
+            "accuracy": 0.53125,
+            "recall": 0.9411764705882353,
+            "specificity": 0.06666666666666667,
+            "balanced_accuracy": 0.503921568627451,
+            "precision": 0.5333333333333333,
+            "f1": 0.6808510638297872
+          }
+        },
+        "outer_metrics": {
+          "samples": 8,
+          "true_positive": 3,
+          "false_positive": 4,
+          "true_negative": 0,
+          "false_negative": 1,
+          "accuracy": 0.375,
+          "recall": 0.75,
+          "specificity": 0.0,
+          "balanced_accuracy": 0.375,
+          "precision": 0.42857142857142855,
+          "f1": 0.5454545454545454
+        }
+      }
+    },
+    {
+      "fold": 1,
+      "baseline": {
+        "selection": {
+          "regularization": 10.0,
+          "threshold": 0.9026894815795536,
+          "training_selection_metrics": {
+            "samples": 32,
+            "true_positive": 5,
+            "false_positive": 1,
+            "true_negative": 14,
+            "false_negative": 12,
+            "accuracy": 0.59375,
+            "recall": 0.29411764705882354,
+            "specificity": 0.9333333333333333,
+            "balanced_accuracy": 0.6137254901960785,
+            "precision": 0.8333333333333334,
+            "f1": 0.43478260869565216
+          }
+        },
+        "outer_metrics": {
+          "samples": 8,
+          "true_positive": 0,
+          "false_positive": 1,
+          "true_negative": 3,
+          "false_negative": 4,
+          "accuracy": 0.375,
+          "recall": 0.0,
+          "specificity": 0.75,
+          "balanced_accuracy": 0.375,
+          "precision": 0.0,
+          "f1": 0.0
+        }
+      },
+      "event": {
+        "selection": {
+          "regularization": 0.3,
+          "threshold": 0.7587152669261525,
+          "training_selection_metrics": {
+            "samples": 32,
+            "true_positive": 4,
+            "false_positive": 0,
+            "true_negative": 15,
+            "false_negative": 13,
+            "accuracy": 0.59375,
+            "recall": 0.23529411764705882,
+            "specificity": 1.0,
+            "balanced_accuracy": 0.6176470588235294,
+            "precision": 1.0,
+            "f1": 0.38095238095238093
+          }
+        },
+        "outer_metrics": {
+          "samples": 8,
+          "true_positive": 0,
+          "false_positive": 1,
+          "true_negative": 3,
+          "false_negative": 4,
+          "accuracy": 0.375,
+          "recall": 0.0,
+          "specificity": 0.75,
+          "balanced_accuracy": 0.375,
+          "precision": 0.0,
+          "f1": 0.0
+        }
+      }
+    },
+    {
+      "fold": 2,
+      "baseline": {
+        "selection": {
+          "regularization": 0.1,
+          "threshold": 0.005638018155212265,
+          "training_selection_metrics": {
+            "samples": 32,
+            "true_positive": 17,
+            "false_positive": 11,
+            "true_negative": 4,
+            "false_negative": 0,
+            "accuracy": 0.65625,
+            "recall": 1.0,
+            "specificity": 0.26666666666666666,
+            "balanced_accuracy": 0.6333333333333333,
+            "precision": 0.6071428571428571,
+            "f1": 0.7555555555555555
+          }
+        },
+        "outer_metrics": {
+          "samples": 8,
+          "true_positive": 4,
+          "false_positive": 4,
+          "true_negative": 0,
+          "false_negative": 0,
+          "accuracy": 0.5,
+          "recall": 1.0,
+          "specificity": 0.0,
+          "balanced_accuracy": 0.5,
+          "precision": 0.5,
+          "f1": 0.6666666666666666
+        }
+      },
+      "event": {
+        "selection": {
+          "regularization": 30.0,
+          "threshold": 0.4777328355464711,
+          "training_selection_metrics": {
+            "samples": 32,
+            "true_positive": 17,
+            "false_positive": 15,
+            "true_negative": 0,
+            "false_negative": 0,
+            "accuracy": 0.53125,
+            "recall": 1.0,
+            "specificity": 0.0,
+            "balanced_accuracy": 0.5,
+            "precision": 0.53125,
+            "f1": 0.6938775510204082
+          }
+        },
+        "outer_metrics": {
+          "samples": 8,
+          "true_positive": 4,
+          "false_positive": 4,
+          "true_negative": 0,
+          "false_negative": 0,
+          "accuracy": 0.5,
+          "recall": 1.0,
+          "specificity": 0.0,
+          "balanced_accuracy": 0.5,
+          "precision": 0.5,
+          "f1": 0.6666666666666666
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "baseline": {
+        "selection": {
+          "regularization": 0.03,
+          "threshold": 0.9976505630954443,
+          "training_selection_metrics": {
+            "samples": 32,
+            "true_positive": 3,
+            "false_positive": 1,
+            "true_negative": 14,
+            "false_negative": 14,
+            "accuracy": 0.53125,
+            "recall": 0.17647058823529413,
+            "specificity": 0.9333333333333333,
+            "balanced_accuracy": 0.5549019607843138,
+            "precision": 0.75,
+            "f1": 0.2857142857142857
+          }
+        },
+        "outer_metrics": {
+          "samples": 8,
+          "true_positive": 0,
+          "false_positive": 1,
+          "true_negative": 3,
+          "false_negative": 4,
+          "accuracy": 0.375,
+          "recall": 0.0,
+          "specificity": 0.75,
+          "balanced_accuracy": 0.375,
+          "precision": 0.0,
+          "f1": 0.0
+        }
+      },
+      "event": {
+        "selection": {
+          "regularization": 30.0,
+          "threshold": 0.5006988999833464,
+          "training_selection_metrics": {
+            "samples": 32,
+            "true_positive": 13,
+            "false_positive": 11,
+            "true_negative": 4,
+            "false_negative": 4,
+            "accuracy": 0.53125,
+            "recall": 0.7647058823529411,
+            "specificity": 0.26666666666666666,
+            "balanced_accuracy": 0.5156862745098039,
+            "precision": 0.5416666666666666,
+            "f1": 0.6341463414634146
+          }
+        },
+        "outer_metrics": {
+          "samples": 8,
+          "true_positive": 4,
+          "false_positive": 4,
+          "true_negative": 0,
+          "false_negative": 0,
+          "accuracy": 0.5,
+          "recall": 1.0,
+          "specificity": 0.0,
+          "balanced_accuracy": 0.5,
+          "precision": 0.5,
+          "f1": 0.6666666666666666
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "baseline": {
+        "selection": {
+          "regularization": 10.0,
+          "threshold": 0.5,
+          "training_selection_metrics": {
+            "samples": 32,
+            "true_positive": 9,
+            "false_positive": 5,
+            "true_negative": 11,
+            "false_negative": 7,
+            "accuracy": 0.625,
+            "recall": 0.5625,
+            "specificity": 0.6875,
+            "balanced_accuracy": 0.625,
+            "precision": 0.6428571428571429,
+            "f1": 0.6
+          }
+        },
+        "outer_metrics": {
+          "samples": 8,
+          "true_positive": 0,
+          "false_positive": 2,
+          "true_negative": 1,
+          "false_negative": 5,
+          "accuracy": 0.125,
+          "recall": 0.0,
+          "specificity": 0.3333333333333333,
+          "balanced_accuracy": 0.16666666666666666,
+          "precision": 0.0,
+          "f1": 0.0
+        }
+      },
+      "event": {
+        "selection": {
+          "regularization": 0.3,
+          "threshold": 0.7002294342818911,
+          "training_selection_metrics": {
+            "samples": 32,
+            "true_positive": 9,
+            "false_positive": 5,
+            "true_negative": 11,
+            "false_negative": 7,
+            "accuracy": 0.625,
+            "recall": 0.5625,
+            "specificity": 0.6875,
+            "balanced_accuracy": 0.625,
+            "precision": 0.6428571428571429,
+            "f1": 0.6
+          }
+        },
+        "outer_metrics": {
+          "samples": 8,
+          "true_positive": 0,
+          "false_positive": 1,
+          "true_negative": 2,
+          "false_negative": 5,
+          "accuracy": 0.25,
+          "recall": 0.0,
+          "specificity": 0.6666666666666666,
+          "balanced_accuracy": 0.3333333333333333,
+          "precision": 0.0,
+          "f1": 0.0
+        }
+      }
+    }
+  ],
+  "approved_for_inference": false,
+  "inference_gate": {
+    "minimum_nested_balanced_accuracy": 0.75,
+    "minimum_nested_recall": 0.7,
+    "minimum_nested_specificity": 0.7,
+    "minimum_balanced_accuracy_gain_over_baseline": 0.05
+  },
+  "final_model_training_selection": {
+    "regularization": 30.0,
+    "threshold": 0.49185584373204055,
+    "training_selection_metrics": {
+      "samples": 40,
+      "true_positive": 20,
+      "false_positive": 18,
+      "true_negative": 1,
+      "false_negative": 1,
+      "accuracy": 0.525,
+      "recall": 0.9523809523809523,
+      "specificity": 0.05263157894736842,
+      "balanced_accuracy": 0.5025062656641603,
+      "precision": 0.5263157894736842,
+      "f1": 0.6779661016949152
+    }
+  },
+  "model_training_groups": 40,
+  "final_model_sha256": "da26b72b148ebd4a656abb2d79518baf1d81b4e2b560d567b2853989ea94419b",
+  "feature_fingerprint": "ba5d6f4145883f8c28ccbf6f0abdb9e341e74d7beea6b379d17806f7be59e449",
+  "encoder": {
+    "encoder": "r3d_18",
+    "pretraining": "KINETICS400_V1",
+    "feature_dimension": 512,
+    "source_code_version": "torchvision==0.28.0+cpu",
+    "source_url": "https://github.com/pytorch/vision/tree/v0.28.0/torchvision/models/video",
+    "weights_url": "https://download.pytorch.org/models/r3d_18-b3b3357e.pth",
+    "weights_filename": "r3d_18-b3b3357e.pth",
+    "weights_bytes": 133546016,
+    "weights_sha256": "b3b3357ead25631ec9c57362ff2128a92d0427e01e2cd184951a44380c3f2e9d",
+    "license_file": "LICENSE-torchvision.txt",
+    "license_url": "https://raw.githubusercontent.com/pytorch/vision/v0.28.0/LICENSE",
+    "preprocessing": "full_frame_letterbox112_kinetics400_mean_std_v1",
+    "sampling": {
+      "clip_frames": 16,
+      "window_sec": 8,
+      "stride_sec": 4,
+      "targets": "uniform_including_window_endpoints",
+      "mapping": "nearest_authoritative_source_PTS"
+    },
+    "inference_network": "disabled",
+    "pretraining_shift": "Uses full-frame letterboxing instead of the pretrained center crop; about 2 fps instead of the original 15 fps evaluation rate."
+  },
+  "category_training": "No validated category heads; positive labels per category remain sparse",
+  "event_localization": "Weak training anchors; sliding-window positions are not reviewed event boundaries",
+  "test_scope": "Exploratory nested video-hash-group CV; previous test clips are reused and cameras/sessions may overlap; no untouched external test",
+  "elapsed_sec": 202.031
+}

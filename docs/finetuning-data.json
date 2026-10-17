@@ -1,0 +1,201 @@
+{
+  "schema_version": "forte-augmentation-audit/1",
+  "generated_at": "2026-10-17T20:36:42.470914+00:00",
+  "run": {
+    "all_video_bytes_hashed": true,
+    "temporal_samples_per_video": 5,
+    "perceptual_method": "five fraction-aligned grayscale correlation and DCT pHash samples; both horizontal orientations; duration gate",
+    "candidate_is_verified_provenance": false,
+    "inference_or_remote_upload": false
+  },
+  "originals": {
+    "files": 42,
+    "bytes": 292870994,
+    "unique_sha256_groups": 40,
+    "exact_duplicate_groups": 2,
+    "positive_groups": 21,
+    "negative_groups": 19,
+    "invalid_label_groups": 0,
+    "weak_positive_anchor_points": 22,
+    "positive_groups_with_weak_anchors": 21,
+    "resolution_histogram": {
+      "464x848": 40
+    },
+    "unique_duration_total_sec_estimate": 1299.867,
+    "duration_range_sec_estimate": [
+      11.633,
+      142.533
+    ]
+  },
+  "augmentations": {
+    "files": 360,
+    "bytes": 467206439,
+    "unique_sha256_groups": 360,
+    "exact_duplicate_groups": 0,
+    "byte_identical_to_original_groups": 0,
+    "filename_families": 40,
+    "family_size_histogram": {
+      "9": 40
+    },
+    "transform_name_hints": {
+      "brighter": 40,
+      "brighter_camera_noise": 40,
+      "camera_noise": 40,
+      "dimmer": 40,
+      "dimmer_camera_noise": 40,
+      "flipped": 40,
+      "flipped_brighter": 40,
+      "flipped_brighter_camera_noise": 40,
+      "flipped_dimmer": 40
+    },
+    "strong_perceptual_candidate_files": 342,
+    "consistent_candidate_families": 38,
+    "distinct_original_candidate_groups": 38,
+    "top_candidate_correlation_range": [
+      0.999677,
+      0.99999
+    ],
+    "median_mean_luma_delta_0_255_by_transform": {
+      "brighter": 8.188,
+      "brighter_camera_noise": 6.7954,
+      "camera_noise": -1.5794,
+      "dimmer": -12.7217,
+      "dimmer_camera_noise": -14.219,
+      "flipped": 0.1062,
+      "flipped_brighter": 8.2441,
+      "flipped_brighter_camera_noise": 6.7862,
+      "flipped_dimmer": -12.6581
+    },
+    "human_reviewed_provenance_files": 0,
+    "quarantined_files": 360,
+    "quarantine_reasons": {
+      "unverified_source_or_label_or_split": 360
+    }
+  },
+  "decode": {
+    "sampled_files": 402,
+    "failed_files": 0
+  },
+  "workbooks": [
+    {
+      "workbook": "open_labels.annotated_2026-10-17.xlsx",
+      "sha256": "ad375ed63c9c12ffb1bfc6a56486099f1692ef3af9b5b63ec6189a624c2b73c5",
+      "sheets": [
+        {
+          "sheet": "labels",
+          "data_rows": 42,
+          "human_review_pending_rows": 42,
+          "has_human_review_field": true,
+          "formula_cells": 0
+        },
+        {
+          "sheet": "Events",
+          "data_rows": 13,
+          "human_review_pending_rows": 13,
+          "has_human_review_field": true,
+          "formula_cells": 0
+        },
+        {
+          "sheet": "Observations",
+          "data_rows": 115,
+          "human_review_pending_rows": 0,
+          "has_human_review_field": false,
+          "formula_cells": 0
+        },
+        {
+          "sheet": "Rules",
+          "data_rows": 132,
+          "human_review_pending_rows": 0,
+          "has_human_review_field": false,
+          "formula_cells": 0
+        }
+      ],
+      "matched_rows": 42,
+      "column_c_disagreements": 0,
+      "invalid_or_unmatched_rows": 0
+    },
+    {
+      "workbook": "open_labels.simplified.xlsx",
+      "sha256": "590d16a3120a535b2d1cd837e18e5b8cd21557305d2137791da0f69edb155d83",
+      "sheets": [
+        {
+          "sheet": "labels",
+          "data_rows": 42,
+          "human_review_pending_rows": 0,
+          "has_human_review_field": false,
+          "formula_cells": 0
+        }
+      ],
+      "matched_rows": 42,
+      "column_c_disagreements": 0,
+      "invalid_or_unmatched_rows": 0
+    },
+    {
+      "workbook": "open_labels.xlsx",
+      "sha256": "4faf595a2679c2f8b2b41be041de59bb3c11cd6e77d57226f1cbcc14b2cc3e75",
+      "sheets": [
+        {
+          "sheet": "labels",
+          "data_rows": 42,
+          "human_review_pending_rows": 0,
+          "has_human_review_field": false,
+          "formula_cells": 0
+        }
+      ],
+      "matched_rows": 42,
+      "column_c_disagreements": 0,
+      "invalid_or_unmatched_rows": 0
+    }
+  ],
+  "possible_category_hints": {
+    "groups_with_possible_category_hints": 13,
+    "groups_without_possible_category_hints": 27,
+    "distinct_possible_category_hints": 7,
+    "counts": {
+      "backoffice_processing_control": {
+        "negative_video_groups": 3,
+        "positive_video_groups": 1
+      },
+      "cash_intake_without_client_presence": {
+        "positive_video_groups": 1
+      },
+      "keys_stamps_secure_handling": {
+        "positive_video_groups": 2
+      },
+      "personal_belongings_in_cash_unit": {
+        "positive_video_groups": 1
+      },
+      "previous_cash_stored": {
+        "positive_video_groups": 1
+      },
+      "previous_transaction_cash_exposed": {
+        "positive_video_groups": 3
+      },
+      "vault_cash_segregation_storage": {
+        "positive_video_groups": 1
+      }
+    },
+    "usable_as_reviewed_category_supervision": false
+  },
+  "supervised_binary_export": {
+    "train": 24,
+    "validation": 8,
+    "test": 8
+  },
+  "source_split_groups": {
+    "test": 8,
+    "train": 24,
+    "validation": 8
+  },
+  "split_scope": "exploratory inspected-source hash split; camera/session independence unknown; no external generalization claim",
+  "not_supervised": [
+    "boxes",
+    "keypoints",
+    "track_ids",
+    "zone_polygons",
+    "human_reviewed_event_intervals",
+    "human_reviewed_rule_predicates",
+    "human_reviewed_vlm_evidence_answers"
+  ],
+  "privacy": "Aggregate report only. Paths, row labels, hashes of individual media, review queues and manifests remain in ignored local data/training."
+}

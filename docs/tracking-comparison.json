@@ -1,0 +1,216 @@
+{
+  "status": "completed",
+  "evaluated_utc": "2026-10-17T18:04:24.442655+00:00",
+  "scope": "Local replay of cached YOLOX person boxes; diagnostic comparison without tracking ground truth",
+  "network_during_evaluation": false,
+  "video_or_image_reads": false,
+  "gpu_used": false,
+  "production_tracker_changed": false,
+  "dependency_import_sec": 1.671585199976107,
+  "environment": {
+    "python": "3.12.14",
+    "trackers": "2.6.1",
+    "supervision": "0.26.1",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "opencv": "5.0.0"
+  },
+  "implementation": {
+    "class": "trackers.ByteTrackTracker",
+    "license": "Apache-2.0",
+    "source": "https://github.com/roboflow/trackers",
+    "supervision_license": "MIT",
+    "api_reference": "https://trackers.roboflow.com/develop/trackers/bytetrack/"
+  },
+  "common_bytetrack_settings": {
+    "minimum_consecutive_frames": 1,
+    "minimum_iou_threshold": 0.25,
+    "track_activation_threshold": 0.35,
+    "high_conf_det_threshold": 0.5,
+    "frame_rate": "cached sample rate",
+    "clock": "authoritative sampled source PTS",
+    "coordinate_basis": "normalized xyxy scaled to 1000x1000"
+  },
+  "clips": [
+    {
+      "clip": "local-clip-1",
+      "source_span_sec": 25.9,
+      "sample_rate": 5.0,
+      "sampled_frames": 131,
+      "input_person_detections": 360,
+      "scene_change_resets": 0,
+      "methods": [
+        {
+          "name": "adjacent_iou",
+          "settings": {
+            "iou_threshold": 0.25,
+            "max_adjacent_source_gap_sec": 0.8,
+            "missed_sample_bridging": false
+          },
+          "runtime_median_sec": 0.0017590999777894467,
+          "runtime_repeats": 3,
+          "unique_track_ids": 18,
+          "contiguous_observed_track_segments": 18,
+          "assigned_detections": 360,
+          "unassigned_detections": 0,
+          "track_interruptions": 15,
+          "one_sample_track_ids": 6,
+          "resumed_ids_across_unobserved_samples": 0,
+          "unobserved_samples_inside_resumed_ids": 0,
+          "max_resumption_span_sec": 0.0,
+          "gap_semantics": "Every interrupted interval is unknown visibility, including when a tracker later reuses its ID"
+        },
+        {
+          "name": "bytetrack_no_lost_buffer",
+          "settings": {
+            "lost_track_buffer_30fps_units": 0
+          },
+          "runtime_median_sec": 0.02469220000784844,
+          "runtime_repeats": 3,
+          "unique_track_ids": 0,
+          "contiguous_observed_track_segments": 0,
+          "assigned_detections": 0,
+          "unassigned_detections": 360,
+          "track_interruptions": 0,
+          "one_sample_track_ids": 0,
+          "resumed_ids_across_unobserved_samples": 0,
+          "unobserved_samples_inside_resumed_ids": 0,
+          "max_resumption_span_sec": 0.0,
+          "gap_semantics": "Every interrupted interval is unknown visibility, including when a tracker later reuses its ID"
+        },
+        {
+          "name": "bytetrack_0_2s_lost_buffer",
+          "settings": {
+            "lost_track_buffer_30fps_units": 6
+          },
+          "runtime_median_sec": 0.028061999997589737,
+          "runtime_repeats": 3,
+          "unique_track_ids": 96,
+          "contiguous_observed_track_segments": 96,
+          "assigned_detections": 203,
+          "unassigned_detections": 157,
+          "track_interruptions": 93,
+          "one_sample_track_ids": 44,
+          "resumed_ids_across_unobserved_samples": 0,
+          "unobserved_samples_inside_resumed_ids": 0,
+          "max_resumption_span_sec": 0.0,
+          "gap_semantics": "Every interrupted interval is unknown visibility, including when a tracker later reuses its ID"
+        },
+        {
+          "name": "bytetrack_0_8s_lost_buffer",
+          "settings": {
+            "lost_track_buffer_30fps_units": 24
+          },
+          "runtime_median_sec": 0.03180739999515936,
+          "runtime_repeats": 3,
+          "unique_track_ids": 5,
+          "contiguous_observed_track_segments": 11,
+          "assigned_detections": 345,
+          "unassigned_detections": 15,
+          "track_interruptions": 8,
+          "one_sample_track_ids": 0,
+          "resumed_ids_across_unobserved_samples": 6,
+          "unobserved_samples_inside_resumed_ids": 10,
+          "max_resumption_span_sec": 0.7999999999999998,
+          "gap_semantics": "Every interrupted interval is unknown visibility, including when a tracker later reuses its ID"
+        }
+      ]
+    },
+    {
+      "clip": "local-clip-2",
+      "source_span_sec": 142.5,
+      "sample_rate": 5.0,
+      "sampled_frames": 714,
+      "input_person_detections": 773,
+      "scene_change_resets": 0,
+      "methods": [
+        {
+          "name": "adjacent_iou",
+          "settings": {
+            "iou_threshold": 0.25,
+            "max_adjacent_source_gap_sec": 0.8,
+            "missed_sample_bridging": false
+          },
+          "runtime_median_sec": 0.0038152000051923096,
+          "runtime_repeats": 3,
+          "unique_track_ids": 21,
+          "contiguous_observed_track_segments": 21,
+          "assigned_detections": 773,
+          "unassigned_detections": 0,
+          "track_interruptions": 20,
+          "one_sample_track_ids": 9,
+          "resumed_ids_across_unobserved_samples": 0,
+          "unobserved_samples_inside_resumed_ids": 0,
+          "max_resumption_span_sec": 0.0,
+          "gap_semantics": "Every interrupted interval is unknown visibility, including when a tracker later reuses its ID"
+        },
+        {
+          "name": "bytetrack_no_lost_buffer",
+          "settings": {
+            "lost_track_buffer_30fps_units": 0
+          },
+          "runtime_median_sec": 0.0771983000158798,
+          "runtime_repeats": 3,
+          "unique_track_ids": 0,
+          "contiguous_observed_track_segments": 0,
+          "assigned_detections": 0,
+          "unassigned_detections": 773,
+          "track_interruptions": 0,
+          "one_sample_track_ids": 0,
+          "resumed_ids_across_unobserved_samples": 0,
+          "unobserved_samples_inside_resumed_ids": 0,
+          "max_resumption_span_sec": 0.0,
+          "gap_semantics": "Every interrupted interval is unknown visibility, including when a tracker later reuses its ID"
+        },
+        {
+          "name": "bytetrack_0_2s_lost_buffer",
+          "settings": {
+            "lost_track_buffer_30fps_units": 6
+          },
+          "runtime_median_sec": 0.09369130001869053,
+          "runtime_repeats": 3,
+          "unique_track_ids": 188,
+          "contiguous_observed_track_segments": 188,
+          "assigned_detections": 263,
+          "unassigned_detections": 510,
+          "track_interruptions": 187,
+          "one_sample_track_ids": 151,
+          "resumed_ids_across_unobserved_samples": 0,
+          "unobserved_samples_inside_resumed_ids": 0,
+          "max_resumption_span_sec": 0.0,
+          "gap_semantics": "Every interrupted interval is unknown visibility, including when a tracker later reuses its ID"
+        },
+        {
+          "name": "bytetrack_0_8s_lost_buffer",
+          "settings": {
+            "lost_track_buffer_30fps_units": 24
+          },
+          "runtime_median_sec": 0.10964280000189319,
+          "runtime_repeats": 3,
+          "unique_track_ids": 4,
+          "contiguous_observed_track_segments": 10,
+          "assigned_detections": 743,
+          "unassigned_detections": 30,
+          "track_interruptions": 9,
+          "one_sample_track_ids": 0,
+          "resumed_ids_across_unobserved_samples": 6,
+          "unobserved_samples_inside_resumed_ids": 7,
+          "max_resumption_span_sec": 0.5999999999999943,
+          "gap_semantics": "Every interrupted interval is unknown visibility, including when a tracker later reuses its ID"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "No IDF1, HOTA, MOTA, identity-switch count, or tracking accuracy can be calculated without reviewed identities",
+    "Different ID counts can reflect false merges, suppressed tracks or fragmentation; fewer IDs is not proof of better tracking",
+    "Cached detections were already filtered at confidence .35; ByteTrack cannot recover omitted .1-.35 detections in this replay",
+    "Reused IDs across missing detections remain unknown visibility, not evidence of presence, absence, cash lineage or identity",
+    "Timings exclude detection, video decoding, VLM inference and dependency imports",
+    "Coordinates are normalized for this diagnostic replay, not calibrated real-world positions"
+  ],
+  "configuration_caveats": [
+    "The zero-lost-buffer setting produced no assigned tracks in trackers2.6.1 timestamp mode on these clips; it is a degenerate observed configuration, not an accuracy result"
+  ],
+  "decision": "Retain conservative adjacent-IoU production default until reviewed association labels establish benefit; ByteTrack is a feasible CPU option"
+}

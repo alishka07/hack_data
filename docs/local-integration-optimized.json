@@ -1,0 +1,31 @@
+{
+  "purpose": "Real local service operation; not an accuracy evaluation",
+  "samples": [
+    {
+      "duration_sec": 142.533,
+      "status": "done",
+      "upload_to_result_sec": 84.828,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 18,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 8.902,
+        "screening_sec": 32.326,
+        "verification_and_evidence_sec": 42.505,
+        "total_sec": 83.733,
+        "candidate_count": 6,
+        "finding_count": 0
+      }
+    }
+  ],
+  "checks": {
+    "authentication": true,
+    "corrupt_input_rejected": true,
+    "busy_rejected": true,
+    "exact_jury_schema": true,
+    "emitted_evidence_frames_validated": 0,
+    "evidence_check_scope": "Every emitted frame is checked; zero frames does not test real positive-event evidence"
+  },
+  "all_completed": true
+}

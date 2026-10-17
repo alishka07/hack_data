@@ -1,0 +1,217 @@
+{
+  "purpose": "Real pipeline operation, not an accuracy evaluation",
+  "pipeline_version": "4.0",
+  "created_utc": "2026-10-17T20:43:18.844854+00:00",
+  "source_sha256": "7e585e33517f7258bd2d1ed3e139556609bc997bb07b78355555060ef193b77a",
+  "duration_sec": 11.633333,
+  "timeout_sec": 300.0,
+  "runtime": {
+    "backend": "llama.cpp",
+    "model": "Qwen3VL-4B-Instruct-Q4_K_M.gguf",
+    "model_id": "unattested:b294f67aa2f199fcb73494eecd950e6a9e901d2b90d3ed68e05f6981c2a965f0",
+    "identity_source": "unattested configuration",
+    "asset_hashes": [],
+    "attached": true,
+    "context_tokens": 8192,
+    "max_frames": 8,
+    "max_pixels_per_frame": 401408,
+    "min_pixels_per_frame": 50176,
+    "max_output_tokens": 2048,
+    "structured_output": "JSON schema constrained decoding plus host validation",
+    "strict_schema_decoding": null,
+    "local_only": true,
+    "server": {}
+  },
+  "status": "done",
+  "verdict": "no_violation",
+  "finding_count": 0,
+  "review_count": 4,
+  "candidate_count": 4,
+  "event_proposals": 13,
+  "detection_count": 97,
+  "declared_jpegs_validated": 59,
+  "emitted_jpegs_validated": 0,
+  "coverage": {
+    "windows_completed": 2,
+    "windows_planned": 2,
+    "duration_sec": 11.633333,
+    "visibility_gaps": [],
+    "max_sample_gap_sec": 1.667,
+    "source_frames_total": 349,
+    "context_windows_used": 0,
+    "detail_frames_per_window": 3,
+    "detail_frame_max_side": 960,
+    "source_samples_inspected": 15,
+    "perception": {
+      "sample_rate": 5.0,
+      "frames_analyzed": 59,
+      "first_timestamp_sec": 0.0,
+      "last_timestamp_sec": 11.6,
+      "ending_included": true,
+      "max_gap_sec": 0.20000000000000107,
+      "complete": true,
+      "unknowns": [
+        "Detection misses and occlusion do not establish absence",
+        "Person roles and cash continuity are unknown",
+        "Motion and track proposals require focused verification",
+        "Detection scores are uncalibrated"
+      ]
+    },
+    "uniform_windows": 1,
+    "proposal_windows": 1,
+    "proposal_triggers": 15
+  },
+  "capabilities": {
+    "person": {
+      "status": "enabled",
+      "backend": "yolox_opencv_cpu",
+      "model_sha256": "c789161ed43c8269fcd4e67c67eeeb4e80c622da2eb296a20bc6007bd18a0b7d",
+      "input_size": [
+        416,
+        416
+      ],
+      "source": "https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_nano.onnx",
+      "license": "Apache-2.0",
+      "opencv_version": "5.0.0",
+      "person_detection_available": true,
+      "confidence_calibrated": false,
+      "model_download_during_inference": false,
+      "classes_used": [
+        "person"
+      ]
+    },
+    "tracking": {
+      "status": "enabled",
+      "backend": "bytetrack",
+      "implementation": "trackers.ByteTrackTracker",
+      "version": "2.6.1",
+      "license": "Apache-2.0",
+      "source": "https://github.com/roboflow/trackers",
+      "association": "two-stage confidence, Kalman prediction, Hungarian assignment",
+      "reidentification": false,
+      "clock": "source_presentation_timestamp",
+      "high_threshold": 0.35,
+      "low_threshold": 0.1,
+      "max_lost_sec": 0.8,
+      "predicted_boxes_are_evidence": false
+    },
+    "pose": {
+      "status": "enabled",
+      "enabled": true,
+      "backend": "rtmpose_onnx_cpu",
+      "model_sha256": "a6c2f6a3896a4d51131d14d7a80a3d08b50f559af5a58a45d5b098aef510a70f",
+      "source": "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/rtmpose-t_simcc-body7_pt-body7_420e-256x192-026a1439_20230504.zip",
+      "license": "Apache-2.0",
+      "device": "cpu",
+      "model_download_during_inference": false,
+      "keypoint_schema": "coco17",
+      "score_semantics": "uncalibrated minimum SimCC peak; not probability",
+      "sample_rate": 2.0,
+      "frames_inspected": 21,
+      "missing_keypoints_mean": "not_visible; absence and occlusion are not distinguished"
+    },
+    "open_vocabulary_objects": {
+      "status": "enabled",
+      "enabled": true,
+      "backend": "owlv2_cpu_subprocess",
+      "source": "https://huggingface.co/google/owlv2-base-patch16-ensemble",
+      "revision": "cfd3195ba4ea9592eec887ded089f4c08eff231d",
+      "license": "Apache-2.0",
+      "device": "cpu",
+      "model_download_during_inference": false,
+      "queries": [
+        "cash",
+        "bag",
+        "phone",
+        "drawer",
+        "safe",
+        "counter",
+        "window"
+      ],
+      "confidence_calibrated": false,
+      "weights_verified_sha256": true,
+      "small_object_recall_validated": false,
+      "input_size": [
+        480,
+        480
+      ],
+      "native_input_size": [
+        960,
+        960
+      ],
+      "position_encoding_interpolated": true,
+      "cpu_threads": 4,
+      "resolution_tradeoff": "Lower CPU input size reduces latency and may reduce small-object recall",
+      "isolated_runtime": true,
+      "pixel_only_ipc": true,
+      "sample_rate": 0.2,
+      "frames_inspected": 3,
+      "temporal_interpolation": false
+    },
+    "scheduling": {
+      "perception_device": "cpu",
+      "gpu_memory_allocated_by_perception": false,
+      "optional_models_released_before_verification": true
+    }
+  },
+  "calibration": {
+    "status": "uncalibrated",
+    "probability_calibrated": false,
+    "reason": "No reviewed verifier-outcome calibration artifact installed"
+  },
+  "timings": {
+    "probe_and_sampling_sec": 42.799,
+    "screening_sec": 19.116,
+    "verification_and_evidence_sec": 34.561,
+    "total_sec": 96.476,
+    "candidate_count": 4,
+    "finding_count": 0,
+    "review_queue_count": 4,
+    "action_calls": 6,
+    "context_calls": 0,
+    "refinement_passes": 3,
+    "review_reason_counts": {
+      "action_uncertain": 3,
+      "review_only_rule": 1,
+      "omission_unverifiable_from_sparse_samples": 1
+    },
+    "action_refinement_passes": 3,
+    "confidence_observation_count": 1,
+    "noninitial_score_count": 1,
+    "detection_count": 97,
+    "event_proposal_count": 13,
+    "case_decision_status": "review_required",
+    "perception_sec": 16.763,
+    "decode_and_cache_sec": 1.74,
+    "transaction_episodes": 1,
+    "cpu_backend": "yolox_opencv_cpu",
+    "vlm_sec": 74.726,
+    "evidence_output_sec": 0.053,
+    "stage_budgets": {
+      "decode_and_cache": {
+        "target_sec": 25,
+        "actual_sec": 1.74,
+        "within_target": true
+      },
+      "perception_and_proposals": {
+        "target_sec": 45,
+        "actual_sec": 16.763,
+        "within_target": true
+      },
+      "vlm_verification_and_screening": {
+        "target_sec": 150,
+        "actual_sec": 74.726,
+        "within_target": true
+      },
+      "evidence_and_output": {
+        "target_sec": 20,
+        "actual_sec": 0.053,
+        "within_target": true
+      },
+      "reserve_sec": 60,
+      "deadline_sec": 300,
+      "note": "Engineering targets, not accuracy or throughput guarantees. Total accepted-job deadline is enforced."
+    }
+  },
+  "wall_sec": 96.528
+}

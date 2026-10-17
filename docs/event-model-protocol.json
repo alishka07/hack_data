@@ -1,0 +1,47 @@
+{
+  "protocol_version": 1,
+  "purpose": "Predeclared stronger event-model comparison on an already inspected local corpus",
+  "source": "open/open_labels.simplified.xlsx",
+  "evaluation": "5 outer stratified video-hash-group folds, 4 inner folds, seed 17",
+  "unseen_external_test": false,
+  "stronger_model": {
+    "encoder": "frozen torchvision R3D-18 Kinetics-400 pretrained action features",
+    "window_seconds": 8,
+    "stride_seconds": 4,
+    "frames_per_window": 16,
+    "features": "unit-normalized action features plus within-video mean-centered action features",
+    "positive_training_windows": "centers within 2 seconds of a weak anchor; nearest-center window fallback per anchor",
+    "negative_training_windows": "all windows of explicit negative videos only",
+    "unannotated_positive_windows": "unknown, never negative",
+    "training_weights": "equal total weight per video, balanced binary class weight",
+    "pca_components": 8,
+    "regularization_candidates": [0.3, 3.0, 30.0],
+    "video_aggregation": "maximum window score",
+    "threshold_selection": "inner video OOF: maximize balanced accuracy, then minimum class recall, then nearest 0.5, then higher threshold"
+  },
+  "baseline": {
+    "encoder": "existing frozen DINOv2 whole-video mean/std/last-first features",
+    "regularization_candidates": [0.03, 0.1, 0.3, 1.0, 3.0, 10.0],
+    "threshold_selection": "existing training-only choose_threshold rule"
+  },
+  "nested_rules": [
+    "Fit every transform and head exclusively inside its training fold",
+    "Choose regularization and threshold only using inner OOF predictions",
+    "Outer test windows are uniform and never selected with known timestamps",
+    "Aggregate outer predictions using each fold's own frozen threshold",
+    "After recording comparison metrics, select full-corpus training settings and fit the final research artifact",
+    "Do not present the final all-data fit or its selection scores as independent test accuracy"
+  ],
+  "inference_gate": {
+    "minimum_nested_balanced_accuracy": 0.75,
+    "minimum_nested_recall": 0.7,
+    "minimum_nested_specificity": 0.7,
+    "minimum_balanced_accuracy_gain_over_baseline": 0.05
+  },
+  "limits": [
+    "Exact byte hashes do not establish independence of cameras, sessions or near-duplicate clips",
+    "Previously inspected data and model iteration make this exploratory, not external validation",
+    "Weak timestamps do not provide reviewed event boundaries",
+    "No supervised category or bounding-box performance is claimed"
+  ]
+}

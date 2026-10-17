@@ -1,0 +1,53 @@
+{
+  "purpose": "Real local service operation; not an accuracy evaluation",
+  "samples": [
+    {
+      "duration_sec": 142.533,
+      "status": "done",
+      "upload_to_result_sec": 126.953,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 18,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 9.127,
+        "screening_sec": 32.764,
+        "verification_and_evidence_sec": 83.712,
+        "total_sec": 125.604,
+        "candidate_count": 6,
+        "finding_count": 0
+      }
+    },
+    {
+      "duration_sec": 25.933,
+      "status": "done",
+      "upload_to_result_sec": 92.75,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 3,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 1.847,
+        "screening_sec": 12.91,
+        "verification_and_evidence_sec": 77.018,
+        "total_sec": 91.775,
+        "candidate_count": 9,
+        "finding_count": 0
+      }
+    }
+  ],
+  "checks": {
+    "authentication": true,
+    "corrupt_input_rejected": true,
+    "busy_rejected": true,
+    "exact_jury_schema": true,
+    "emitted_evidence_frames_validated": 0,
+    "evidence_check_scope": "Every emitted frame is checked; these samples emitted none. Multiple-event JPEG generation is covered with synthetic media."
+  },
+  "all_completed": true,
+  "automated_tests": {
+    "passed": 53,
+    "scope": "Synthetic API, pipeline, runtime, and offline regressions; not accuracy"
+  },
+  "pipeline_note": "Baseline run before skipping action-only checks for candidates rejected by the full context gate; same legal acceptance predicates."
+}

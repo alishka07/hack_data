@@ -1,0 +1,67 @@
+{
+  "workbook_sha256": "4faf595a2679c2f8b2b41be041de59bb3c11cd6e77d57226f1cbcc14b2cc3e75",
+  "sheet": "labels",
+  "range": "A1:C43",
+  "columns": [
+    {
+      "column": "A",
+      "header": "наименование файла",
+      "types": {
+        "str": 42
+      },
+      "nonblank_rows": 42
+    },
+    {
+      "column": "B",
+      "header": "таймстемп",
+      "types": {
+        "str": 22,
+        "NoneType": 20
+      },
+      "nonblank_rows": 22
+    },
+    {
+      "column": "C",
+      "header": "нарушение / без нарушения",
+      "types": {
+        "str": 42
+      },
+      "nonblank_rows": 42
+    }
+  ],
+  "filename_column": "A",
+  "timestamp_column": "B",
+  "explicit_verdict_column": "C",
+  "explicit_binary_vocabulary": [
+    "без нарушения",
+    "нарушение"
+  ],
+  "precedence": "Explicit nonblank binary verdict is authoritative; conflicting positive timestamps invalidate a negative verdict. Blank=negative fallback applies only when the explicit verdict is absent.",
+  "label_rows": 42,
+  "positive_rows": 22,
+  "negative_rows": 20,
+  "original_video_files": 42,
+  "original_unique_hash_groups": 40,
+  "matched_unique_hash_groups": 40,
+  "duplicate_hash_groups": 2,
+  "disagreeing_timestamp_groups": 1,
+  "conflicting_binary_groups": 0,
+  "positive_groups": 21,
+  "negative_groups": 19,
+  "invalid_binary_groups": 0,
+  "row_counts": {
+    "rows": 42,
+    "timestamp_nonblank_rows": 22,
+    "parsed_timestamp_rows": 22,
+    "extracted_point_count": 22,
+    "explicit_positive_rows": 22,
+    "positive_rows": 22,
+    "timestamp_blank_rows": 20,
+    "explicit_negative_rows": 20,
+    "negative_rows": 20
+  },
+  "formula_input_cell_count": 0,
+  "ground_truth_human_validated": false,
+  "timestamp_semantics": "Weak point anchors extracted locally; not reviewed event boundaries or category labels",
+  "privacy": "No scene descriptions, original annotation text, frames, filenames or row-level labels in this aggregate audit"
+}

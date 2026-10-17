@@ -1,0 +1,114 @@
+{
+  "purpose": "Real local hybrid operation and exploratory weak-label comparison",
+  "sample_mode": "longest",
+  "pipeline_version_requested": "3.0",
+  "generated_at_utc": "2026-10-17T18:04:54.241290+00:00",
+  "samples": [
+    {
+      "sample_number": 1,
+      "duration_sec": 142.533021,
+      "reference_binary": false,
+      "checks_passed": true,
+      "status": "done",
+      "upload_to_result_sec": 128.266,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "verdict": "no_violation",
+      "finding_count": 0,
+      "pipeline_version": "3.0",
+      "pipeline_timings": {
+        "total_sec": 127.695,
+        "decode_and_cache_sec": 15.898,
+        "perception_sec": 13.745,
+        "vlm_sec": 82.851,
+        "evidence_output_sec": 0.759,
+        "probe_and_sampling_sec": 34.572,
+        "screening_sec": 71.784,
+        "verification_and_evidence_sec": 21.339
+      },
+      "stage_targets": {
+        "decode_and_cache_sec": {
+          "target_sec": 25,
+          "actual_sec": 15.898,
+          "within_target": true
+        },
+        "perception_sec": {
+          "target_sec": 45,
+          "actual_sec": 13.745,
+          "within_target": true
+        },
+        "vlm_sec": {
+          "target_sec": 150,
+          "actual_sec": 82.851,
+          "within_target": true
+        },
+        "evidence_output_sec": {
+          "target_sec": 20,
+          "actual_sec": 0.759,
+          "within_target": true
+        }
+      },
+      "windows_completed": 20,
+      "windows_planned": 20,
+      "perception_frames_analyzed": 714,
+      "perception_complete": true,
+      "ending_included": true,
+      "detection_count": 773,
+      "detections_source_and_box_validated": 773,
+      "detection_jpegs_declared": 710,
+      "declared_jpegs_total": 710,
+      "declared_jpegs_validated": 3,
+      "evidence_authentication_checked": true,
+      "review_required": true,
+      "review_queue_count": 1,
+      "case_decision_status": "review_required",
+      "gpu_memory": {
+        "available": true,
+        "samples": 119,
+        "sampling_failures": 0,
+        "sampled_max_mib": 7688,
+        "devices": [
+          {
+            "gpu_index": 0,
+            "sampled_max_mib": 7688,
+            "total_memory_mib": 8151
+          }
+        ],
+        "scope": "Maximum observed whole-GPU memory per device, sampled approximately once per second. Includes other processes; this is not a true peak or model-only memory measurement."
+      }
+    }
+  ],
+  "checks": {
+    "health_ready": true,
+    "unauthenticated_401": true,
+    "corrupt_input_400": true,
+    "busy_429": true
+  },
+  "caveat": "Previously inspected footage; no held-out generalization, annotation quality or score calibration claim.",
+  "summary": {
+    "samples_attempted": 1,
+    "completed": 1,
+    "failed": 0,
+    "technical_checks_passed_samples": 1,
+    "failure_rate": 0.0,
+    "review_rate_completed_known": 1.0,
+    "review_rate_denominator": 1,
+    "media_seconds_per_processing_second": 1.1112299518188764,
+    "completed_jobs_per_processing_hour": 28.066673943211764,
+    "all_under_300_sec": true,
+    "exploratory_binary": {
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "precision": null,
+      "recall": null,
+      "specificity": 1.0,
+      "denominator": 1,
+      "negative_video_hours": 0.03959250583333333,
+      "emitted_findings_per_negative_hour": 0.0,
+      "caveat": "Weak labels from previously inspected footage; exploratory only. Finding rate on negative-labeled footage is not human-verified false-alert rate."
+    }
+  },
+  "complete": true
+}

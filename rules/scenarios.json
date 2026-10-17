@@ -1,0 +1,288 @@
+{
+  "version": "2026-10-18-v5",
+  "semantics": "Fixed visual review taxonomy. Every supported scenario is a human-review candidate; the independent legal registry controls automatic legal findings. No example video, filename, timestamp or verdict is included.",
+  "scenarios": [
+    {
+      "id": "previous_transaction_cash_exposed",
+      "label": "Cash remains exposed across a client-service transition",
+      "visual_checks": [
+        "cash_on_work_surface_observed",
+        "client_service_transition_observed",
+        "cash_persistence_visually_supported"
+      ],
+      "check_descriptions": {
+        "cash_on_work_surface_observed": "A cash-like bundle or notes are visibly outside a storage container.",
+        "client_service_transition_observed": "The supplied sequence shows a client arrival/departure or another distinct service transition.",
+        "cash_persistence_visually_supported": "The same visible cash location or bundle persists across the observed transition; no identity is inferred across occlusion."
+      },
+      "visual_cues": [
+        "cash_on_work_surface",
+        "client_arrival",
+        "client_departure",
+        "cash_received"
+      ],
+      "unknowns": [
+        "Cash ownership and actual transaction completion require separate context verification.",
+        "Several piles alone do not establish earlier-client cash."
+      ],
+      "related_legal_rule_ids": [
+        "previous_transaction_cash_exposed"
+      ],
+      "legal_source": {
+        "document": "NBK Board Resolution No. 231 of 29 November 2019",
+        "paragraph": "20",
+        "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z111"
+      },
+      "disposition": "review_only",
+      "alias_of": null
+    },
+    {
+      "id": "previous_cash_stored",
+      "label": "Cash placement and storage concern",
+      "visual_checks": [
+        "cash_handling_observed",
+        "storage_relationship_visible"
+      ],
+      "check_descriptions": {
+        "cash_handling_observed": "A visible cash-like bundle is handled at the workstation.",
+        "storage_relationship_visible": "The sequence shows the cash location relative to a visible drawer, cabinet, safe or work surface."
+      },
+      "visual_cues": [
+        "cash_on_work_surface",
+        "cash_stored",
+        "cash_storage_opened",
+        "cash_storage_closed"
+      ],
+      "unknowns": [
+        "A still-open drawer does not establish an always-locked requirement.",
+        "Storage purpose, prior cash lineage and interval completeness may remain unknown."
+      ],
+      "related_legal_rule_ids": [
+        "previous_cash_stored"
+      ],
+      "legal_source": {
+        "document": "NBK Board Resolution No. 231 of 29 November 2019",
+        "paragraph": "20",
+        "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z111"
+      },
+      "disposition": "review_only",
+      "alias_of": "previous_transaction_cash_exposed"
+    },
+    {
+      "id": "cash_intake_without_client_presence",
+      "label": "Cash handling while the visible client area is empty",
+      "visual_checks": [
+        "cash_acceptance_or_count_observed",
+        "client_area_visible",
+        "client_absence_visually_supported"
+      ],
+      "check_descriptions": {
+        "cash_acceptance_or_count_observed": "Acceptance or manual/machine counting of visible cash-like notes is observed.",
+        "client_area_visible": "The relevant client side of the workstation is actually visible.",
+        "client_absence_visually_supported": "No client is visible in the adequately exposed relevant client area at the observed cash action."
+      },
+      "visual_cues": [
+        "cash_received",
+        "cash_count_manual",
+        "cash_count_machine",
+        "client_departure"
+      ],
+      "unknowns": [
+        "A camera crop or occluded client area is not evidence of absence.",
+        "Cash stock preparation is not established client intake."
+      ],
+      "related_legal_rule_ids": [
+        "cash_intake_without_client_presence"
+      ],
+      "legal_source": {
+        "document": "NBK Board Resolution No. 231 of 29 November 2019",
+        "paragraph": "20",
+        "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z111"
+      },
+      "disposition": "review_only",
+      "alias_of": null
+    },
+    {
+      "id": "backoffice_processing_control",
+      "label": "Cash-processing activity requiring control-context review",
+      "visual_checks": [
+        "cash_processing_observed",
+        "processing_area_visible"
+      ],
+      "check_descriptions": {
+        "cash_processing_observed": "Visible counting, sorting or packing of cash-like notes is observed.",
+        "processing_area_visible": "The supplied views expose the immediate processing area and visible accompanying persons."
+      },
+      "visual_cues": [
+        "cash_processing_activity",
+        "cash_count_manual",
+        "cash_count_machine",
+        "person_enters_processing_area",
+        "person_leaves_processing_area"
+      ],
+      "unknowns": [
+        "Client intake and payout are excepted from this particular control rule.",
+        "People count, clothes or appearance do not establish supervisory roles or authorization.",
+        "An unobserved controller is not proven absent."
+      ],
+      "related_legal_rule_ids": [
+        "backoffice_processing_control"
+      ],
+      "legal_source": {
+        "document": "NBK Board Resolution No. 231 of 29 November 2019",
+        "paragraph": "42",
+        "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z163"
+      },
+      "disposition": "review_only",
+      "alias_of": null
+    },
+    {
+      "id": "keys_stamps_secure_handling",
+      "label": "Visible handling or placement of keys and stamps",
+      "visual_checks": [
+        "key_or_stamp_visually_supported",
+        "handling_or_placement_observed"
+      ],
+      "check_descriptions": {
+        "key_or_stamp_visually_supported": "A key-like item or stamp is visually identifiable; unresolved tiny objects stay unknown.",
+        "handling_or_placement_observed": "The sequence shows its handling, transfer or placement on a visible surface or container."
+      },
+      "visual_cues": [
+        "key_handling",
+        "stamp_handling",
+        "key_or_stamp_left_on_surface"
+      ],
+      "unknowns": [
+        "An actual internal bank policy and access records are needed to determine a safeguard breach.",
+        "A surface placement alone is not a universal legal violation."
+      ],
+      "related_legal_rule_ids": [
+        "keys_stamps_secure_handling"
+      ],
+      "legal_source": {
+        "document": "NBK Board Resolution No. 231 of 29 November 2019",
+        "paragraph": "80",
+        "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z226"
+      },
+      "disposition": "review_only",
+      "alias_of": null
+    },
+    {
+      "id": "vault_cash_segregation_storage",
+      "label": "Cash arrangement or transfer at vault or safe storage",
+      "visual_checks": [
+        "storage_container_visible",
+        "cash_storage_relationship_observed"
+      ],
+      "check_descriptions": {
+        "storage_container_visible": "A safe, cabinet or storage container and its relevant opening or compartment is visible.",
+        "cash_storage_relationship_observed": "Cash-like notes or bundles are visibly placed, removed or arranged relative to that storage."
+      },
+      "visual_cues": [
+        "cash_moved_between_storage",
+        "cash_stored",
+        "cash_storage_opened",
+        "cash_on_work_surface"
+      ],
+      "unknowns": [
+        "Vault classification, bank/client cash identity and any required segregation policy remain unknown.",
+        "No exact public clause mapping has been curated for this category; the visual concern is review-only."
+      ],
+      "related_legal_rule_ids": [],
+      "legal_source": null,
+      "disposition": "review_only",
+      "alias_of": null
+    },
+    {
+      "id": "personal_belongings_in_cash_unit",
+      "label": "Personal-object candidate in a cash-handling area",
+      "visual_checks": [
+        "non_cash_object_visually_supported",
+        "object_cash_area_relationship_visible"
+      ],
+      "check_descriptions": {
+        "non_cash_object_visually_supported": "A bag, phone, personal container or other non-cash object is visually identifiable.",
+        "object_cash_area_relationship_visible": "Its placement or handling in the visible cash-handling workstation is supported."
+      },
+      "visual_cues": [
+        "personal_object_interaction",
+        "bag_or_container_handling",
+        "phone_handling"
+      ],
+      "unknowns": [
+        "Appearance does not establish personal ownership, contents or prohibited purpose.",
+        "Medicines, medical devices and qualifying communication devices have exceptions."
+      ],
+      "related_legal_rule_ids": [
+        "personal_belongings_in_cash_unit"
+      ],
+      "legal_source": {
+        "document": "NBK Board Resolution No. 231 of 29 November 2019",
+        "paragraph": "12",
+        "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z81"
+      },
+      "disposition": "review_only",
+      "alias_of": null
+    },
+    {
+      "id": "active_intake_departure",
+      "label": "Workstation departure requiring intake-context review",
+      "visual_checks": [
+        "actual_workstation_departure"
+      ],
+      "check_descriptions": {
+        "actual_workstation_departure": "A person visibly moves outside the workstation rather than standing or reaching within it."
+      },
+      "visual_cues": [
+        "workstation_departure",
+        "workstation_return"
+      ],
+      "unknowns": [
+        "An empty chair alone is insufficient.",
+        "Active unfinished client intake must be separately established."
+      ],
+      "related_legal_rule_ids": [
+        "active_intake_departure"
+      ],
+      "legal_source": {
+        "document": "NBK Board Resolution No. 231 of 29 November 2019",
+        "paragraph": "22",
+        "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z114"
+      },
+      "disposition": "review_only",
+      "alias_of": null
+    },
+    {
+      "id": "loose_cash_issued_without_observed_count",
+      "label": "Payout handover requiring count-sequence review",
+      "visual_checks": [
+        "cash_handover_observed",
+        "cash_form_visible"
+      ],
+      "check_descriptions": {
+        "cash_handover_observed": "A visible cash-like bundle or notes are passed toward another person or the client side.",
+        "cash_form_visible": "The supplied view exposes whether the item resembles loose notes, a wrapped pack or unresolved packaging."
+      },
+      "visual_cues": [
+        "cash_prepared",
+        "cash_handed_over",
+        "cash_count_manual",
+        "cash_count_machine"
+      ],
+      "unknowns": [
+        "Sparse samples cannot prove a counting step was omitted.",
+        "Packaging exceptions, earlier counting and offscreen counting require complete context."
+      ],
+      "related_legal_rule_ids": [
+        "loose_cash_issued_without_observed_count"
+      ],
+      "legal_source": {
+        "document": "NBK Board Resolution No. 231 of 29 November 2019",
+        "paragraph": "31(4), subject to 32",
+        "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z144"
+      },
+      "disposition": "review_only",
+      "alias_of": null
+    }
+  ]
+}

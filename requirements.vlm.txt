@@ -1,0 +1,13 @@
+# Optional isolated CUDA environment. These older, documented versions are pinned
+# deliberately; they do not replace the main CPU inference environment.
+# Install torch==2.9.0 / torchvision==0.24.0 from the official matching CUDA wheel
+# index first (see docs/vlm-runtime.md), then this file.
+torch==2.9.0
+torchvision==0.24.0
+transformers==4.57.1
+accelerate==1.11.0
+bitsandbytes==0.48.1
+lm-format-enforcer==0.11.3
+pillow==12.0.0
+fastapi==0.143.3
+uvicorn==0.54.0

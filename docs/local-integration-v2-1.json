@@ -1,0 +1,149 @@
+{
+  "purpose": "Real local service operation; not an accuracy evaluation",
+  "samples": [
+    {
+      "duration_sec": 142.533,
+      "status": "done",
+      "upload_to_result_sec": 130.078,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 18,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 8.862,
+        "screening_sec": 71.347,
+        "verification_and_evidence_sec": 49.339,
+        "total_sec": 129.548,
+        "candidate_count": 4,
+        "finding_count": 0,
+        "review_queue_count": 4,
+        "action_calls": 8,
+        "context_calls": 0,
+        "refinement_passes": 4,
+        "review_reason_counts": {
+          "action_uncertain": 4
+        },
+        "action_refinement_passes": 4
+      },
+      "pipeline_version": "2.1",
+      "review_queue_count": 4
+    },
+    {
+      "duration_sec": 25.267,
+      "status": "done",
+      "upload_to_result_sec": 22.235,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 3,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 1.732,
+        "screening_sec": 12.186,
+        "verification_and_evidence_sec": 7.763,
+        "total_sec": 21.681,
+        "candidate_count": 1,
+        "finding_count": 0,
+        "review_queue_count": 1,
+        "action_calls": 2,
+        "context_calls": 0,
+        "refinement_passes": 1,
+        "review_reason_counts": {
+          "action_uncertain": 1
+        },
+        "action_refinement_passes": 1
+      },
+      "pipeline_version": "2.1",
+      "review_queue_count": 1
+    },
+    {
+      "duration_sec": 11.633,
+      "status": "done",
+      "upload_to_result_sec": 13.204,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 1,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 0.881,
+        "screening_sec": 4.958,
+        "verification_and_evidence_sec": 6.523,
+        "total_sec": 12.361,
+        "candidate_count": 1,
+        "finding_count": 0,
+        "review_queue_count": 1,
+        "action_calls": 2,
+        "context_calls": 0,
+        "refinement_passes": 1,
+        "review_reason_counts": {
+          "action_uncertain": 1
+        },
+        "action_refinement_passes": 1
+      },
+      "pipeline_version": "2.1",
+      "review_queue_count": 1
+    },
+    {
+      "duration_sec": 33.333,
+      "status": "done",
+      "upload_to_result_sec": 44.39,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 4,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 2.205,
+        "screening_sec": 15.857,
+        "verification_and_evidence_sec": 24.944,
+        "total_sec": 43.006,
+        "candidate_count": 3,
+        "finding_count": 0,
+        "review_queue_count": 3,
+        "action_calls": 6,
+        "context_calls": 0,
+        "refinement_passes": 3,
+        "review_reason_counts": {
+          "action_uncertain": 3
+        },
+        "action_refinement_passes": 3
+      },
+      "pipeline_version": "2.1",
+      "review_queue_count": 3
+    },
+    {
+      "duration_sec": 23.8,
+      "status": "done",
+      "upload_to_result_sec": 26.281,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 3,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 1.628,
+        "screening_sec": 10.571,
+        "verification_and_evidence_sec": 13.774,
+        "total_sec": 25.973,
+        "candidate_count": 2,
+        "finding_count": 0,
+        "review_queue_count": 2,
+        "action_calls": 4,
+        "context_calls": 0,
+        "refinement_passes": 2,
+        "review_reason_counts": {
+          "action_uncertain": 2
+        },
+        "action_refinement_passes": 2
+      },
+      "pipeline_version": "2.1",
+      "review_queue_count": 2
+    }
+  ],
+  "checks": {
+    "authentication": true,
+    "corrupt_input_rejected": true,
+    "busy_rejected": true,
+    "exact_jury_schema": true,
+    "emitted_evidence_frames_validated": 0,
+    "evidence_check_scope": "Every emitted frame is checked; zero frames does not test real positive-event evidence"
+  },
+  "all_completed": true
+}

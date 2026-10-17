@@ -1,17 +1,12 @@
--r requirements-web.txt
-torch==2.5.1
-torchvision==0.20.1
-numpy==2.0.2
-opencv-python==4.10.0.84
-Pillow==11.3.0
-transformers==4.51.3
-tokenizers==0.21.4
-huggingface-hub==0.30.2
-safetensors==0.6.2
-faster-coco-eval==1.8.0
-scipy==1.17.1
-lap==0.5.13
-imageio-ffmpeg==0.6.0
-PyYAML==6.0.2
-tensorboard>=2.13,<3
+# Direct dependencies verified against public PyPI metadata on 2026-10-17.
+# Python 3.12+; no Torch or cloud-model SDK is needed.
+fastapi==0.143.3
+uvicorn==0.54.0
+pydantic==2.12.5
+pydantic-core==2.41.5
+python-multipart==0.0.32
+opencv-python-headless==5.0.0.93
+numpy==2.5.4
 httpx==0.28.1
+pytest==9.1.1
+openpyxl==3.1.5

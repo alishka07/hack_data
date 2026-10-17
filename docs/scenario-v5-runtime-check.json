@@ -1,0 +1,14 @@
+{
+  "purpose": "Actual local scenario schema/runtime compatibility; not case recall",
+  "pipeline": "5.0",
+  "status": "passed",
+  "scenario_families": 9,
+  "source_frames": 8,
+  "source_duration_sec": 11.633333,
+  "screening_sec": 3.536,
+  "scenario_hypotheses": 0,
+  "proposed_types": [],
+  "visibility": "unusable",
+  "model": "Qwen3VL-4B-Instruct-Q4_K_M.gguf",
+  "labels_used_in_inference": false
+}

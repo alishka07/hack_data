@@ -1,0 +1,91 @@
+{
+  "purpose": "Replay of the exact upload that failed near its deadline",
+  "original_job_id": "b3f1d757-b9fc-48e9-835c-40715fffaede",
+  "job_id": "297c0740-cfe2-4d02-9c50-10990b7cd28a",
+  "status": "done",
+  "pipeline": "5.2",
+  "elapsed_sec": 268.27,
+  "processing_status": "review_incomplete",
+  "verdict": "no_violation",
+  "error_code": null,
+  "windows_completed": 12,
+  "windows_planned": 12,
+  "verification_complete": false,
+  "unverified_candidate_count": 16,
+  "raw_candidate_count": 42,
+  "candidate_count": 32,
+  "active_reviews": 7,
+  "case_status": "review_required",
+  "request_diagnostics": {
+    "calls": 37,
+    "attempts": 37,
+    "retries": 0,
+    "failures": 0,
+    "elapsed_sec": 218.483,
+    "last_request": {
+      "attempts": 1,
+      "frame_count": 8,
+      "max_tokens": 512,
+      "timeout_sec": 7.763,
+      "elapsed_sec": 3.891,
+      "error_code": null,
+      "retry_error_code": null
+    }
+  },
+  "timings": {
+    "probe_and_sampling_sec": 27.839,
+    "screening_sec": 119.086,
+    "verification_and_evidence_sec": 119.269,
+    "total_sec": 266.195,
+    "candidate_count": 32,
+    "raw_candidate_count": 42,
+    "unverified_candidate_count": 16,
+    "finding_count": 0,
+    "review_queue_count": 7,
+    "action_calls": 24,
+    "context_calls": 0,
+    "refinement_passes": 8,
+    "review_reason_counts": {
+      "action_uncertain": 7,
+      "review_only_rule": 5
+    },
+    "action_refinement_passes": 8,
+    "confidence_observation_count": 2,
+    "noninitial_score_count": 1,
+    "detection_count": 462,
+    "event_proposal_count": 40,
+    "case_decision_status": "review_required",
+    "perception_sec": 18.484,
+    "decode_and_cache_sec": 3.127,
+    "transaction_episodes": 1,
+    "cpu_backend": "yolox_opencv_cpu",
+    "vlm_sec": 218.851,
+    "evidence_output_sec": 0.783,
+    "stage_budgets": {
+      "decode_and_cache": {
+        "target_sec": 25,
+        "actual_sec": 3.127,
+        "within_target": true
+      },
+      "perception_and_proposals": {
+        "target_sec": 90.0,
+        "actual_sec": 18.484,
+        "within_target": true
+      },
+      "vlm_verification_and_screening": {
+        "target_sec": 150,
+        "actual_sec": 218.851,
+        "within_target": false
+      },
+      "evidence_and_output": {
+        "target_sec": 20,
+        "actual_sec": 0.783,
+        "within_target": true
+      },
+      "reserve_sec": 15.0,
+      "deadline_sec": 300,
+      "note": "Engineering targets, not accuracy or throughput guarantees. Total accepted-job deadline is enforced."
+    }
+  },
+  "evidence_jpegs_validated": 141
+}

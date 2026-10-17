@@ -1,0 +1,192 @@
+{
+  "audit_version": "1.1",
+  "scope": "offline_label_category_coverage_not_detection_accuracy",
+  "summary": "7/7 hinted types with visual detection paths; 3 legal automatic rules",
+  "counts": {
+    "label_rows": 42,
+    "positive_rows": 22,
+    "negative_rows": 20,
+    "category_ids": 7,
+    "positive_rows_without_category": 11,
+    "negative_rows_without_category": 17,
+    "hinted_types_with_visual_detection_paths": 7,
+    "registered_visual_scenarios": 9,
+    "legal_automatic_rules": 3
+  },
+  "categories": [
+    {
+      "type_id": "backoffice_processing_control",
+      "positive_rows": 1,
+      "negative_rows": 3,
+      "catalog_present": true,
+      "registry_present": false,
+      "registry_enabled": false,
+      "auto_emit": false,
+      "automation": "manual",
+      "required_checks": [],
+      "action_checks": [],
+      "visual_scenario_present": true,
+      "visual_detection_path": true,
+      "visual_checks": [
+        "cash_processing_observed",
+        "processing_area_visible"
+      ],
+      "visual_disposition": "review_only",
+      "visual_alias_of": null
+    },
+    {
+      "type_id": "cash_intake_without_client_presence",
+      "positive_rows": 1,
+      "negative_rows": 0,
+      "catalog_present": true,
+      "registry_present": true,
+      "registry_enabled": true,
+      "auto_emit": true,
+      "automation": "automatic_when_supported",
+      "required_checks": [
+        "cash_intake_established",
+        "client_cash_lineage_established",
+        "client_area_visible",
+        "client_demonstrably_absent",
+        "cash_acceptance_or_count_observed",
+        "relevant_context_visible"
+      ],
+      "action_checks": [
+        "client_area_visible",
+        "client_demonstrably_absent",
+        "cash_acceptance_or_count_observed"
+      ],
+      "visual_scenario_present": true,
+      "visual_detection_path": true,
+      "visual_checks": [
+        "cash_acceptance_or_count_observed",
+        "client_area_visible",
+        "client_absence_visually_supported"
+      ],
+      "visual_disposition": "review_only",
+      "visual_alias_of": null
+    },
+    {
+      "type_id": "keys_stamps_secure_handling",
+      "positive_rows": 2,
+      "negative_rows": 0,
+      "catalog_present": true,
+      "registry_present": false,
+      "registry_enabled": false,
+      "auto_emit": false,
+      "automation": "manual",
+      "required_checks": [],
+      "action_checks": [],
+      "visual_scenario_present": true,
+      "visual_detection_path": true,
+      "visual_checks": [
+        "key_or_stamp_visually_supported",
+        "handling_or_placement_observed"
+      ],
+      "visual_disposition": "review_only",
+      "visual_alias_of": null
+    },
+    {
+      "type_id": "personal_belongings_in_cash_unit",
+      "positive_rows": 1,
+      "negative_rows": 0,
+      "catalog_present": true,
+      "registry_present": false,
+      "registry_enabled": false,
+      "auto_emit": false,
+      "automation": "manual",
+      "required_checks": [],
+      "action_checks": [],
+      "visual_scenario_present": true,
+      "visual_detection_path": true,
+      "visual_checks": [
+        "non_cash_object_visually_supported",
+        "object_cash_area_relationship_visible"
+      ],
+      "visual_disposition": "review_only",
+      "visual_alias_of": null
+    },
+    {
+      "type_id": "previous_cash_stored",
+      "positive_rows": 1,
+      "negative_rows": 0,
+      "catalog_present": true,
+      "registry_present": false,
+      "registry_enabled": false,
+      "auto_emit": false,
+      "automation": "review_only",
+      "required_checks": [],
+      "action_checks": [],
+      "visual_scenario_present": true,
+      "visual_detection_path": true,
+      "visual_checks": [
+        "cash_handling_observed",
+        "storage_relationship_visible"
+      ],
+      "visual_disposition": "review_only",
+      "visual_alias_of": "previous_transaction_cash_exposed"
+    },
+    {
+      "type_id": "previous_transaction_cash_exposed",
+      "positive_rows": 4,
+      "negative_rows": 0,
+      "catalog_present": true,
+      "registry_present": true,
+      "registry_enabled": true,
+      "auto_emit": true,
+      "automation": "automatic_when_supported",
+      "required_checks": [
+        "previous_client_cash_identified",
+        "previous_transaction_completed",
+        "next_distinct_client_transaction_active",
+        "cash_outside_designated_storage",
+        "object_continuity_established",
+        "relevant_context_visible"
+      ],
+      "action_checks": [
+        "cash_outside_designated_storage",
+        "object_continuity_established"
+      ],
+      "visual_scenario_present": true,
+      "visual_detection_path": true,
+      "visual_checks": [
+        "cash_on_work_surface_observed",
+        "client_service_transition_observed",
+        "cash_persistence_visually_supported"
+      ],
+      "visual_disposition": "review_only",
+      "visual_alias_of": null
+    },
+    {
+      "type_id": "vault_cash_segregation_storage",
+      "positive_rows": 1,
+      "negative_rows": 0,
+      "catalog_present": true,
+      "registry_present": false,
+      "registry_enabled": false,
+      "auto_emit": false,
+      "automation": "manual",
+      "required_checks": [],
+      "action_checks": [],
+      "visual_scenario_present": true,
+      "visual_detection_path": true,
+      "visual_checks": [
+        "storage_container_visible",
+        "cash_storage_relationship_observed"
+      ],
+      "visual_disposition": "review_only",
+      "visual_alias_of": null
+    }
+  ],
+  "missing_catalog_ids": [],
+  "missing_enabled_registry_ids": [
+    "backoffice_processing_control",
+    "keys_stamps_secure_handling",
+    "personal_belongings_in_cash_unit",
+    "previous_cash_stored",
+    "vault_cash_segregation_storage"
+  ],
+  "missing_visual_detection_path_ids": [],
+  "semantics": "Column C is the explicit binary label; column D is a sparse possible-category hint. Missing categories are unknown. Negative rows remain negative. Row counts are not independent source groups. Visual detection paths are registered review scenarios, separate from automatic legal rules. Static coverage does not establish recall or legal applicability.",
+  "source_workbook_sha256": "590d16a3120a535b2d1cd837e18e5b8cd21557305d2137791da0f69edb155d83"
+}

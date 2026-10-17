@@ -1,0 +1,291 @@
+{
+  "version": "2026-10-17-v2",
+  "review_notice": "Three positive-action categories are eligible for automatic findings after applicability and exception checks. Loose-cash counting omission is review-only because sparse samples cannot establish a missing procedure. Other observable events remain an unconfirmed review queue.",
+  "sources": [
+    {
+      "id": "nbk_231_2019",
+      "document": "National Bank of Kazakhstan Board Resolution No. 231 of 29 November 2019",
+      "title": "Rules for cash operations and collection of banknotes, coins and valuables by banks and organizations performing certain banking operations",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+      "effective_version": "2026-07-12",
+      "reviewed_at": "2026-10-17",
+      "review_record": "rules/sources/resolution-231.md",
+      "provenance": "Official Adilet text and Information tab inspected during local research; source findings preserved in tmp/planning/legal/verified_rules.md."
+    },
+    {
+      "id": "nbk_14_2020",
+      "document": "National Bank of Kazakhstan Board Resolution No. 14 of 24 February 2020",
+      "title": "Requirements for security and construction of bank premises",
+      "source_url": "https://adilet.zan.kz/rus/docs/V2000020075",
+      "effective_version": "2024-12-24",
+      "reviewed_at": "2026-10-17",
+      "review_record": "rules/sources/resolution-14.md",
+      "provenance": "Official Adilet text and Information tab inspected during local research; temporary wording through 2026-12-31 must not be replaced with the 2027 wording."
+    }
+  ],
+  "rules": [
+    {
+      "id": "active_intake_departure",
+      "type": "active_intake_departure",
+      "label": "Workstation departure during unfinished cash intake",
+      "enabled": true,
+      "source_id": "nbk_231_2019",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "paragraph": "22",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z114",
+      "effective_version": "2026-07-12",
+      "summary": "In the cash-intake subsection, the cashier must not leave the workstation before client service ends.",
+      "applicability": [
+        "An actual client cash-intake transaction is established.",
+        "Client service has started and has not visibly completed.",
+        "The observed departure leaves the workstation, rather than merely changing posture or reaching within it."
+      ],
+      "exceptions": [
+        "Departure after completed client service.",
+        "Standing, reaching, movement inside the workstation, or a brief occlusion.",
+        "Uncertain transaction type, boundaries, or workstation boundaries."
+      ],
+      "required_checks": [
+        "cash_intake_established",
+        "client_service_active",
+        "service_not_completed",
+        "actual_workstation_departure",
+        "relevant_context_visible"
+      ],
+      "action_checks": [
+        "actual_workstation_departure"
+      ],
+      "disabled_examples": [
+        "Any empty chair without active intake context.",
+        "Generic absence during an unknown operation."
+      ],
+      "legal_review_status": "public_clause_checked_scene_applicability_required",
+      "auto_emit": true,
+      "automation": "automatic_when_supported",
+      "context_requirement": "Referenced pre-action, action and post-action observations must establish the relevant transaction context. Sparse observations do not prove that an action never happened."
+    },
+    {
+      "id": "cash_intake_without_client_presence",
+      "type": "cash_intake_without_client_presence",
+      "label": "Client cash accepted or counted during the client's demonstrable absence",
+      "enabled": true,
+      "source_id": "nbk_231_2019",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "paragraph": "20",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z111",
+      "effective_version": "2026-07-12",
+      "summary": "Acceptance and counting of client cash during intake takes place in the client's presence.",
+      "applicability": [
+        "Client cash intake and the relevant cash lineage are established.",
+        "The client area is visible sufficiently to establish actual absence.",
+        "Acceptance or counting takes place during that absence."
+      ],
+      "exceptions": [
+        "Client outside a crop or occluded: presence is unknown.",
+        "Cash stock preparation or preparatory payout counting rather than client intake.",
+        "Counting performed by equipment counts as counting."
+      ],
+      "required_checks": [
+        "cash_intake_established",
+        "client_cash_lineage_established",
+        "client_area_visible",
+        "client_demonstrably_absent",
+        "cash_acceptance_or_count_observed",
+        "relevant_context_visible"
+      ],
+      "action_checks": [
+        "client_area_visible",
+        "client_demonstrably_absent",
+        "cash_acceptance_or_count_observed"
+      ],
+      "disabled_examples": [
+        "No visible client in a camera angle that omits the client area.",
+        "Cashier handling unidentified stock alone."
+      ],
+      "legal_review_status": "public_clause_checked_scene_applicability_required",
+      "auto_emit": true,
+      "automation": "automatic_when_supported",
+      "context_requirement": "Referenced pre-action, action and post-action observations must establish the relevant transaction context. Sparse observations do not prove that an action never happened."
+    },
+    {
+      "id": "previous_transaction_cash_exposed",
+      "type": "previous_transaction_cash_exposed",
+      "label": "Earlier client's cash left outside storage during a new transaction",
+      "enabled": true,
+      "source_id": "nbk_231_2019",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "paragraph": "20",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z111",
+      "effective_version": "2026-07-12",
+      "summary": "Only the current client's cash remains at the workstation; previously accepted cash belongs in designated key-lockable storage.",
+      "applicability": [
+        "Cash accepted from an earlier client is positively identified.",
+        "The previous transaction ends and a distinct next client transaction starts.",
+        "The earlier cash remains outside designated storage, with continuity across the transition."
+      ],
+      "exceptions": [
+        "Several cash piles belonging to one client.",
+        "Unidentified teller stock or ambiguous ownership.",
+        "An open drawer alone does not prove improper storage or an always-locked requirement."
+      ],
+      "required_checks": [
+        "previous_client_cash_identified",
+        "previous_transaction_completed",
+        "next_distinct_client_transaction_active",
+        "cash_outside_designated_storage",
+        "object_continuity_established",
+        "relevant_context_visible"
+      ],
+      "action_checks": [
+        "cash_outside_designated_storage",
+        "object_continuity_established"
+      ],
+      "disabled_examples": [
+        "Open cash drawer without identified exposed earlier-client cash.",
+        "Two visible bundles whose ownership cannot be established."
+      ],
+      "legal_review_status": "public_clause_checked_scene_applicability_required",
+      "auto_emit": true,
+      "automation": "automatic_when_supported",
+      "context_requirement": "Referenced pre-action, action and post-action observations must establish the relevant transaction context. Sparse observations do not prove that an action never happened."
+    },
+    {
+      "id": "loose_cash_issued_without_observed_count",
+      "type": "loose_cash_issued_without_observed_count",
+      "label": "Loose payout cash handed over without the required observed count",
+      "enabled": true,
+      "source_id": "nbk_231_2019",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "paragraph": "31(4), subject to 32",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z144",
+      "exception_source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z150",
+      "effective_version": "2026-07-12",
+      "summary": "Prepared payout cash is counted in the client's presence before handover; paragraph 32 allows qualifying intact packages, full straps, and packaged coins to be issued by their marked amounts.",
+      "applicability": [
+        "Cash payout, loose cash, and handover are established.",
+        "The complete preparation-to-handover opportunity is continuously visible.",
+        "Manual, machine, earlier, and offscreen counting are excluded by the visible complete context.",
+        "The packaging exceptions in paragraph 32 are affirmatively excluded."
+      ],
+      "exceptions": [
+        "Intact full or incomplete packs and individual full straps may be issued by marked amounts.",
+        "Qualifying packaged coins may be issued by labeled amounts.",
+        "An earlier or offscreen count remains possible.",
+        "Packaging completeness or integrity is too small or occluded to determine."
+      ],
+      "required_checks": [
+        "cash_payout_established",
+        "loose_cash_established",
+        "complete_preparation_to_handover_visible",
+        "cash_handover_observed",
+        "no_manual_or_machine_count_observed",
+        "no_earlier_or_offscreen_count_possible",
+        "packaging_exception_excluded",
+        "client_area_visible"
+      ],
+      "action_checks": [
+        "loose_cash_established",
+        "cash_handover_observed",
+        "client_area_visible"
+      ],
+      "disabled_examples": [
+        "A single handover frame with no full transaction coverage.",
+        "An intact strap or pack handed over without unwrapping.",
+        "Counting not visible because of occlusion or a missing portion of the clip."
+      ],
+      "legal_review_status": "public_clause_checked_scene_applicability_required",
+      "auto_emit": false,
+      "automation": "review_only",
+      "review_only_reason": "Complete preparation-to-handover counting absence cannot be established by sparse sampling; no automatic violation is emitted."
+    },
+    {
+      "id": "cup_or_beverage",
+      "type": "cup_or_beverage",
+      "label": "Cup, beverage, or presumed personal property",
+      "enabled": false,
+      "source_id": "nbk_231_2019",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "paragraph": "12",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z81",
+      "effective_version": "2026-07-12",
+      "summary": "The personal-property clause does not establish that a visible cup is prohibited; contents, ownership, room applicability, and exceptions remain unresolved.",
+      "applicability": [],
+      "exceptions": [
+        "Medicines, medical devices, and qualifying communication devices are expressly excepted."
+      ],
+      "required_checks": [],
+      "disabled_examples": [
+        "Cup interpreted as coffee.",
+        "Unidentified object interpreted as prohibited personal property."
+      ],
+      "legal_review_status": "unsupported_visual_mapping_disabled"
+    },
+    {
+      "id": "physical_id_not_seen",
+      "type": "physical_id_not_seen",
+      "label": "Physical identification document not visible",
+      "enabled": false,
+      "source_id": "nbk_231_2019",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "paragraph": "19(1), 31(1)",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z104",
+      "effective_version": "2026-07-12",
+      "summary": "Digital identification is permitted; an unseen paper identity document does not establish failure to identify.",
+      "applicability": [],
+      "exceptions": [
+        "Digital-documents-service data.",
+        "Identification before the clip or outside camera view."
+      ],
+      "required_checks": [],
+      "disabled_examples": [
+        "No ID card visible.",
+        "Any identity or face-recognition inference."
+      ],
+      "legal_review_status": "unsupported_visual_mapping_disabled"
+    },
+    {
+      "id": "ordinary_transaction_without_supervisor",
+      "type": "ordinary_transaction_without_supervisor",
+      "label": "No separate supervisor during an ordinary client transaction",
+      "enabled": false,
+      "source_id": "nbk_231_2019",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "paragraph": "42",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z163",
+      "effective_version": "2026-07-12",
+      "summary": "The supervisory-presence rule expressly excludes client cash intake and payout.",
+      "applicability": [],
+      "exceptions": [
+        "Ordinary client intake or payout.",
+        "Role and authorization cannot be inferred from appearance."
+      ],
+      "required_checks": [],
+      "disabled_examples": [
+        "Only one teller visible during customer service."
+      ],
+      "legal_review_status": "express_exception_disabled"
+    },
+    {
+      "id": "open_door",
+      "type": "open_door",
+      "label": "Open door treated as a universal violation",
+      "enabled": false,
+      "source_id": "nbk_14_2020",
+      "document": "NBK Board Resolution No. 14 of 24 February 2020",
+      "paragraph": "8, 16(1)",
+      "source_url": "https://adilet.zan.kz/rus/docs/V2000020075",
+      "effective_version": "2024-12-24; applicable temporary wording through 2026-12-31",
+      "summary": "These clauses address room isolation and closable or lockable entrances; they do not establish a universal always-closed or always-locked state requirement.",
+      "applicability": [],
+      "exceptions": [
+        "Room configuration and legal room category are unknown.",
+        "Construction capability is distinct from a momentary observed door state."
+      ],
+      "required_checks": [],
+      "disabled_examples": [
+        "Any open door in a teller video."
+      ],
+      "legal_review_status": "unsupported_visual_mapping_disabled"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "purpose": "Exploratory local development evaluation; not held-out accuracy or generalization evidence",
+  "generated_at_utc": "2026-10-17T09:43:32.705419+00:00",
+  "warnings": [
+    "ALL 42 CURRENT LABEL ROWS ARE BLANK/NEGATIVE. User-confirmed blank=negative is applied, but this reference cannot measure positive recall or localization. Review/restore ground truth before interpreting accuracy.",
+    "LABEL WORKBOOK CHANGED since the prior audit (then 22 timestamped / 20 blank rows). Current bytes and labels are evaluated as written.",
+    "Exploratory development-only results; clips were not held out and do not establish generalization.",
+    "Ground truth has not been human-validated. Point annotations do not define event intervals or event categories.",
+    "The service covers four reviewed visual rule categories; broad workbook violation labels may describe unsupported events.",
+    "Category accuracy, evidence relevance and legal applicability require human review and are not scored here.",
+    "Only the latest completed job per byte-identical video group is evaluated; active jobs are ignored as predictions."
+  ],
+  "reference": {
+    "workbook_sha256": "6a5c0feddc76ed2467dcc6bfc8673402d69e4e1270c1ef1ad6643f6971b99131",
+    "previous_audit_sha256": "a6e80004dde165c9294acc5cae165ab5df9aa11d5dc9e0d6b50e313da7701e4e",
+    "changed_since_prior_audit": true,
+    "ground_truth_human_validated": false,
+    "blank_timestamp_means": "no_violation",
+    "timestamp_column": "B",
+    "label_rows": 42,
+    "positive_rows": 0,
+    "negative_rows": 42,
+    "original_video_files": 42,
+    "matched_unique_hash_groups": 40,
+    "duplicate_hash_groups": 2,
+    "disagreeing_timestamp_groups": 0,
+    "conflicting_binary_groups": 0,
+    "unparsed_timestamp_rows": 0,
+    "unmatched_filename_rows": 0
+  },
+  "coverage": {
+    "completed_groups": 2,
+    "unevaluated_groups": 38,
+    "group_status_disjoint": {
+      "completed": 2,
+      "invalid_completed": 0,
+      "processing": 0,
+      "failed": 0,
+      "not_submitted": 38
+    },
+    "database_jobs_seen": 5,
+    "jobs_with_missing_upload": 0,
+    "jobs_not_matching_reference_bytes": 0
+  },
+  "exploratory_binary": {
+    "evaluated_groups": 2,
+    "reference_positive_groups": 0,
+    "reference_negative_groups": 40,
+    "confusion": {
+      "true_positive": 0,
+      "false_positive": 0,
+      "true_negative": 2,
+      "false_negative": 0
+    },
+    "precision": null,
+    "recall": null,
+    "specificity": 1.0,
+    "f1": null
+  },
+  "exploratory_localization": {
+    "status": "unavailable_no_evaluated_positive_reference_points",
+    "tolerance_sec": 3.0,
+    "eligible_completed_groups": 2,
+    "positive_reference_groups": 0,
+    "reference_points": 0,
+    "predicted_points": 0,
+    "matched_points": 0,
+    "unmatched_reference_points": 0,
+    "unmatched_predicted_points": 0,
+    "precision": null,
+    "recall": null,
+    "mean_absolute_error_sec": null
+  }
+}

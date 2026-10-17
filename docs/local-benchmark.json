@@ -1,0 +1,32 @@
+{
+  "model": "Qwen3-VL-4B-Instruct Q4_K_M, F16 vision",
+  "context": 4096,
+  "frames_per_overview": 8,
+  "frame_height": 448,
+  "output_cap": 384,
+  "strict_json_schema": true,
+  "overview_count": 42,
+  "successful_calls": 42,
+  "json_valid_overviews": 42,
+  "call_min_sec": 0.9454028000182007,
+  "call_max_sec": 1.9974475000053644,
+  "call_mean_sec": 1.522881183332564,
+  "coverage": "sparse overview only; not a full detection benchmark",
+  "private_notes_shared": false,
+  "longest_screening_benchmark": {
+    "clip_duration_sec": 142.533021,
+    "windows": 18,
+    "window_span_sec": 12,
+    "hop_sec": 8,
+    "frames_per_window": 8,
+    "output_cap": 384,
+    "strict_json_schema": true,
+    "json_valid_windows": 18,
+    "extract_and_screen_sec": 37.548,
+    "inference_sum_sec": 24.713,
+    "max_window_call_sec": 1.876,
+    "scope": "screening only; no event verification, evidence packaging, API or accuracy benchmark"
+  },
+  "peak_total_gpu_used_mib": 7118,
+  "gpu_measurement_scope": "total device memory, including other applications, sampled once per second"
+}

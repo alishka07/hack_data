@@ -1,0 +1,41 @@
+# Optional CPU perception profile; base API remains usable without this profile.
+# Existing opencv-python-headless satisfies both libraries' cv2 API at runtime.
+# Install AFTER requirements.txt with:
+#   python -m pip install --no-deps -r requirements.perception.txt
+# This complete support-package list avoids a second conflicting cv2 wheel.
+# The upstream packages declare opencv-python; the existing headless cv2 runtime
+# supplies its used APIs, so pip check still reports that metadata-only mismatch.
+supervision==0.26.1
+trackers==2.6.1
+onnxruntime==1.23.2
+scipy==1.18.1
+matplotlib==3.11.2
+PyYAML==6.0.3
+defusedxml==0.7.1
+pillow==13.0.0
+requests==2.34.2
+tqdm==4.70.1
+rich==15.0.0
+pydeprecate==0.13.0
+coloredlogs==15.0.1
+flatbuffers==25.12.19
+protobuf==7.36.2
+sympy==1.14.0
+charset-normalizer==3.5.2
+contourpy==1.4.0
+cycler==0.12.1
+fonttools==4.67.0
+humanfriendly==10.0
+kiwisolver==1.5.1
+markdown-it-py==4.2.0
+mdurl==0.1.2
+mpmath==1.3.0
+pyparsing==3.3.3
+pyreadline3==3.5.6; sys_platform == "win32"
+python-dateutil==2.9.0.post0
+six==1.17.0
+urllib3==2.8.0
+# OWLv2 additionally needs CPU Torch and Transformers. Use the existing
+# .venv-train or a separate CPU worker environment; no CUDA allocation is used.
+# pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# pip install transformers==4.57.6 safetensors

@@ -1,0 +1,100 @@
+{
+  "purpose": "Synthetic local annotation workflow contract smoke only; no detection quality measurement",
+  "generated_at_utc": "2026-10-17T17:48:48.830051+00:00",
+  "network_used": false,
+  "real_media_used": false,
+  "human_reviews_created": 0,
+  "review_metadata_simulated": true,
+  "synthetic_fixture_imported_only_under_tmp": true,
+  "production_annotation_directory_modified": false,
+  "synthetic_source": {
+    "duration_sec": 2.0,
+    "frame_count": 10,
+    "width": 320,
+    "height": 240
+  },
+  "steps": {
+    "generate_synthetic_video": {
+      "return_code": 0,
+      "elapsed_sec": 0.065064,
+      "aggregate_result": {}
+    },
+    "init": {
+      "return_code": 0,
+      "elapsed_sec": 0.338109,
+      "aggregate_result": {
+        "status": "draft_created",
+        "events": 0,
+        "source_frames": 10
+      }
+    },
+    "validate_draft": {
+      "return_code": 0,
+      "elapsed_sec": 0.270534,
+      "aggregate_result": {
+        "status": "valid",
+        "schema_version": "forte-reviewed-events/1",
+        "reviewed": false,
+        "events": 0,
+        "supported_events": 0,
+        "coverage": "partial"
+      }
+    },
+    "validate_synthetic_fixture": {
+      "return_code": 0,
+      "elapsed_sec": 0.252736,
+      "aggregate_result": {
+        "status": "valid",
+        "schema_version": "forte-reviewed-events/1",
+        "reviewed": true,
+        "events": 0,
+        "supported_events": 0,
+        "coverage": "complete"
+      }
+    },
+    "import_synthetic_fixture": {
+      "return_code": 0,
+      "elapsed_sec": 0.24684,
+      "aggregate_result": {
+        "status": "imported",
+        "schema_version": "forte-reviewed-events/1",
+        "reviewed": true,
+        "events": 0,
+        "supported_events": 0,
+        "coverage": "complete"
+      }
+    },
+    "reimport_idempotent": {
+      "return_code": 0,
+      "elapsed_sec": 0.321885,
+      "aggregate_result": {
+        "status": "imported",
+        "schema_version": "forte-reviewed-events/1",
+        "reviewed": true,
+        "events": 0,
+        "supported_events": 0,
+        "coverage": "complete"
+      }
+    },
+    "evaluate_synthetic_fixture": {
+      "return_code": 0,
+      "elapsed_sec": 0.304076,
+      "aggregate_result": {
+        "status": "evaluated",
+        "matched_sources": 1,
+        "missing_predictions": 0
+      }
+    }
+  },
+  "evaluation": {
+    "matched_sources": 1,
+    "video_confusion_denominator": 0,
+    "unknown_video_labels": 1,
+    "video_precision": null,
+    "video_recall": null,
+    "human_evidence_relevance": null,
+    "review_rate": 1.0,
+    "failure_rate": 0.0
+  },
+  "limitation": "Simulated review fields exercise import guards on generated color video. This fixture is not a human annotation, training label, or model benchmark."
+}

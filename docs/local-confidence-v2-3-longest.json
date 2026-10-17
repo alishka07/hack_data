@@ -1,0 +1,39 @@
+{
+  "purpose": "Local confidence operation, not accuracy/calibration validation",
+  "duration_sec": 142.533,
+  "status": "done",
+  "elapsed_sec": 206.438,
+  "jury_evidence_validated": 0,
+  "pipeline_version": "2.3",
+  "scoring_version": "2.1",
+  "catalog_items": 32,
+  "episode_assessments": 55,
+  "confidence_observations": 106,
+  "changed_scores": 4,
+  "fractional_scores": 4,
+  "event_increases": 3,
+  "procedure_decreases": 1,
+  "finding_count": 0,
+  "windows": 18,
+  "job_id": "d3d73be7-887b-40ea-b41f-250b1242d190",
+  "pipeline_timings": {
+    "probe_and_sampling_sec": 12.472,
+    "screening_sec": 160.706,
+    "verification_and_evidence_sec": 32.637,
+    "total_sec": 205.814,
+    "candidate_count": 4,
+    "finding_count": 0,
+    "review_queue_count": 4,
+    "action_calls": 6,
+    "context_calls": 0,
+    "refinement_passes": 3,
+    "review_reason_counts": {
+      "action_uncertain": 3,
+      "review_only_rule": 1,
+      "omission_unverifiable_from_sparse_samples": 1
+    },
+    "action_refinement_passes": 3,
+    "confidence_observation_count": 106,
+    "noninitial_score_count": 4
+  }
+}

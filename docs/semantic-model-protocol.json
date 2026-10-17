@@ -1,0 +1,49 @@
+{
+  "protocol_version": 1,
+  "purpose": "Exploratory semantic-observable model after unsuccessful image and motion baselines",
+  "evaluation": "Same 5 outer stratified video-hash folds, 4 inner folds, seed 17",
+  "unseen_external_test": false,
+  "encoder": {
+    "model": "Existing frozen local Qwen3-VL-4B-Instruct Q4_K_M",
+    "semantic_version": "physical_tristate_v1",
+    "source_frames": 8,
+    "sampling": "uniform full-video source PTS, no label anchors or filenames in prompts",
+    "height": 448,
+    "max_long_side": 960,
+    "context_tokens": 8192,
+    "max_output_tokens": 768,
+    "features": "26 fixed observable yes/no/unknown physical scene and action facts",
+    "fingerprint": "Exact prompt, schema, sampling, model weights, projector and runtime binary hashes"
+  },
+  "supervised_head": {
+    "candidate_families": ["main", "pairs"],
+    "main": "26 signed observables plus 26 unknown masks",
+    "pairs": "main plus 325 known-known pair products",
+    "regularization_candidates": [0.3, 3.0, 30.0],
+    "pca": false,
+    "class_weight": "balanced",
+    "fit": "train-only standardization and regularized logistic coefficients",
+    "selection": "Inner video OOF balanced accuracy, minimum class recall, larger regularization, simpler family",
+    "threshold": "Inner OOF balanced accuracy, minimum class recall, nearest 0.5, higher threshold"
+  },
+  "nested_rules": [
+    "The pixel-only encoder never sees workbook labels, case identifiers, timestamp anchors, rule decisions or annotation text",
+    "Fit every transform and head inside the current training partition",
+    "Jointly select feature family, regularization and threshold using inner OOF predictions only",
+    "Aggregate outer decisions at each fold's frozen threshold",
+    "The final full-data artifact and selection threshold are separate from nested evaluation metrics",
+    "Legacy semantic caches with different prompts or sampling are not reused"
+  ],
+  "inference_gate": {
+    "minimum_nested_balanced_accuracy": 0.75,
+    "minimum_nested_recall": 0.7,
+    "minimum_nested_specificity": 0.7,
+    "minimum_balanced_accuracy_gain_over_baseline": 0.05
+  },
+  "limits": [
+    "The same inspected corpus has informed multiple model attempts; nested folds do not undo model-iteration bias",
+    "Exact byte hashes do not separate cameras, sessions or near-duplicates",
+    "Unknown observations remain distinct from visible negative evidence",
+    "Binary predictions do not establish a regulatory category, supervised box or exact event time"
+  ]
+}

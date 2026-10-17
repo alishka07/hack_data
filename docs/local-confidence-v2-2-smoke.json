@@ -1,0 +1,18 @@
+{
+  "purpose": "Local confidence operation, not accuracy/calibration validation",
+  "duration_sec": 11.633,
+  "status": "done",
+  "elapsed_sec": 10.187,
+  "jury_evidence_validated": 0,
+  "pipeline_version": "2.2",
+  "scoring_version": "2.0",
+  "catalog_items": 32,
+  "episode_assessments": 6,
+  "confidence_observations": 6,
+  "changed_scores": 0,
+  "fractional_scores": 0,
+  "event_increases": 0,
+  "procedure_decreases": 0,
+  "finding_count": 0,
+  "windows": 1
+}

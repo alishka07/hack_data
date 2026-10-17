@@ -1,0 +1,144 @@
+{
+  "purpose": "Real local service operation; not an accuracy evaluation",
+  "samples": [
+    {
+      "duration_sec": 142.533,
+      "status": "done",
+      "upload_to_result_sec": 97.875,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 18,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 9.045,
+        "screening_sec": 69.441,
+        "verification_and_evidence_sec": 18.501,
+        "total_sec": 96.987,
+        "candidate_count": 3,
+        "finding_count": 0,
+        "review_queue_count": 3,
+        "action_calls": 3,
+        "context_calls": 0,
+        "refinement_passes": 0,
+        "review_reason_counts": {
+          "action_uncertain": 3
+        }
+      },
+      "pipeline_version": "2.0",
+      "review_queue_count": 3
+    },
+    {
+      "duration_sec": 25.267,
+      "status": "done",
+      "upload_to_result_sec": 23.266,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 3,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 1.758,
+        "screening_sec": 13.065,
+        "verification_and_evidence_sec": 7.245,
+        "total_sec": 22.068,
+        "candidate_count": 2,
+        "finding_count": 0,
+        "review_queue_count": 2,
+        "action_calls": 2,
+        "context_calls": 0,
+        "refinement_passes": 0,
+        "review_reason_counts": {
+          "action_uncertain": 2
+        }
+      },
+      "pipeline_version": "2.0",
+      "review_queue_count": 2
+    },
+    {
+      "duration_sec": 11.633,
+      "status": "done",
+      "upload_to_result_sec": 10.204,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 1,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 0.913,
+        "screening_sec": 5.099,
+        "verification_and_evidence_sec": 3.561,
+        "total_sec": 9.574,
+        "candidate_count": 1,
+        "finding_count": 0,
+        "review_queue_count": 1,
+        "action_calls": 1,
+        "context_calls": 0,
+        "refinement_passes": 0,
+        "review_reason_counts": {
+          "action_uncertain": 1
+        }
+      },
+      "pipeline_version": "2.0",
+      "review_queue_count": 1
+    },
+    {
+      "duration_sec": 33.333,
+      "status": "done",
+      "upload_to_result_sec": 25.281,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 4,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 2.251,
+        "screening_sec": 15.247,
+        "verification_and_evidence_sec": 7.474,
+        "total_sec": 24.971,
+        "candidate_count": 2,
+        "finding_count": 0,
+        "review_queue_count": 2,
+        "action_calls": 2,
+        "context_calls": 0,
+        "refinement_passes": 0,
+        "review_reason_counts": {
+          "action_uncertain": 2
+        }
+      },
+      "pipeline_version": "2.0",
+      "review_queue_count": 2
+    },
+    {
+      "duration_sec": 23.8,
+      "status": "done",
+      "upload_to_result_sec": 16.297,
+      "under_300_sec": true,
+      "evidence_frames_validated": 0,
+      "finding_count": 0,
+      "windows_completed": 3,
+      "pipeline_timings": {
+        "probe_and_sampling_sec": 1.758,
+        "screening_sec": 10.181,
+        "verification_and_evidence_sec": 3.732,
+        "total_sec": 15.671,
+        "candidate_count": 1,
+        "finding_count": 0,
+        "review_queue_count": 1,
+        "action_calls": 1,
+        "context_calls": 0,
+        "refinement_passes": 0,
+        "review_reason_counts": {
+          "action_uncertain": 1
+        }
+      },
+      "pipeline_version": "2.0",
+      "review_queue_count": 1
+    }
+  ],
+  "checks": {
+    "authentication": true,
+    "corrupt_input_rejected": true,
+    "busy_rejected": true,
+    "exact_jury_schema": true,
+    "emitted_evidence_frames_validated": 0,
+    "evidence_check_scope": "Every emitted frame is checked; zero frames does not test real positive-event evidence"
+  },
+  "all_completed": true
+}

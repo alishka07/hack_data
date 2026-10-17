@@ -1,0 +1,614 @@
+{
+  "version": "2026-10-18-v5",
+  "scope": "Bounded candidate catalog for teller/cash-unit CCTV and supporting manual checks; not all bank-law violations. No private video or label descriptions used.",
+  "scoring_note": "Continuous scoring 2.0: an event starts at 0 and rises to max(previous score, 100 * source-grounded model occurrence confidence); a required procedure starts at 100 and falls to min(previous score, 100 * (1 - source-grounded model confidence in correct completion)). Model self-confidence is uncalibrated, not a measured probability. Source-linked window estimates may update before the separate legal gate, including with unknown applicability; missing evidence leaves the prior score unchanged. Eleven visible checks (3 automatic event checks and 8 review-only procedures) are assessed in existing window calls; 22 manual checks retain their initial scores unless external evidence is supplied. New observed episode starts create fresh assessments; windows without established episode boundaries are isolated. The summary retains the highest remaining estimate across relevant assessed episodes, including pending procedures; correlated frames are never added. Initial values and unresolved scores do not establish occurrence, omission, compliance or applicability. Evidenced not-applicable items are excluded; related event/procedure views must not be counted as independent breaches.",
+  "source_note": "32 entries retain their prior_primary_review provenance from 2026-10-17. One additional vault storage review item has no curated legal clause mapping and is explicitly unmapped_review_only. No new legal clause is represented as verified.",
+  "items": [
+    {
+      "id": "active_intake_departure",
+      "label": "Cashier leaves during unfinished client cash intake",
+      "scoring_kind": "event_occurrence",
+      "initial_score": 0,
+      "paragraph": "22",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z114",
+      "trigger": "Observed actual departure during an established unfinished client intake.",
+      "required_evidence": "Referenced active intake before departure, movement outside the workstation, relevant after-context and established service boundary.",
+      "exceptions": [
+        "Standing, reaching, workstation movement, occlusion, and completed service do not establish departure during unfinished intake.",
+        "The clause is situated in the intake subsection; no universal rule across every operation."
+      ],
+      "automation": "automatic_when_supported",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "cash_intake_without_client_presence",
+      "label": "Client intake acceptance or counting while client demonstrably absent",
+      "scoring_kind": "event_occurrence",
+      "initial_score": 0,
+      "paragraph": "20",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z111",
+      "trigger": "Observed acceptance/counting of identified client cash during established client absence.",
+      "required_evidence": "Visible client zone and client absence; visible relevant cash acceptance/counting; established intake and cash lineage.",
+      "exceptions": [
+        "Cropped-out or occluded client means unknown, not absent.",
+        "Cash-stock preparation and preliminary payout counting are different operations.",
+        "Counting may use equipment."
+      ],
+      "automation": "automatic_when_supported",
+      "legal_status": "prior_primary_review",
+      "related_ids": [
+        "intake_client_presence_required"
+      ]
+    },
+    {
+      "id": "previous_transaction_cash_exposed",
+      "label": "Previous client's cash exposed during a new transaction",
+      "scoring_kind": "event_occurrence",
+      "initial_score": 0,
+      "paragraph": "20",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z111",
+      "trigger": "Identified previously accepted client cash remains outside designated storage while a distinct next transaction proceeds.",
+      "required_evidence": "Two transaction boundaries, referenced cash continuity and visible storage relationship.",
+      "exceptions": [
+        "Multiple piles belonging to one client and unidentified teller stock are insufficient.",
+        "An open drawer alone does not establish a breach or an always-locked obligation."
+      ],
+      "automation": "automatic_when_supported",
+      "legal_status": "prior_primary_review",
+      "related_ids": [
+        "previous_cash_stored"
+      ]
+    },
+    {
+      "id": "intake_banknotes_counted",
+      "label": "Count intake banknotes note by note",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "19(2), 20",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+      "trigger": "Required when banknotes are accepted in client cash intake.",
+      "required_evidence": "Complete relevant intake interval; visible cash handling or counting equipment; client presence and visibility assessment.",
+      "exceptions": [
+        "Manual and machine counting both qualify.",
+        "Sparse samples cannot establish a skipped count; occluded or earlier action remains unknown."
+      ],
+      "automation": "review_only",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "intake_coins_counted",
+      "label": "Count intake coins piece by piece",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "19(2), 20",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+      "trigger": "Required when coins are accepted in client cash intake.",
+      "required_evidence": "Identified coins and complete relevant intake sequence; suitable view of manual/equipment counting.",
+      "exceptions": [
+        "Equipment may perform counting.",
+        "Small coins and equipment results may be unresolvable on CCTV; unknown is not omitted."
+      ],
+      "automation": "review_only",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "intake_client_presence_required",
+      "label": "Accept and count intake cash in client presence",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "20",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z111",
+      "trigger": "Required during client intake acceptance and counting; procedural counterpart of cash_intake_without_client_presence.",
+      "required_evidence": "Visible relevant client zone throughout the actual action and established intake context.",
+      "exceptions": [
+        "Client outside frame is unknown.",
+        "Do not double-count this procedural view and its related event view as independent breaches."
+      ],
+      "automation": "review_only",
+      "legal_status": "prior_primary_review",
+      "related_ids": [
+        "cash_intake_without_client_presence"
+      ]
+    },
+    {
+      "id": "previous_cash_stored",
+      "label": "Store previously accepted client cash in designated storage",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "20",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z111",
+      "trigger": "Required after acceptance before earlier cash would remain at a new client's workstation; counterpart of previous_transaction_cash_exposed.",
+      "required_evidence": "Established cash lineage, transaction transition, and storage placement or proven exposure.",
+      "exceptions": [
+        "Designated storage includes key-lockable drawers/cabinets/safes etc.; an open drawer alone is insufficient.",
+        "Do not double-count the related event and procedural views."
+      ],
+      "automation": "review_only",
+      "legal_status": "prior_primary_review",
+      "related_ids": [
+        "previous_transaction_cash_exposed"
+      ]
+    },
+    {
+      "id": "loose_cash_issued_without_observed_count",
+      "label": "Count prepared payout cash in client presence before handover",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "31(4), subject to 32",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z144",
+      "trigger": "Required for the applicable prepared payout; failure is assessed only over the full required preparation-to-handover opportunity.",
+      "required_evidence": "Established payout, cash type/packaging, visible required interval and handover; check manual/equipment count and exceptions.",
+      "exceptions": [
+        "Qualifying intact packs and full straps may be issued by their marked amounts.",
+        "Qualifying packaged coins may be issued by labeled amounts.",
+        "Earlier or offscreen count and unresolved packaging mean unknown; sparse footage cannot prove omission."
+      ],
+      "automation": "review_only",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "damaged_incomplete_strap_count",
+      "label": "Count notes from incomplete or damaged straps note by note",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "32",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z150",
+      "trigger": "Required when payout notes come from an incomplete or damaged strap.",
+      "required_evidence": "Readable packaging completeness/integrity, visible extraction and complete required count interval.",
+      "exceptions": [
+        "Intact full straps and qualifying packs have marked-amount exceptions.",
+        "Packaging details may be below camera resolution."
+      ],
+      "automation": "review_only",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "incomplete_coin_sack_count",
+      "label": "Count coins from incomplete sacks piece by piece",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "32",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z150",
+      "trigger": "Required when payout coins come from an incomplete sack.",
+      "required_evidence": "Clearly identified packaging type/completeness and the complete relevant counting sequence.",
+      "exceptions": [
+        "Qualifying intact coin packaging has label-based issue provisions.",
+        "Coin quantities or packaging completeness may be visually unresolved."
+      ],
+      "automation": "review_only",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "payout_bank_packaging",
+      "label": "Issue cash in the permitted bank packaging",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "33",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+      "trigger": "Required for cash issuance under this packaging provision.",
+      "required_evidence": "Readable packaging origin plus applicable bank/interbank contractual policy; footage can support packaging observations.",
+      "exceptions": [
+        "NBK or another bank's packaging may be permitted where the relevant interbank contract specifies claims handling.",
+        "Other-bank packaging alone is not proof of breach."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "client_recount_supervision",
+      "label": "Provide cashier/controller presence for client recount",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "35",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+      "trigger": "Applies when the client recounts cash at the cashier window or the designated client counting room.",
+      "required_evidence": "Established client recount, designated location, and confirmed cashier/controller oversight.",
+      "exceptions": [
+        "Does not require an extra supervisor for every ordinary transaction.",
+        "A person's official role and off-camera supervision may require manual confirmation."
+      ],
+      "automation": "review_only",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "backoffice_processing_control",
+      "label": "Provide controlling-worker presence for applicable cash processing",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "42",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z163",
+      "trigger": "Applies to covered counting, sorting and packing outside the client-intake/payout exception.",
+      "required_evidence": "Established non-client processing activity, applicable work area and manually confirmed supervisory role/presence.",
+      "exceptions": [
+        "Client cash intake and payout are expressly excepted.",
+        "Appearance or people count cannot establish official supervisory roles; off-camera oversight may be unresolved."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "intake_authenticity_validity_checks",
+      "label": "Check intake cash genuineness and payment validity",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "19(2)",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+      "trigger": "Required as part of client cash intake.",
+      "required_evidence": "Equipment configuration, operating records or manual review establishing the actual checks; CCTV only supports visible handling.",
+      "exceptions": [
+        "No separate visible UV device is insufficient proof of missing checks.",
+        "Internal automatic checks cannot be inferred from machine appearance."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "machine_security_features",
+      "label": "Configure counting/sorting equipment to check the required security features",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "41",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+      "trigger": "Applicable counting/sorting equipment must check at least two machine-readable security features.",
+      "required_evidence": "Equipment specifications, enabled configuration and operating records; physical appearance alone is inadequate.",
+      "exceptions": [
+        "A visible machine does not establish its enabled features or whether checking was disabled."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "intake_client_identification",
+      "label": "Perform required client identification for cash intake",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "19(1)",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z104",
+      "trigger": "Required as part of the intake procedure.",
+      "required_evidence": "Authorized identification records or confirmed workflow completion; CCTV may show an interaction but cannot validate identity.",
+      "exceptions": [
+        "Identity-document data or permitted digital-documents-service data may be used.",
+        "No visible physical card does not imply failure; earlier/off-camera identification is possible.",
+        "No face recognition or person identification is permitted."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "payout_client_identification",
+      "label": "Perform required client identification for cash payout",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "31(1)",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z144",
+      "trigger": "Required as part of the payout procedure.",
+      "required_evidence": "Authorized identification records or confirmed workflow completion.",
+      "exceptions": [
+        "Permitted digital-document data can substitute for a physical document.",
+        "No visible physical card is not proof of failure.",
+        "No face recognition or identity inference."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "intake_confirmation_document",
+      "label": "Provide the document confirming cash intake",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "19(6), with digital-document provisions in 10-1",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+      "trigger": "Required for the completed intake operation.",
+      "required_evidence": "Transaction record and permitted document-delivery evidence; paper handover is only one possible observation.",
+      "exceptions": [
+        "Electronic or otherwise permitted delivery may occur outside CCTV view.",
+        "Absence of a paper receipt cannot establish omission."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "payout_confirmation_document",
+      "label": "Provide the document confirming cash payout",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "31(6), with digital-document provisions in 10-1",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+      "trigger": "Required for the completed payout operation.",
+      "required_evidence": "Transaction record and permitted document-delivery evidence.",
+      "exceptions": [
+        "Electronic delivery and off-camera delivery cannot be excluded visually.",
+        "Absence of paper alone is insufficient."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "personal_belongings_in_cash_unit",
+      "label": "Prohibited personal belongings brought into the cash unit",
+      "scoring_kind": "event_occurrence",
+      "initial_score": 0,
+      "paragraph": "12",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z81",
+      "trigger": "Potential occurrence only after item ownership, cash-unit zone and the clause's scope are established.",
+      "required_evidence": "Manual ownership/purpose confirmation, applicable zone, visible item and exception review.",
+      "exceptions": [
+        "Medicines, medical devices and qualifying communication devices are expressly excepted.",
+        "A cup does not establish contents, personal ownership or prohibition; beverage classification is not verified."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "personal_cash_valuables_in_cash_unit",
+      "label": "Personal cash or valuables kept in the cash unit",
+      "scoring_kind": "event_occurrence",
+      "initial_score": 0,
+      "paragraph": "12",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z81",
+      "trigger": "Potential occurrence if money/valuables are positively established as a worker's personal property in the applicable cash-unit zone.",
+      "required_evidence": "Manual provenance/ownership and zone confirmation; CCTV alone cannot distinguish bank/client/personal cash.",
+      "exceptions": [
+        "Do not infer personal ownership from a pocket, bag, pile or a transfer alone.",
+        "Applicable internal storage arrangements must be reviewed."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "personal_device_exception_eligibility",
+      "label": "Verify personal communication device qualifies for the exception",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "12",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z81",
+      "trigger": "A personal communication device in the cash unit needs the exception's no-photo/video-function condition and applicable ownership/context.",
+      "required_evidence": "Device specifications, ownership/purpose and cash-unit location; review by an authorized human.",
+      "exceptions": [
+        "Certain communication devices without photo/video functions are permitted.",
+        "Bank equipment cannot be presumed personal; external appearance does not establish all device capabilities."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "vault_entry_authorization",
+      "label": "Entry to vault/safe-room without established authorization",
+      "scoring_kind": "event_occurrence",
+      "initial_score": 0,
+      "paragraph": "75",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z221",
+      "trigger": "Potential occurrence only when vault/safe-room classification and the person's authorization status are known.",
+      "required_evidence": "Access register, responsible-person appointments or head's administrative authorization plus referenced entry.",
+      "exceptions": [
+        "Others may enter when authorized by bank-head administrative document and accompanied as prescribed.",
+        "Appearance, anonymous role guesses or people count cannot establish unauthorized status."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "vault_other_person_accompaniment",
+      "label": "Accompany authorized other persons entering the vault/safe-room",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "75",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z221",
+      "trigger": "Applies when an authorized person other than those responsible for safekeeping enters.",
+      "required_evidence": "Authorized role/status records, established vault entry and confirmed accompanying responsible person.",
+      "exceptions": [
+        "Scope depends on role and authorization records, not visual appearance.",
+        "Do not infer role from clothing or identity recognition."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "keys_stamps_secure_handling",
+      "label": "Apply internal safeguards for keys, codes, stamps and valuables",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "80",
+      "document": "NBK Board Resolution No. 231 of 29 November 2019",
+      "source_url": "https://adilet.zan.kz/rus/docs/V1900019680#z226",
+      "trigger": "Applies to handling/storage governed by internal documents ensuring no unauthorized use.",
+      "required_evidence": "The actual internal bank policy, role/access records and relevant visible handling.",
+      "exceptions": [
+        "The public clause does not specify a universal exact key-placement rule.",
+        "A key left on a surface or code-entry gesture alone does not establish an internal-policy breach."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "cash_unit_isolation",
+      "label": "Maintain required cash-unit isolation and closable entrances",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "8",
+      "document": "NBK Board Resolution No. 14 of 24 February 2020",
+      "source_url": "https://adilet.zan.kz/rus/docs/V2000020075",
+      "trigger": "Applies to the designated cash unit's construction and isolation.",
+      "required_evidence": "Confirmed room plan, site inspection and closable staff entrance; any permitted loading entrance must be accounted for.",
+      "exceptions": [
+        "Additional closable loading entrance is permitted under the clause.",
+        "A temporarily open door is not a universal always-closed violation."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "cashier_room_lockable_entrance",
+      "label": "Provide a separate lockable entrance to each cashier room",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "16(1)",
+      "document": "NBK Board Resolution No. 14 of 24 February 2020",
+      "source_url": "https://adilet.zan.kz/rus/docs/V2000020075",
+      "trigger": "Applies where the scene is an applicable cashier room under the current temporary wording.",
+      "required_evidence": "Confirmed room classification, construction plan and door lockability inspection.",
+      "exceptions": [
+        "Lockability is a capability requirement, not proof that every observed open/unlocked moment is a breach.",
+        "Use the temporary wording effective through 2026-12-31, not the replacement 2027 wording."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "cash_transfer_device_serviceable",
+      "label": "Provide a serviceable prescribed front cash-transfer device",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "16(4)",
+      "document": "NBK Board Resolution No. 14 of 24 February 2020",
+      "source_url": "https://adilet.zan.kz/rus/docs/V2000020075",
+      "trigger": "Applies to the prescribed cashier-room front arrangement.",
+      "required_evidence": "Confirmed room/protected-window configuration and device presence/serviceability inspection.",
+      "exceptions": [
+        "The reviewed provision permits a lower front collection bunker for more than ten banknote packs and/or five coin sacks; confirm the exact applicable configuration.",
+        "An open tabletop alone does not establish the legally required room arrangement.",
+        "Use applicable temporary wording through 2026-12-31."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "cash_transfer_controls_inside",
+      "label": "Keep prescribed transfer-device operating/fixing mechanism inside cashier room",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "16(4)",
+      "document": "NBK Board Resolution No. 14 of 24 February 2020",
+      "source_url": "https://adilet.zan.kz/rus/docs/V2000020075",
+      "trigger": "Applies to the specified cash-transfer device and room arrangement.",
+      "required_evidence": "Known device type, room boundary and verified control/fixing-mechanism location.",
+      "exceptions": [
+        "Requires confirmed configuration; a video cannot establish hidden mechanisms.",
+        "Do not infer an independent bypass prohibition merely from a tabletop handover."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "counting_room_lockable_entrance",
+      "label": "Provide a lockable entrance to the separate counting room",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "19(1)",
+      "document": "NBK Board Resolution No. 14 of 24 February 2020",
+      "source_url": "https://adilet.zan.kz/rus/docs/V2000020075",
+      "trigger": "Applies to a designated separate counting room.",
+      "required_evidence": "Confirmed room classification and site inspection of the lockable entrance.",
+      "exceptions": [
+        "A visible open door does not prove absence of lockability or an always-locked requirement."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "collection_loading_access_restriction",
+      "label": "Restrict third-party access during applicable collection loading",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "21",
+      "document": "NBK Board Resolution No. 14 of 24 February 2020",
+      "source_url": "https://adilet.zan.kz/rus/docs/V2000020075",
+      "trigger": "Applies to a collection loading box/loading area, not an ordinary teller transaction.",
+      "required_evidence": "Established collection-loading scene, designated area, access boundaries and role/authorization confirmation.",
+      "exceptions": [
+        "Anonymous appearance cannot establish whether someone is a third party or authorized.",
+        "Ordinary client service is outside this loading-area scope."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "collection_loading_view_restriction",
+      "label": "Provide required protection from third-party view of collection loading",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "21",
+      "document": "NBK Board Resolution No. 14 of 24 February 2020",
+      "source_url": "https://adilet.zan.kz/rus/docs/V2000020075",
+      "trigger": "Applies to the designated collection loading arrangement.",
+      "required_evidence": "Site plan, sightline inspection and confirmed loading configuration.",
+      "exceptions": [
+        "Camera visibility of an activity does not establish visibility to unauthorized third parties.",
+        "Not an ordinary teller-counter rule."
+      ],
+      "automation": "manual",
+      "legal_status": "prior_primary_review",
+      "related_ids": []
+    },
+    {
+      "id": "vault_cash_segregation_storage",
+      "label": "Review cash segregation and storage arrangement at a vault or safe",
+      "scoring_kind": "required_procedure",
+      "initial_score": 100,
+      "paragraph": "unmapped",
+      "document": "No curated public clause mapping",
+      "source_url": "",
+      "trigger": "Visible cash placement, removal or arrangement at an identified storage container.",
+      "required_evidence": "Reviewed vault classification, storage policy, cash provenance and source-linked placement or arrangement.",
+      "exceptions": [
+        "Visual proximity does not establish ownership or a required segregation policy.",
+        "No legal violation is inferred without an actual applicable policy or curated clause."
+      ],
+      "automation": "manual",
+      "legal_status": "unmapped_review_only",
+      "related_ids": []
+    }
+  ],
+  "automatic_coverage": "Production automatic findings remain limited to the three legal event rules. The separate fixed visual scenario registry covers nine review scenarios, including seven supplied category names, without asserting legal applicability. The broader 33-item catalog includes one explicitly unmapped vault-storage review item; procedure completion and hidden/manual conditions remain unknown unless positively verified."
+}

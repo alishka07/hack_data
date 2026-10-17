@@ -8,3 +8,5 @@
 *.cmd text eol=crlf
 runtime/** -whitespace
 /runtime/GroundingDINO-local/weights/* -text
+
+docs/third-party-licenses/** -whitespace

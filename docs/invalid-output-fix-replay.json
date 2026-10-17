@@ -1,0 +1,14 @@
+{
+  "purpose": "Actual authenticated replay of a previously schema-failing upload",
+  "status": "done",
+  "retry_of": "bb13ca5a-6d3c-4010-9e0a-459ab5f3a7d2",
+  "job_id": "3e619653-0f10-4e5c-8c50-01412b8da32e",
+  "pipeline": "5.1",
+  "elapsed_sec": 150.689,
+  "verdict": "no_violation",
+  "active_reviews": 2,
+  "dismissed_hypotheses": 1,
+  "unresolved_checks": 0,
+  "error_code": null,
+  "corrected_decisions": 2
+}

@@ -1,0 +1,53 @@
+{
+  "purpose": "Actual local model/vision-projector and schema compatibility, not accuracy",
+  "synthetic_frames": 4,
+  "cpu_requested": true,
+  "status": "verified",
+  "startup_sec": 38.704,
+  "inference_sec": 23.012,
+  "runtime": {
+    "backend": "llama.cpp",
+    "model": "Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
+    "model_id": "sha256:02930445479007b5ad6d1d9f52f15e451e3335cd8f3515cae48717c6cdb901d3",
+    "identity_source": "hashed managed assets",
+    "asset_hashes": [
+      {
+        "bytes": 4683072032,
+        "sha256": "9258bf05b12686d097ff3b6b18d968ab393649780aa2b3cd67fec43d50554392"
+      },
+      {
+        "bytes": 853119712,
+        "sha256": "2ddb555391bae966e412deab9e07b58afa18bcc06930ba0f1c78a3695ab9e506"
+      },
+      {
+        "bytes": 9216,
+        "sha256": "f24c6a9272ed48c6e71d80abb91b9ca35e79dcaf4759207149e72a1d2f8e105a"
+      }
+    ],
+    "attached": false,
+    "context_tokens": 8192,
+    "max_frames": 8,
+    "max_pixels_per_frame": 401408,
+    "min_pixels_per_frame": 50176,
+    "max_output_tokens": 2048,
+    "gpu_layers": "0",
+    "projector_cpu": true,
+    "structured_output": "JSON schema constrained decoding plus host validation",
+    "strict_schema_decoding": true,
+    "local_only": true,
+    "server": {}
+  },
+  "structured_response": {
+    "rule_id": "synthetic_visual_test",
+    "state": "visible",
+    "frame_indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "confidence": 1
+  },
+  "basic_observation_passed": true,
+  "total_sec": 62.575
+}

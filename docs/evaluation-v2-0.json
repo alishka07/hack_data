@@ -1,0 +1,152 @@
+{
+  "purpose": "Exploratory local development evaluation; not held-out accuracy or generalization evidence",
+  "pipeline_version_filter": "2.0",
+  "generated_at_utc": "2026-10-17T10:56:58.550050+00:00",
+  "warnings": [
+    "Workbook bytes differ from the original planning audit. The immutable current snapshot is evaluated; prior all-blank-reference results are superseded.",
+    "Exploratory development-only results; clips were not held out and do not establish generalization.",
+    "Ground truth has not been human-validated. Point annotations do not define event intervals or event categories.",
+    "The service covers four reviewed visual rule categories; broad workbook violation labels may describe unsupported events.",
+    "Category accuracy, evidence relevance and legal applicability require human review and are not scored here.",
+    "Only the latest completed job per byte-identical video group is evaluated; active jobs are ignored as predictions."
+  ],
+  "reference": {
+    "workbook_sha256": "4faf595a2679c2f8b2b41be041de59bb3c11cd6e77d57226f1cbcc14b2cc3e75",
+    "sheet": "labels",
+    "range": "A1:C43",
+    "columns": [
+      {
+        "column": "A",
+        "header": "наименование файла",
+        "types": {
+          "str": 42
+        },
+        "nonblank_rows": 42
+      },
+      {
+        "column": "B",
+        "header": "таймстемп",
+        "types": {
+          "str": 22,
+          "NoneType": 20
+        },
+        "nonblank_rows": 22
+      },
+      {
+        "column": "C",
+        "header": "нарушение / без нарушения",
+        "types": {
+          "str": 42
+        },
+        "nonblank_rows": 42
+      }
+    ],
+    "filename_column": "A",
+    "timestamp_column": "B",
+    "explicit_verdict_column": "C",
+    "explicit_binary_vocabulary": [
+      "без нарушения",
+      "нарушение"
+    ],
+    "precedence": "Explicit nonblank binary verdict is authoritative; conflicting positive timestamps invalidate a negative verdict. Blank=negative fallback applies only when the explicit verdict is absent.",
+    "label_rows": 42,
+    "positive_rows": 22,
+    "negative_rows": 20,
+    "original_video_files": 42,
+    "original_unique_hash_groups": 40,
+    "matched_unique_hash_groups": 40,
+    "duplicate_hash_groups": 2,
+    "disagreeing_timestamp_groups": 1,
+    "conflicting_binary_groups": 0,
+    "positive_groups": 21,
+    "negative_groups": 19,
+    "invalid_binary_groups": 0,
+    "row_counts": {
+      "rows": 42,
+      "timestamp_nonblank_rows": 22,
+      "parsed_timestamp_rows": 22,
+      "extracted_point_count": 22,
+      "explicit_positive_rows": 22,
+      "positive_rows": 22,
+      "timestamp_blank_rows": 20,
+      "explicit_negative_rows": 20,
+      "negative_rows": 20
+    },
+    "formula_input_cell_count": 0,
+    "ground_truth_human_validated": false,
+    "timestamp_semantics": "Weak point anchors extracted locally; not reviewed event boundaries or category labels",
+    "privacy": "No scene descriptions, original annotation text, frames, filenames or row-level labels in this aggregate audit",
+    "previous_audit_sha256": "a6e80004dde165c9294acc5cae165ab5df9aa11d5dc9e0d6b50e313da7701e4e",
+    "changed_since_prior_audit": true,
+    "blank_timestamp_fallback": "no_violation only when explicit binary verdict is absent"
+  },
+  "coverage": {
+    "completed_groups": 5,
+    "unevaluated_groups": 35,
+    "group_status_disjoint": {
+      "completed": 5,
+      "invalid_completed": 0,
+      "processing": 0,
+      "failed": 1,
+      "other_pipeline_only": 2,
+      "not_submitted": 32
+    },
+    "database_jobs_seen": 12,
+    "jobs_with_missing_upload": 0,
+    "jobs_not_matching_reference_bytes": 0,
+    "done_jobs_excluded_by_pipeline_filter": 3,
+    "completed_pipeline_versions": {
+      "2.0": 5
+    }
+  },
+  "exploratory_binary": {
+    "evaluated_groups": 5,
+    "completed_groups_excluded_for_label_issues": 0,
+    "reference_positive_groups": 21,
+    "reference_negative_groups": 19,
+    "confusion": {
+      "true_positive": 0,
+      "false_positive": 0,
+      "true_negative": 3,
+      "false_negative": 2
+    },
+    "precision": null,
+    "recall": 0.0,
+    "specificity": 1.0,
+    "f1": 0.0
+  },
+  "exploratory_localization": {
+    "status": "available",
+    "tolerance_sec": 3.0,
+    "eligible_completed_groups": 5,
+    "positive_reference_groups": 2,
+    "reference_points": 2,
+    "predicted_points": 0,
+    "completed_groups_excluded_for_disagreement": 0,
+    "completed_groups_excluded_for_missing_timestamps": 0,
+    "matched_points": 0,
+    "unmatched_reference_points": 2,
+    "unmatched_predicted_points": 0,
+    "precision": null,
+    "recall": 0.0,
+    "mean_absolute_error_sec": null
+  },
+  "exploratory_candidate_localization": {
+    "status": "available",
+    "purpose": "Proposal timing before the legal evidence gate; not a violation or legality score",
+    "tolerance_sec": 3.0,
+    "eligible_completed_groups": 5,
+    "groups_without_candidate_metadata": 0,
+    "positive_reference_groups": 2,
+    "reference_points": 2,
+    "proposal_points": 9,
+    "matched_points": 2,
+    "unmatched_reference_points": 0,
+    "recall": 1.0,
+    "mean_absolute_error_sec": 1.5
+  },
+  "supersedes": {
+    "report": "evaluation-allblank-superseded.json",
+    "reason": "Restored explicit binary labels replace the incomplete all-blank reference"
+  }
+}

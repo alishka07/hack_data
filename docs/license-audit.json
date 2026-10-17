@@ -1,0 +1,963 @@
+{
+  "client_date": "2026-10-17",
+  "python": "3.12.14",
+  "method": "Read installed license files, grant/conditions text, declared bundled notices, and primary Mozilla/NVIDIA terms; retain byte-identical copies and SHA-256.",
+  "distributions": [
+    {
+      "name": "annotated-doc",
+      "version": "0.0.5",
+      "metadata_license_expression": "MIT",
+      "reviewed_primary_license": "MIT",
+      "condition_code": "M",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/annotated_doc-0.0.5.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/annotated-doc-0.0.5/annotated_doc-0.0.5.dist-info/licenses/LICENSE",
+        "sha256": "fff170779a6acbf65abdb405c087f1cee1786691e4a96a4034517e4a504a0cdf",
+        "size_bytes": 1086
+      },
+      "grant_evidence": {
+        "line": 5,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/annotated_doc-0.0.5.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/annotated-doc-0.0.5/annotated_doc-0.0.5.dist-info/licenses/LICENSE",
+          "sha256": "fff170779a6acbf65abdb405c087f1cee1786691e4a96a4034517e4a504a0cdf",
+          "size_bytes": 1086
+        }
+      ]
+    },
+    {
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "metadata_license_expression": "MIT",
+      "reviewed_primary_license": "MIT",
+      "condition_code": "M",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/annotated_types-0.8.0.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/annotated-types-0.8.0/annotated_types-0.8.0.dist-info/licenses/LICENSE",
+        "sha256": "fe1049884b1a0d9342901e88e07f32925d24b3121d9972b6a6805fb9824b095d",
+        "size_bytes": 1083
+      },
+      "grant_evidence": {
+        "line": 5,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/annotated_types-0.8.0.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/annotated-types-0.8.0/annotated_types-0.8.0.dist-info/licenses/LICENSE",
+          "sha256": "fe1049884b1a0d9342901e88e07f32925d24b3121d9972b6a6805fb9824b095d",
+          "size_bytes": 1083
+        }
+      ]
+    },
+    {
+      "name": "anyio",
+      "version": "4.15.1",
+      "metadata_license_expression": "MIT",
+      "reviewed_primary_license": "MIT",
+      "condition_code": "M",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/anyio-4.15.1.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/anyio-4.15.1/anyio-4.15.1.dist-info/licenses/LICENSE",
+        "sha256": "5361ac9dc58f2ef5fd2e9b09c68297c17f04950909bbc8023bdb82eacf22c2b0",
+        "size_bytes": 1081
+      },
+      "grant_evidence": {
+        "line": 5,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/anyio-4.15.1.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/anyio-4.15.1/anyio-4.15.1.dist-info/licenses/LICENSE",
+          "sha256": "5361ac9dc58f2ef5fd2e9b09c68297c17f04950909bbc8023bdb82eacf22c2b0",
+          "size_bytes": 1081
+        }
+      ]
+    },
+    {
+      "name": "certifi",
+      "version": "2026.7.22",
+      "metadata_license_expression": null,
+      "reviewed_primary_license": "MPL-2.0",
+      "condition_code": "C",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/certifi-2026.7.22.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/certifi-2026.7.22/certifi-2026.7.22.dist-info/licenses/LICENSE",
+        "sha256": "e93716da6b9c0d5a4a1df60fe695b370f0695603d21f6f83f053e42cfc10caf7",
+        "size_bytes": 989
+      },
+      "grant_evidence": {
+        "line": 15,
+        "text_excerpt": "This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.  ***** END LICENSE BLOCK ***** @(#) $RCSfile: certdata.txt,v $ $Revision: 1.80 $ $Date: 2011/11/03 15:11:58 $",
+        "evidence_kind": "installed MPL notice plus official MPL 2.0 sections 2.1/3.1-3.4 and Mozilla FAQ Q5",
+        "grant_source": "https://www.mozilla.org/en-US/MPL/2.0/#2-license-grants-and-conditions"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/certifi-2026.7.22.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/certifi-2026.7.22/certifi-2026.7.22.dist-info/licenses/LICENSE",
+          "sha256": "e93716da6b9c0d5a4a1df60fe695b370f0695603d21f6f83f053e42cfc10caf7",
+          "size_bytes": 989
+        }
+      ]
+    },
+    {
+      "name": "click",
+      "version": "8.5.0",
+      "metadata_license_expression": "BSD-3-Clause",
+      "reviewed_primary_license": "BSD-3-Clause",
+      "condition_code": "B",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/click-8.5.0.dist-info/licenses/LICENSE.txt",
+        "retained_path": "docs/third-party-licenses/click-8.5.0/click-8.5.0.dist-info/licenses/LICENSE.txt",
+        "sha256": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+        "size_bytes": 1475
+      },
+      "grant_evidence": {
+        "line": 3,
+        "text_excerpt": "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:  1.  Redistributions of source code must retain the above copyright     notice, this list of conditions and the following disclaimer.",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/click-8.5.0.dist-info/licenses/LICENSE.txt",
+          "retained_path": "docs/third-party-licenses/click-8.5.0/click-8.5.0.dist-info/licenses/LICENSE.txt",
+          "sha256": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+          "size_bytes": 1475
+        }
+      ]
+    },
+    {
+      "name": "colorama",
+      "version": "0.4.6",
+      "metadata_license_expression": null,
+      "reviewed_primary_license": "BSD-3-Clause",
+      "condition_code": "B",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/colorama-0.4.6.dist-info/licenses/LICENSE.txt",
+        "retained_path": "docs/third-party-licenses/colorama-0.4.6/colorama-0.4.6.dist-info/licenses/LICENSE.txt",
+        "sha256": "cac35c02686e5d04a5a7140bfb3b36e73aed496656e891102e428886d7930318",
+        "size_bytes": 1491
+      },
+      "grant_evidence": {
+        "line": 4,
+        "text_excerpt": "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:  * Redistributions of source code must retain the above copyright notice, this   list of conditions and the following disclaimer.",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/colorama-0.4.6.dist-info/licenses/LICENSE.txt",
+          "retained_path": "docs/third-party-licenses/colorama-0.4.6/colorama-0.4.6.dist-info/licenses/LICENSE.txt",
+          "sha256": "cac35c02686e5d04a5a7140bfb3b36e73aed496656e891102e428886d7930318",
+          "size_bytes": 1491
+        }
+      ]
+    },
+    {
+      "name": "et_xmlfile",
+      "version": "2.0.0",
+      "metadata_license_expression": null,
+      "reviewed_primary_license": "MIT plus retained PSF/Python notices",
+      "condition_code": "P",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/et_xmlfile-2.0.0.dist-info/LICENCE.rst",
+        "retained_path": "docs/third-party-licenses/et-xmlfile-2.0.0/et_xmlfile-2.0.0.dist-info/LICENCE.rst",
+        "sha256": "0c84bb42f5d367e5ebf9fc2dde35b16141df5ee0fdc189250858bc6c5560f69e",
+        "size_bytes": 1131
+      },
+      "grant_evidence": {
+        "line": 6,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/et_xmlfile-2.0.0.dist-info/LICENCE.python",
+          "retained_path": "docs/third-party-licenses/et-xmlfile-2.0.0/et_xmlfile-2.0.0.dist-info/LICENCE.python",
+          "sha256": "4ccdaaebc0f44b83720ec0399bb7ab329adce067dd62f73c5535a2dc05628ab2",
+          "size_bytes": 14688
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/et_xmlfile-2.0.0.dist-info/LICENCE.rst",
+          "retained_path": "docs/third-party-licenses/et-xmlfile-2.0.0/et_xmlfile-2.0.0.dist-info/LICENCE.rst",
+          "sha256": "0c84bb42f5d367e5ebf9fc2dde35b16141df5ee0fdc189250858bc6c5560f69e",
+          "size_bytes": 1131
+        }
+      ]
+    },
+    {
+      "name": "fastapi",
+      "version": "0.143.3",
+      "metadata_license_expression": "MIT",
+      "reviewed_primary_license": "MIT",
+      "condition_code": "M",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/fastapi-0.143.3.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/fastapi-0.143.3/fastapi-0.143.3.dist-info/licenses/LICENSE",
+        "sha256": "4ec89ffc81485b97fec584b2d4a961032eeffe834453894fd9c1274906cc744e",
+        "size_bytes": 1086
+      },
+      "grant_evidence": {
+        "line": 5,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/fastapi-0.143.3.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/fastapi-0.143.3/fastapi-0.143.3.dist-info/licenses/LICENSE",
+          "sha256": "4ec89ffc81485b97fec584b2d4a961032eeffe834453894fd9c1274906cc744e",
+          "size_bytes": 1086
+        }
+      ]
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "metadata_license_expression": null,
+      "reviewed_primary_license": "MIT",
+      "condition_code": "M",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/h11-0.16.0.dist-info/licenses/LICENSE.txt",
+        "retained_path": "docs/third-party-licenses/h11-0.16.0/h11-0.16.0.dist-info/licenses/LICENSE.txt",
+        "sha256": "37db5bb85926db28a427a25867f10b1232003aea1be69ccb851138adb8e6f361",
+        "size_bytes": 1124
+      },
+      "grant_evidence": {
+        "line": 5,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/h11-0.16.0.dist-info/licenses/LICENSE.txt",
+          "retained_path": "docs/third-party-licenses/h11-0.16.0/h11-0.16.0.dist-info/licenses/LICENSE.txt",
+          "sha256": "37db5bb85926db28a427a25867f10b1232003aea1be69ccb851138adb8e6f361",
+          "size_bytes": 1124
+        }
+      ]
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9",
+      "metadata_license_expression": "BSD-3-Clause",
+      "reviewed_primary_license": "BSD-3-Clause",
+      "condition_code": "B",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/httpcore-1.0.9.dist-info/licenses/LICENSE.md",
+        "retained_path": "docs/third-party-licenses/httpcore-1.0.9/httpcore-1.0.9.dist-info/licenses/LICENSE.md",
+        "sha256": "fdcb59154c74cbaba16a11242f7740bea9f23d6feb5547917d8c5f94a80392a5",
+        "size_bytes": 1518
+      },
+      "grant_evidence": {
+        "line": 4,
+        "text_excerpt": "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:  * Redistributions of source code must retain the above copyright notice, this   list of conditions and the following disclaimer.",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/httpcore-1.0.9.dist-info/licenses/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/httpcore-1.0.9/httpcore-1.0.9.dist-info/licenses/LICENSE.md",
+          "sha256": "fdcb59154c74cbaba16a11242f7740bea9f23d6feb5547917d8c5f94a80392a5",
+          "size_bytes": 1518
+        }
+      ]
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1",
+      "metadata_license_expression": null,
+      "reviewed_primary_license": "BSD-3-Clause",
+      "condition_code": "B",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/httpx-0.28.1.dist-info/licenses/LICENSE.md",
+        "retained_path": "docs/third-party-licenses/httpx-0.28.1/httpx-0.28.1.dist-info/licenses/LICENSE.md",
+        "sha256": "4ec59d544f12b5f539a3a716fd321ac58ccd8030b465221f2c880200cdf28d8d",
+        "size_bytes": 1508
+      },
+      "grant_evidence": {
+        "line": 4,
+        "text_excerpt": "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:  * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.  * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/httpx-0.28.1.dist-info/licenses/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/httpx-0.28.1/httpx-0.28.1.dist-info/licenses/LICENSE.md",
+          "sha256": "4ec59d544f12b5f539a3a716fd321ac58ccd8030b465221f2c880200cdf28d8d",
+          "size_bytes": 1508
+        }
+      ]
+    },
+    {
+      "name": "idna",
+      "version": "3.20",
+      "metadata_license_expression": "BSD-3-Clause",
+      "reviewed_primary_license": "BSD-3-Clause",
+      "condition_code": "B",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/idna-3.20.dist-info/licenses/LICENSE.md",
+        "retained_path": "docs/third-party-licenses/idna-3.20/idna-3.20.dist-info/licenses/LICENSE.md",
+        "sha256": "1a9a4f0e3d479a27240ddd59a9137a66ab4a0f9dfdc8ca6188cc0bfd85187f04",
+        "size_bytes": 1541
+      },
+      "grant_evidence": {
+        "line": 6,
+        "text_excerpt": "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:  1. Redistributions of source code must retain the above copyright    notice, this list of conditions and the following disclaimer.",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/idna-3.20.dist-info/licenses/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/idna-3.20/idna-3.20.dist-info/licenses/LICENSE.md",
+          "sha256": "1a9a4f0e3d479a27240ddd59a9137a66ab4a0f9dfdc8ca6188cc0bfd85187f04",
+          "size_bytes": 1541
+        }
+      ]
+    },
+    {
+      "name": "iniconfig",
+      "version": "2.3.1",
+      "metadata_license_expression": "MIT",
+      "reviewed_primary_license": "MIT",
+      "condition_code": "M",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/iniconfig-2.3.1.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/iniconfig-2.3.1/iniconfig-2.3.1.dist-info/licenses/LICENSE",
+        "sha256": "3409fa91f7ace557894632676656e32264fe5ef7581535725dc9a23774551bd4",
+        "size_bytes": 1098
+      },
+      "grant_evidence": {
+        "line": 5,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/iniconfig-2.3.1.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/iniconfig-2.3.1/iniconfig-2.3.1.dist-info/licenses/LICENSE",
+          "sha256": "3409fa91f7ace557894632676656e32264fe5ef7581535725dc9a23774551bd4",
+          "size_bytes": 1098
+        }
+      ]
+    },
+    {
+      "name": "numpy",
+      "version": "2.5.4",
+      "metadata_license_expression": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+      "reviewed_primary_license": "BSD-3-Clause plus bundled licenses",
+      "condition_code": "N",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/LICENSE.txt",
+        "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/LICENSE.txt",
+        "sha256": "a804dff0ead9fadc5293456410bcbfc32bf024be9c4513459663fb7b442d2341",
+        "size_bytes": 45831
+      },
+      "grant_evidence": {
+        "line": 4,
+        "text_excerpt": "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:      * Redistributions of source code must retain the above copyright        notice, this list of conditions and the following disclaimer.",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/LICENSE.txt",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/LICENSE.txt",
+          "sha256": "a804dff0ead9fadc5293456410bcbfc32bf024be9c4513459663fb7b442d2341",
+          "size_bytes": 45831
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt",
+          "sha256": "d544761558b510866c21f7e8a2d5716fca76e0b98117e3b6b86314db7244d150",
+          "size_bytes": 1039
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/COPYING",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/COPYING",
+          "sha256": "aea41976c720f91bd19725c16916a1ace40eb1ea42620d340e587a5de4bbcea0",
+          "size_bytes": 704
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/_core/src/highway/LICENSE",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/_core/src/highway/LICENSE",
+          "sha256": "d208152e2777ffd0126eacc1bd21c0320d69e4e6b622d21a2a12a47e8ef73763",
+          "size_bytes": 21155
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/_core/src/multiarray/dragon4_LICENSE.txt",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/_core/src/multiarray/dragon4_LICENSE.txt",
+          "sha256": "b0fd592d4ead563148e3977e7b589169d46a5ef2ff133c755a81af880a3fc919",
+          "size_bytes": 1441
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/LICENSE.md",
+          "sha256": "a732977853530066790c42817087f4829b518dd98d340c916acbfd227e39d3cb",
+          "size_bytes": 1542
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/_core/src/umath/svml/LICENSE",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/_core/src/umath/svml/LICENSE",
+          "sha256": "585483905b13d4b42f800c55ba99e89d6e2e33ccd5f503e201c07531d148ff41",
+          "size_bytes": 1573
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/fft/pocketfft/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/fft/pocketfft/LICENSE.md",
+          "sha256": "8db000e158c162e7249787852d8c69764706502ccee725c06641b31c1e95c8af",
+          "size_bytes": 1523
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/linalg/lapack_lite/LICENSE.txt",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/linalg/lapack_lite/LICENSE.txt",
+          "sha256": "19060ef465e1797d682ee0fc3081bd25ab1395e995e43d25c9d13c95d9a3cd6b",
+          "size_bytes": 2314
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/ma/LICENSE",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/ma/LICENSE",
+          "sha256": "d78dbb208b80d92b4d333e41a4baae50d12444f46e53199fa7726a91de6e2da7",
+          "size_bytes": 1616
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/random/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/random/LICENSE.md",
+          "sha256": "b4bc2f4fa1c95778f1ed3dd8f14706bece399475b978f9f34b5d3cd72521b48a",
+          "size_bytes": 3582
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/random/src/distributions/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/random/src/distributions/LICENSE.md",
+          "sha256": "cf5619f25b112d5ce7c896efffc8e610bcb345dfadcc19f2c1460aa48fff2c9e",
+          "size_bytes": 2805
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/random/src/mt19937/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/random/src/mt19937/LICENSE.md",
+          "sha256": "92c10699884321f1c2947fe2a70ab23b0fbf1507f756d89dd08f38c61fc3d4fa",
+          "size_bytes": 2986
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/random/src/pcg64/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/random/src/pcg64/LICENSE.md",
+          "sha256": "41190663b77bee5302386495a07b7eabfbfa571aa0ae2f11da6764162062fc4f",
+          "size_bytes": 1176
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/random/src/philox/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/random/src/philox/LICENSE.md",
+          "sha256": "322ac46d870c8aeead6c53adcccc839296fb3c8e456eae155081297daf7f8013",
+          "size_bytes": 1540
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/random/src/sfc64/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/random/src/sfc64/LICENSE.md",
+          "sha256": "28cad82ce1379dc529df30da78ec012d7d0d1d576b03ddcb93388aee53659f59",
+          "size_bytes": 1253
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy-2.5.4.dist-info/licenses/numpy/random/src/splitmix64/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy-2.5.4.dist-info/licenses/numpy/random/src/splitmix64/LICENSE.md",
+          "sha256": "454ec7350e478e037061850b67395753b425b1cb0a34bbc26290b020bf89d763",
+          "size_bytes": 340
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy/_core/include/numpy/random/LICENSE.txt",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy/_core/include/numpy/random/LICENSE.txt",
+          "sha256": "d544761558b510866c21f7e8a2d5716fca76e0b98117e3b6b86314db7244d150",
+          "size_bytes": 1039
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy/ma/LICENSE",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy/ma/LICENSE",
+          "sha256": "d78dbb208b80d92b4d333e41a4baae50d12444f46e53199fa7726a91de6e2da7",
+          "size_bytes": 1616
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/numpy/random/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/numpy-2.5.4/numpy/random/LICENSE.md",
+          "sha256": "b4bc2f4fa1c95778f1ed3dd8f14706bece399475b978f9f34b5d3cd72521b48a",
+          "size_bytes": 3582
+        }
+      ]
+    },
+    {
+      "name": "opencv-python-headless",
+      "version": "5.0.0.93",
+      "metadata_license_expression": null,
+      "reviewed_primary_license": "MIT wrapper; Apache-2.0 OpenCV; bundled licenses",
+      "condition_code": "O",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/opencv_python_headless-5.0.0.93.dist-info/LICENSE.txt",
+        "retained_path": "docs/third-party-licenses/opencv-python-headless-5.0.0.93/opencv_python_headless-5.0.0.93.dist-info/LICENSE.txt",
+        "sha256": "edef0fac1eb08d29d34563f724742e078da2513e196133a12c6ad9ff01e26107",
+        "size_bytes": 1090
+      },
+      "grant_evidence": {
+        "line": 5,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/cv2/LICENSE-3RD-PARTY.txt",
+          "retained_path": "docs/third-party-licenses/opencv-python-headless-5.0.0.93/cv2/LICENSE-3RD-PARTY.txt",
+          "sha256": "c1d60169b55cee56452b227c2fd2a7b9ddda3dd3741065f1c6201072be73fadb",
+          "size_bytes": 183251
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/cv2/LICENSE.txt",
+          "retained_path": "docs/third-party-licenses/opencv-python-headless-5.0.0.93/cv2/LICENSE.txt",
+          "sha256": "edef0fac1eb08d29d34563f724742e078da2513e196133a12c6ad9ff01e26107",
+          "size_bytes": 1090
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/opencv_python_headless-5.0.0.93.dist-info/LICENSE-3RD-PARTY.txt",
+          "retained_path": "docs/third-party-licenses/opencv-python-headless-5.0.0.93/opencv_python_headless-5.0.0.93.dist-info/LICENSE-3RD-PARTY.txt",
+          "sha256": "c1d60169b55cee56452b227c2fd2a7b9ddda3dd3741065f1c6201072be73fadb",
+          "size_bytes": 183251
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/opencv_python_headless-5.0.0.93.dist-info/LICENSE.txt",
+          "retained_path": "docs/third-party-licenses/opencv-python-headless-5.0.0.93/opencv_python_headless-5.0.0.93.dist-info/LICENSE.txt",
+          "sha256": "edef0fac1eb08d29d34563f724742e078da2513e196133a12c6ad9ff01e26107",
+          "size_bytes": 1090
+        }
+      ]
+    },
+    {
+      "name": "openpyxl",
+      "version": "3.1.5",
+      "metadata_license_expression": null,
+      "reviewed_primary_license": "MIT",
+      "condition_code": "M",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/openpyxl-3.1.5.dist-info/LICENCE.rst",
+        "retained_path": "docs/third-party-licenses/openpyxl-3.1.5/openpyxl-3.1.5.dist-info/LICENCE.rst",
+        "sha256": "0c84bb42f5d367e5ebf9fc2dde35b16141df5ee0fdc189250858bc6c5560f69e",
+        "size_bytes": 1131
+      },
+      "grant_evidence": {
+        "line": 6,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/openpyxl-3.1.5.dist-info/LICENCE.rst",
+          "retained_path": "docs/third-party-licenses/openpyxl-3.1.5/openpyxl-3.1.5.dist-info/LICENCE.rst",
+          "sha256": "0c84bb42f5d367e5ebf9fc2dde35b16141df5ee0fdc189250858bc6c5560f69e",
+          "size_bytes": 1131
+        }
+      ]
+    },
+    {
+      "name": "opentelemetry-api",
+      "version": "1.45.1",
+      "metadata_license_expression": "Apache-2.0",
+      "reviewed_primary_license": "Apache-2.0",
+      "condition_code": "A",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/opentelemetry_api-1.45.1.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/opentelemetry-api-1.45.1/opentelemetry_api-1.45.1.dist-info/licenses/LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "size_bytes": 11357
+      },
+      "grant_evidence": {
+        "line": 66,
+        "text_excerpt": "2. Grant of Copyright License. Subject to the terms and conditions of       this License, each Contributor hereby grants to You a perpetual,       worldwide, non-exclusive, no-charge, royalty-free, irrevocable       copyright license to reproduce, prepare Derivative Works of,       publicly display, publicly perform, sublicense, and distribute the       Work and such Derivative Works in Source or Object form.",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/opentelemetry_api-1.45.1.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/opentelemetry-api-1.45.1/opentelemetry_api-1.45.1.dist-info/licenses/LICENSE",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "size_bytes": 11357
+        }
+      ]
+    },
+    {
+      "name": "packaging",
+      "version": "26.3",
+      "metadata_license_expression": "Apache-2.0 OR BSD-2-Clause",
+      "reviewed_primary_license": "Apache-2.0 OR BSD-2-Clause (BSD option reviewed)",
+      "condition_code": "B2",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/packaging-26.3.dist-info/licenses/LICENSE.BSD",
+        "retained_path": "docs/third-party-licenses/packaging-26.3/packaging-26.3.dist-info/licenses/LICENSE.BSD",
+        "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5",
+        "size_bytes": 1344
+      },
+      "grant_evidence": {
+        "line": 4,
+        "text_excerpt": "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:      1. Redistributions of source code must retain the above copyright notice,        this list of conditions and the following disclaimer.",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/packaging-26.3.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/packaging-26.3/packaging-26.3.dist-info/licenses/LICENSE",
+          "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48",
+          "size_bytes": 197
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/packaging-26.3.dist-info/licenses/LICENSE.APACHE",
+          "retained_path": "docs/third-party-licenses/packaging-26.3/packaging-26.3.dist-info/licenses/LICENSE.APACHE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "size_bytes": 10174
+        },
+        {
+          "installed_path": ".venv/Lib/site-packages/packaging-26.3.dist-info/licenses/LICENSE.BSD",
+          "retained_path": "docs/third-party-licenses/packaging-26.3/packaging-26.3.dist-info/licenses/LICENSE.BSD",
+          "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5",
+          "size_bytes": 1344
+        }
+      ]
+    },
+    {
+      "name": "pluggy",
+      "version": "1.7.0",
+      "metadata_license_expression": null,
+      "reviewed_primary_license": "MIT",
+      "condition_code": "M",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/pluggy-1.7.0.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/pluggy-1.7.0/pluggy-1.7.0.dist-info/licenses/LICENSE",
+        "sha256": "d6b65e6c213a5d0b577911d34d6e5949b9f59d76c238c5071a2f3fc16cfb2606",
+        "size_bytes": 1110
+      },
+      "grant_evidence": {
+        "line": 5,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/pluggy-1.7.0.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/pluggy-1.7.0/pluggy-1.7.0.dist-info/licenses/LICENSE",
+          "sha256": "d6b65e6c213a5d0b577911d34d6e5949b9f59d76c238c5071a2f3fc16cfb2606",
+          "size_bytes": 1110
+        }
+      ]
+    },
+    {
+      "name": "pydantic",
+      "version": "2.12.5",
+      "metadata_license_expression": "MIT",
+      "reviewed_primary_license": "MIT",
+      "condition_code": "M",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/pydantic-2.12.5.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/pydantic-2.12.5/pydantic-2.12.5.dist-info/licenses/LICENSE",
+        "sha256": "a9e186f3ca16b5eef84318e7a701721351a00cb7b8ae3a4394b67b49e3529ef3",
+        "size_bytes": 1129
+      },
+      "grant_evidence": {
+        "line": 5,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/pydantic-2.12.5.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/pydantic-2.12.5/pydantic-2.12.5.dist-info/licenses/LICENSE",
+          "sha256": "a9e186f3ca16b5eef84318e7a701721351a00cb7b8ae3a4394b67b49e3529ef3",
+          "size_bytes": 1129
+        }
+      ]
+    },
+    {
+      "name": "pydantic_core",
+      "version": "2.41.5",
+      "metadata_license_expression": "MIT",
+      "reviewed_primary_license": "MIT",
+      "condition_code": "M",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/pydantic_core-2.41.5.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/pydantic-core-2.41.5/pydantic_core-2.41.5.dist-info/licenses/LICENSE",
+        "sha256": "fbe7f615f18d135c07000e5a86325db27f42c7729699ef166ac1f7a3f4586bf4",
+        "size_bytes": 1101
+      },
+      "grant_evidence": {
+        "line": 5,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/pydantic_core-2.41.5.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/pydantic-core-2.41.5/pydantic_core-2.41.5.dist-info/licenses/LICENSE",
+          "sha256": "fbe7f615f18d135c07000e5a86325db27f42c7729699ef166ac1f7a3f4586bf4",
+          "size_bytes": 1101
+        }
+      ]
+    },
+    {
+      "name": "Pygments",
+      "version": "2.21.0",
+      "metadata_license_expression": "BSD-2-Clause",
+      "reviewed_primary_license": "BSD-3-Clause",
+      "condition_code": "B",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/pygments-2.21.0.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/pygments-2.21.0/pygments-2.21.0.dist-info/licenses/LICENSE",
+        "sha256": "a9d66f1d526df02e29dce73436d34e56e8632f46c275bbdffc70569e882f9f17",
+        "size_bytes": 1331
+      },
+      "grant_evidence": {
+        "line": 4,
+        "text_excerpt": "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:  * Redistributions of source code must retain the above copyright   notice, this list of conditions and the following disclaimer.",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/pygments-2.21.0.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/pygments-2.21.0/pygments-2.21.0.dist-info/licenses/LICENSE",
+          "sha256": "a9d66f1d526df02e29dce73436d34e56e8632f46c275bbdffc70569e882f9f17",
+          "size_bytes": 1331
+        }
+      ]
+    },
+    {
+      "name": "pytest",
+      "version": "9.1.1",
+      "metadata_license_expression": "MIT",
+      "reviewed_primary_license": "MIT",
+      "condition_code": "M",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/pytest-9.1.1.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/pytest-9.1.1/pytest-9.1.1.dist-info/licenses/LICENSE",
+        "sha256": "ca836a5f9ecca3b2f350230faa20a48fb8b145653b5568d784862df864706b9b",
+        "size_bytes": 1091
+      },
+      "grant_evidence": {
+        "line": 5,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/pytest-9.1.1.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/pytest-9.1.1/pytest-9.1.1.dist-info/licenses/LICENSE",
+          "sha256": "ca836a5f9ecca3b2f350230faa20a48fb8b145653b5568d784862df864706b9b",
+          "size_bytes": 1091
+        }
+      ]
+    },
+    {
+      "name": "python-multipart",
+      "version": "0.0.32",
+      "metadata_license_expression": "Apache-2.0",
+      "reviewed_primary_license": "Apache-2.0",
+      "condition_code": "A",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/python_multipart-0.0.32.dist-info/licenses/LICENSE.txt",
+        "retained_path": "docs/third-party-licenses/python-multipart-0.0.32/python_multipart-0.0.32.dist-info/licenses/LICENSE.txt",
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "size_bytes": 11358
+      },
+      "grant_evidence": {
+        "line": 67,
+        "text_excerpt": "2. Grant of Copyright License. Subject to the terms and conditions of       this License, each Contributor hereby grants to You a perpetual,       worldwide, non-exclusive, no-charge, royalty-free, irrevocable       copyright license to reproduce, prepare Derivative Works of,       publicly display, publicly perform, sublicense, and distribute the       Work and such Derivative Works in Source or Object form.",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/python_multipart-0.0.32.dist-info/licenses/LICENSE.txt",
+          "retained_path": "docs/third-party-licenses/python-multipart-0.0.32/python_multipart-0.0.32.dist-info/licenses/LICENSE.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "size_bytes": 11358
+        }
+      ]
+    },
+    {
+      "name": "starlette",
+      "version": "1.8.0",
+      "metadata_license_expression": "BSD-3-Clause",
+      "reviewed_primary_license": "BSD-3-Clause",
+      "condition_code": "B",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/starlette-1.8.0.dist-info/licenses/LICENSE.md",
+        "retained_path": "docs/third-party-licenses/starlette-1.8.0/starlette-1.8.0.dist-info/licenses/LICENSE.md",
+        "sha256": "dcb95677a02240243187e964f941847d19b17821cf99e5afae684fab328c19bf",
+        "size_bytes": 1518
+      },
+      "grant_evidence": {
+        "line": 4,
+        "text_excerpt": "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:  * Redistributions of source code must retain the above copyright notice, this   list of conditions and the following disclaimer.",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/starlette-1.8.0.dist-info/licenses/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/starlette-1.8.0/starlette-1.8.0.dist-info/licenses/LICENSE.md",
+          "sha256": "dcb95677a02240243187e964f941847d19b17821cf99e5afae684fab328c19bf",
+          "size_bytes": 1518
+        }
+      ]
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "metadata_license_expression": "PSF-2.0",
+      "reviewed_primary_license": "PSF-2.0 plus historical Python notices",
+      "condition_code": "P",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/typing_extensions-4.16.0.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/typing-extensions-4.16.0/typing_extensions-4.16.0.dist-info/licenses/LICENSE",
+        "sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf",
+        "size_bytes": 13936
+      },
+      "grant_evidence": {
+        "line": 82,
+        "text_excerpt": "grants Licensee a nonexclusive, royalty-free, world-wide license to reproduce, analyze, test, perform and/or display publicly, prepare derivative works, distribute, and otherwise use Python alone or in any derivative version, provided, however, that PSF's License Agreement and PSF's notice of copyright, i.e., \"Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Python Software Foundation;",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/typing_extensions-4.16.0.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/typing-extensions-4.16.0/typing_extensions-4.16.0.dist-info/licenses/LICENSE",
+          "sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf",
+          "size_bytes": 13936
+        }
+      ]
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.4",
+      "metadata_license_expression": "MIT",
+      "reviewed_primary_license": "MIT",
+      "condition_code": "M",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/typing_inspection-0.4.4.dist-info/licenses/LICENSE",
+        "retained_path": "docs/third-party-licenses/typing-inspection-0.4.4/typing_inspection-0.4.4.dist-info/licenses/LICENSE",
+        "sha256": "804b59b25f2c31bd278f9202a19ae49a3945aa2664387e2d0a128c7cacc61ec3",
+        "size_bytes": 1090
+      },
+      "grant_evidence": {
+        "line": 5,
+        "text_excerpt": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/typing_inspection-0.4.4.dist-info/licenses/LICENSE",
+          "retained_path": "docs/third-party-licenses/typing-inspection-0.4.4/typing_inspection-0.4.4.dist-info/licenses/LICENSE",
+          "sha256": "804b59b25f2c31bd278f9202a19ae49a3945aa2664387e2d0a128c7cacc61ec3",
+          "size_bytes": 1090
+        }
+      ]
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "metadata_license_expression": "BSD-3-Clause",
+      "reviewed_primary_license": "BSD-3-Clause",
+      "condition_code": "B",
+      "primary_license": {
+        "installed_path": ".venv/Lib/site-packages/uvicorn-0.54.0.dist-info/licenses/LICENSE.md",
+        "retained_path": "docs/third-party-licenses/uvicorn-0.54.0/uvicorn-0.54.0.dist-info/licenses/LICENSE.md",
+        "sha256": "efe1acf3e62fb99c288b0ec73e5a773b7268ef4320fe757ea994214e4b63c371",
+        "size_bytes": 1526
+      },
+      "grant_evidence": {
+        "line": 4,
+        "text_excerpt": "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:  * Redistributions of source code must retain the above copyright notice, this   list of conditions and the following disclaimer.",
+        "evidence_kind": "installed license text"
+      },
+      "license_files": [
+        {
+          "installed_path": ".venv/Lib/site-packages/uvicorn-0.54.0.dist-info/licenses/LICENSE.md",
+          "retained_path": "docs/third-party-licenses/uvicorn-0.54.0/uvicorn-0.54.0.dist-info/licenses/LICENSE.md",
+          "sha256": "efe1acf3e62fb99c288b0ec73e5a773b7268ef4320fe757ea994214e4b63c371",
+          "size_bytes": 1526
+        }
+      ]
+    }
+  ],
+  "runtime_notice_files": [
+    {
+      "installed_path": "tmp/planning/local_runtime/llama-LICENSE.txt",
+      "retained_path": "docs/third-party-licenses/llama.cpp-b11707/llama-LICENSE.txt",
+      "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d",
+      "size_bytes": 1078,
+      "component": "llama.cpp-b11707",
+      "reviewed_license": "MIT"
+    },
+    {
+      "installed_path": "tmp/planning/local_runtime/bin/LICENSE-LLVM-OpenMP",
+      "retained_path": "docs/third-party-licenses/llama.cpp-b11707/LICENSE-LLVM-OpenMP",
+      "sha256": "fdad1758a9e1f9d5a81e18879b3406772115edc92c24bfa36b70c654f325e8e4",
+      "size_bytes": 19741,
+      "component": "llama.cpp-b11707",
+      "reviewed_license": "Apache-2.0 WITH LLVM-exception and retained legacy notices"
+    },
+    {
+      "installed_path": "tmp/planning/local_runtime/Qwen-model-card.md",
+      "retained_path": "docs/third-party-licenses/qwen3-vl-4b-pinned/Qwen-model-card.md",
+      "sha256": "3d50ed633b88c42249a9fd9771899d751b3e75a57f698ec35babcd3a0c7b6110",
+      "size_bytes": 5789,
+      "component": "qwen3-vl-4b-pinned",
+      "reviewed_license": "Model card declares Apache-2.0"
+    },
+    {
+      "installed_path": "tmp/planning/local_runtime/Qwen-code-LICENSE",
+      "retained_path": "docs/third-party-licenses/qwen3-vl-4b-pinned/Qwen-code-LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "size_bytes": 11357,
+      "component": "qwen3-vl-4b-pinned",
+      "reviewed_license": "Apache-2.0 code notice; separate provenance from model card"
+    },
+    {
+      "installed_path": "C:\\Users\\user\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-9.0.1-full_build\\LICENSE",
+      "retained_path": "docs/third-party-licenses/ffmpeg-9.0.1-gyan/LICENSE",
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+      "size_bytes": 35147,
+      "component": "external ffmpeg/ffprobe 9.0.1-full_build-www.gyan.dev",
+      "reviewed_license": "GPL-3.0-or-later; README records GPL v3 and source commit bf1b838f2a"
+    },
+    {
+      "installed_path": "C:\\Users\\user\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-9.0.1-full_build\\README.txt",
+      "retained_path": "docs/third-party-licenses/ffmpeg-9.0.1-gyan/README.txt",
+      "sha256": "9d734beeeafa8b187693880ceb2cd5f0cf436151da72cce31fb1afa1d3726b25",
+      "size_bytes": 45547,
+      "component": "external ffmpeg/ffprobe 9.0.1-full_build-www.gyan.dev",
+      "reviewed_license": "GPL-3.0-or-later; README records GPL v3 and source commit bf1b838f2a"
+    }
+  ],
+  "opencv_build_metadata": [
+    "3rdparty dependencies:       ittnotify libprotobuf libjpeg-turbo libwebp libpng libtiff libopenjp2 zlib libclapack ipphal ippiw ippicv",
+    "GUI:                           NONE",
+    "JPEG:                        build-libjpeg-turbo (ver 3.1.2-70)",
+    "WEBP:                        build (ver decoder: 0x0210, encoder: 0x0210, demux: 0x0107)",
+    "AVIF:                        NO",
+    "PNG:                         build (ver 1.6.57)",
+    "TIFF:                        build (ver 42 - 4.7.1)",
+    "JPEG 2000:                   build (ver 2.5.3)",
+    "FFMPEG:                      YES (prebuilt binaries)",
+    "avcodec:                   YES (61.19.100)",
+    "avformat:                  YES (61.7.100)",
+    "avutil:                    YES (59.39.100)",
+    "swscale:                   YES (8.3.100)",
+    "Intel IPP:                   2026.0.0 [2026.0.0]",
+    "Intel IPP IW:                sources (2026.0.0)",
+    "Lapack:                      YES (Built-In libclapack)",
+    "Protobuf:                    build (3.19.1)",
+    "Flatbuffers:                 builtin/3rdparty (25.9.23)"
+  ],
+  "remaining_gaps": [
+    "Installed OpenCV reports Intel IPP 2026.0.0, while its bundled third-party notice labels Intel IPP 2021 Update 10 and October 2022 license terms; exact-version notice coverage is not independently established.",
+    "The llama.cpp runtime bundle includes cudart64_13.dll, cublas64_13.dll and cublasLt64_13.dll without a local NVIDIA EULA copy. Official current CUDA terms were checked; exact delivered-version terms and packaging are not fully archived.",
+    "FFmpeg vendor README identifies source commit bf1b838f2a. Complete corresponding source/build inputs for all enabled external codecs are not archived here; binary redistribution compliance is unfinished.",
+    "The Qwen pinned model card declares Apache-2.0, but no standalone model-repository LICENSE was available during planning. The retained Qwen code Apache notice is a separate source and is not relabeled as the missing model LICENSE.",
+    "This audit inspects declared license/notice files, not every statically linked binary object or patent claim. Platform-specific third-party notices are not treated as proof that every named component is present on Windows."
+  ]
+}

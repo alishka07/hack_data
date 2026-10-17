@@ -1,0 +1,69 @@
+{
+  "purpose": "Exploratory group-held-out binary training evaluation on previously inspected clips",
+  "dataset_sha256": "590d16a3120a535b2d1cd837e18e5b8cd21557305d2137791da0f69edb155d83",
+  "encoder": {
+    "encoder": "dinov2_vits14",
+    "source_revision": "7764ea0f912e53c92e82eb78a2a1631e92725fc8",
+    "source_url": "https://github.com/facebookresearch/dinov2",
+    "weights_url": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth",
+    "weights_sha256": "b938bf1bc15cd2ec0feacfe3a1bb553fe8ea9ca46a7e1d8d00217f29aef60cd9",
+    "license_file": "source/LICENSE",
+    "inference_network": "disabled"
+  },
+  "model_sha256": "55a5bbd5e8479d656d7d632279c36114c2fc3b9716c7c198650b48f28d4fc939",
+  "feature_fingerprint": "c4f880717b23d2f2cd7d1019644602c47a01f26df9603161a00ccfc5900e58d9",
+  "max_frames": 24,
+  "splits": {
+    "train": {
+      "samples": 24,
+      "true_positive": 13,
+      "false_positive": 0,
+      "true_negative": 11,
+      "false_negative": 0,
+      "accuracy": 1.0,
+      "recall": 1.0,
+      "specificity": 1.0,
+      "balanced_accuracy": 1.0
+    },
+    "validation": {
+      "samples": 8,
+      "true_positive": 4,
+      "false_positive": 3,
+      "true_negative": 1,
+      "false_negative": 0,
+      "accuracy": 0.625,
+      "recall": 1.0,
+      "specificity": 0.25,
+      "balanced_accuracy": 0.625
+    },
+    "test": {
+      "samples": 8,
+      "true_positive": 4,
+      "false_positive": 4,
+      "true_negative": 0,
+      "false_negative": 0,
+      "accuracy": 0.5,
+      "recall": 1.0,
+      "specificity": 0.0,
+      "balanced_accuracy": 0.5
+    }
+  },
+  "training_selection_metrics": {
+    "samples": 24,
+    "true_positive": 13,
+    "false_positive": 10,
+    "true_negative": 1,
+    "false_negative": 0,
+    "accuracy": 0.5833333333333334,
+    "recall": 1.0,
+    "specificity": 0.09090909090909091,
+    "balanced_accuracy": 0.5454545454545454
+  },
+  "regularization": 10.0,
+  "decision_threshold": 0.10318223541142899,
+  "approved_for_inference": false,
+  "category_training": "Not validated: only 1-3 positive video groups per named category; missing category labels are unknown",
+  "bounding_box_training": "Not trained: workbook contains no box annotations",
+  "test_scope": "8 video groups excluded from fitting, preprocessing, threshold selection and hyperparameter tuning; not an untouched external dataset",
+  "elapsed_sec": 162.266
+}
