@@ -15,7 +15,8 @@ const catalog = {version:"synthetic-catalog",items:[
   {id:"event-one",label:"Synthetic event <img src=x>",scoring_kind:"event_occurrence",initial_score:0,automation:"review_only"},
   {item_id:"procedure-one",label:"Synthetic required procedure",scoring_kind:"required_procedure",initial_score:100,automation:"review_only"},
   {id:"procedure-manual",label:"Synthetic manual procedure",scoring_kind:"required_procedure",initial_score:100,automation:"manual"},
-  {id:"procedure-na",label:"Synthetic excluded procedure",scoring_kind:"required_procedure",initial_score:100,automation:"excluded"}
+  {id:"procedure-na",label:"Synthetic excluded procedure",scoring_kind:"required_procedure",initial_score:100,automation:"excluded"},
+  {id:"cashier_eating_at_workstation",label:"Eating at cashier workstation",scoring_kind:"event_occurrence",initial_score:0,automation:"automatic_when_supported",basis:"workplace_policy",source_url:"/policies/workplace-eating"}
 ]};
 const assessments = [
   {item_id:"event-one",label:"Synthetic review-only observation",scoring_kind:"event_occurrence",initial_score:0,score:68,model_confidence:0.68,calibrated:false,applicability:"applicable",assessment:"observed",confirmed_finding:false,evidence_refs:[{source_index:10,timestamp_sec:1},{source_index:20,timestamp_sec:2}],scope:"clip_event_summary",automation:"review_only"},
@@ -46,6 +47,10 @@ ids.incompleteFlagged = "ffffffff-ffff-4fff-8fff-ffffffffffff";
 ids.incompleteMarker = "01234567-0123-4123-8123-012345678901";
 ids.incompleteStatus = "01234567-0123-4123-8123-012345678902";
 ids.incompleteCount = "01234567-0123-4123-8123-012345678903";
+ids.eating = "01234567-0123-4123-8123-012345678904";
+ids.unsafePolicy = "01234567-0123-4123-8123-012345678905";
+let unsafePolicyUrl = "javascript:alert(1)";
+const eatingDetails = {findings:[{type_id:"cashier_eating_at_workstation",timecode_sec:12.5,basis:"workplace_policy",rule_name:"User-provided workplace policy",paragraph:"Eating at the cashier workstation",rule_url:"/policies/workplace-eating"}],case_decision:{status:"confirmed",cases:[]}};
 const incompleteDetails = {processing_status:"review_incomplete",coverage:{...details.coverage,verification_complete:false,unverified_candidate_count:3},case_decision:{status:"no_supported_violation",cases:[]},review_queue:[{...hostQueue[0],status:"diagnostic",requires_review:false,reason_codes:["verification_budget_exhausted"]}]};
 const denseDetections = Array.from({length:50},(_,index) => {
   const group = Math.floor(index / 24), timestamp = 10 + group * 10;
@@ -124,13 +129,15 @@ const pageErrors = [];
         return route.fulfill({status:200,contentType:"image/jpeg",body:Buffer.from(syntheticJpeg,"base64")});
       }
       const id = pathname.split("/").at(-1);
-      const flagged = id === ids.flagged || id === ids.incompleteFlagged;
+      const eating = id === ids.eating || id === ids.unsafePolicy;
+      const flagged = id === ids.flagged || id === ids.incompleteFlagged || eating;
       if (pathname.startsWith("/api/v1/jobs/")) {
         if (id === runningId) { runningPolls += 1; return route.fulfill({json:{job_id:id,status:"processing"}}); }
-        return route.fulfill({json:{job_id:id,status:"done",verdict:flagged?"violation":"no_violation",violations:flagged?[{type:"example_supported_type",timecode_sec:10,description:"Synthetic supported event.",evidence_frames:[{timestamp_sec:10,image_base64:syntheticJpeg}]}]:[]}});
+        return route.fulfill({json:{job_id:id,status:"done",verdict:flagged?"violation":"no_violation",violations:flagged?[{type:eating?"cashier_eating_at_workstation":"example_supported_type",timecode_sec:eating?12.5:10,description:eating?"Cashier visibly eats at the workstation during work.":"Synthetic supported event.",evidence_frames:[{timestamp_sec:eating?12.5:10,image_base64:syntheticJpeg}]}]:[]}});
       }
       if (pathname.startsWith("/api/ui/jobs/")) {
         if (id === runningId) return route.fulfill({json:{job_id:id,status:"processing",stage:"verifying",progress:.54}});
+        if (eating) return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:id === ids.eating ? eatingDetails : {...eatingDetails,findings:[{...eatingDetails.findings[0],rule_url:unsafePolicyUrl}]}}});
         if (id === ids.unavailable && unavailableDetails) return route.fulfill({status:500,json:{detail:"Synthetic details failure"}});
         if ([ids.incomplete,ids.incompleteFlagged,ids.incompleteMarker,ids.incompleteStatus,ids.incompleteCount].includes(id)) {
           const incomplete = id === ids.incompleteMarker ? {coverage:{verification_complete:false},case_decision:{cases:[]}} : id === ids.incompleteStatus ? {processing_status:"review_incomplete",case_decision:{cases:[]}} : id === ids.incompleteCount ? {coverage:{unverified_candidate_count:3},case_decision:{cases:[]}} : incompleteDetails;
@@ -146,7 +153,7 @@ const pageErrors = [];
     assert.equal(activeJobRequests,0,"Do not discover a running job before a key is entered");
     assert.equal(await page.locator("#catalog-section").isVisible(),false);
     await page.fill("#api-key","synthetic-test-key");
-    await page.waitForFunction(() => document.querySelectorAll("#catalog-items tr").length === 4);
+    await page.waitForFunction(() => document.querySelectorAll("#catalog-items tr").length === 5);
     const catalogDisclosure = page.locator("#catalog-section").locator("xpath=ancestor-or-self::details[1]");
     assert.equal(await catalogDisclosure.evaluate(element => element.open),false,"The reference catalog should be collapsed by default");
     await catalogDisclosure.locator(":scope > summary").click();
@@ -157,6 +164,10 @@ const pageErrors = [];
       assert.equal(await row.locator(".score-value").textContent(),"—","Unassessed baselines must not display apparent confidence");
     }
     assert.equal(await page.locator("#catalog-items img").count(),0);
+    const policyCatalogLink = page.locator("#catalog-items a");
+    assert.equal(await policyCatalogLink.getAttribute("href"),"/policies/workplace-eating");
+    assert.equal(await policyCatalogLink.textContent(),"Read workplace policy ↗");
+    assert.match(await page.locator("#catalog-items tr").last().textContent(),/User-provided workplace policy/);
     await catalogDisclosure.locator(":scope > summary").click();
     await page.locator(".existing-job summary").click();
     const open = async id => {
@@ -253,7 +264,7 @@ const pageErrors = [];
     assert(!/event-one|procedure-one|procedure-manual/.test(await page.locator("#assessment-items").innerText()),"Raw catalog identifiers must not replace readable check labels");
     await page.locator("#assessment-items tr").nth(1).locator(".check-evidence button").click();
     assert.equal(await page.locator("#source-video").evaluate(video=>video.currentTime),3);
-    assert.match(await page.locator("#catalog-status").textContent(),/4 catalog items.*0 event checks eligible/);
+    assert.match(await page.locator("#catalog-status").textContent(),/5 catalog items.*1 event checks eligible/);
     await page.locator(".score-episodes summary").click();
     assert.match(await page.locator(".score-episodes ul").textContent(),/Episode 1.*18%.*correct-procedure confidence 82%.*Episode 2.*8%.*correct-procedure confidence 92%/);
     assert.equal(await page.locator(".finding-card").count(),0);
@@ -414,6 +425,22 @@ const pageErrors = [];
     assert.match(await sourceLink.getAttribute("rel"),/noopener/);
     await page.locator(".finding-card .evidence-button").click();
     assert.equal(await page.locator("#source-video").evaluate(video=>video.currentTime),10);
+    await open(ids.eating);
+    assert.equal(await page.locator("#verdict-title").textContent(),"Violation detected");
+    assert.equal(await page.locator(".finding-card h3").textContent(),"Eating at cashier workstation");
+    assert.match(await page.locator(".finding-card").textContent(),/Workplace policy violation/);
+    assert.match(await page.locator(".finding-card .rule-box").textContent(),/User-provided workplace policy.*Section Eating at the cashier workstation/);
+    assert.doesNotMatch(await page.locator(".finding-card").textContent(),/NBK|Paragraph|official source|regulatory reference/);
+    assert.equal(await page.locator(".finding-card .rule-box a").textContent(),"Read workplace policy ↗");
+    assert.equal(await page.locator(".finding-card .rule-box a").getAttribute("href"),"/policies/workplace-eating");
+    assert.equal(await page.locator(".finding-card .evidence-button img").count(),1);
+    await page.locator(".finding-card .evidence-button").click();
+    assert.equal(await page.locator("#source-video").evaluate(video=>video.currentTime),12.5,"Eating evidence pinpoints its source moment");
+    for (const unsafeUrl of ["javascript:alert(1)","//evil.example/policies/workplace-eating","http://forte-synthetic.test/policies/workplace-eating","/policies/workplace-eating?redirect=evil","/policies/workplace-eating#fragment","/policies/../workplace-eating","/other-policy","https://user:secret@adilet.zan.kz/rus/docs/V1900019680","https://adilet.zan.kz.evil.example/rule"]) {
+      unsafePolicyUrl = unsafeUrl;
+      await open(ids.unsafePolicy);
+      assert.equal(await page.locator(".finding-card .rule-box a").count(),0,"Only the exact local workplace policy route and trusted official hosts may be linked: " + unsafeUrl);
+    }
     await page.fill("#api-key","");
     assert.equal(await page.locator("#catalog-section").isVisible(),false);
     assert.equal(await page.locator("#catalog-items tr").count(),0);

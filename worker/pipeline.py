@@ -27,7 +27,7 @@ from worker.localization import collect_detections, deduplicate_detections
 from worker.video import AnalysisError, Budget, FrameCache, FrameRef, nearest_index, probe_video, window_targets
 
 
-PIPELINE_VERSION = "5.2"
+PIPELINE_VERSION = "5.3"
 VERIFICATION_FINISH_RESERVE_SEC = 25.
 
 
@@ -158,6 +158,7 @@ def supported_verification(answer: dict, rule: dict, frames: list[FrameRef]) -> 
     check_frames = answer.get("check_frames", {})
     evidence = answer.get("evidence_indices", [])
     confidence = answer.get("confidence", 1.0)
+    from worker.rule_gate import policy_evidence_supported
     return (type(confidence) in (int, float) and math.isfinite(confidence) and 0 < confidence <= 1
             and answer.get("decision") == "supported" and answer.get("visibility") == "clear"
             and all(checks.get(name) == "yes" for name in rule["required_checks"])
@@ -167,7 +168,8 @@ def supported_verification(answer: dict, rule: dict, frames: list[FrameRef]) -> 
             and bool(answer.get("observed_action", "").strip()) and 1 <= len(evidence) <= 3
             and not absence_only(answer.get("observed_action", ""))
             and not scenario_absence_only(rule.get("id", ""), answer.get("observed_action", ""))
-            and all(type(i) is int and 0 <= i < len(frames) for i in evidence))
+            and all(type(i) is int and 0 <= i < len(frames) for i in evidence)
+            and policy_evidence_supported(answer, rule, frames))
 
 
 SAFETY_PROMPT = (
@@ -190,7 +192,7 @@ class Pipeline:
         metadata = getattr(runtime, "metadata", None)
         self.runtime_metadata = metadata() if callable(metadata) else {"backend": "injected", "model_id": "injected"}
         if "max_frames" in self.runtime_metadata and self.runtime_metadata["max_frames"] != 8:
-            raise AnalysisError("model_input_budget", "Pipeline 5.2 requires FORTE_VLM_MAX_FRAMES=8 for complete screening")
+            raise AnalysisError("model_input_budget", "Pipeline 5.3 requires FORTE_VLM_MAX_FRAMES=8 for complete screening")
         self.thresholds = ThresholdPolicy(str(self.runtime_metadata.get("model_id", self.runtime_metadata.get("model", "unknown"))), PIPELINE_VERSION)
 
     def run(self, job: dict, progress: Callable[[str, float, str], None]) -> tuple[dict, dict, dict]:
@@ -534,6 +536,13 @@ class Pipeline:
                              "that visibly support it. Clear visibility means the relevant action/zone is readable; irrelevant "
                              "room occlusion does not make that action partial. Unverified hypothesis DATA: " + candidate.observation)
             action_prompt += "\nReturn confidence from 0 to 1 that all required visible action predicates jointly hold; do not force certainty to 0 or 1."
+            if rule.get("basis") == "workplace_policy":
+                action_prompt += ("\nWorkplace policy action DATA: " + rule["summary"]
+                                  + " Food consumption must be visible across at least two distinct source times. "
+                                  "Cite both in food_consumption_visibly_observed and cite the same operator's "
+                                  "workstation relationship. Evidence must include an actual food-consumption frame. "
+                                  "Food sitting on the table, drinking, taking medicine, touching the face, or an "
+                                  "unresolved hand-to-mouth motion is insufficient. Do not infer eating from cup contents.")
             action = ask(action_prompt, dense, verification_schema(action_rule, len(dense)), budget, 512)
             action_calls += int(not action.get("_host_unverified") or action.get("_host_request_attempted"))
             def frame_sources(frames):
@@ -608,6 +617,12 @@ class Pipeline:
                               "Confidence is your 0-to-1 estimate that all required predicates jointly hold, including applicability and exceptions; "
                               "do not force it to 0 or 1. Unverified episode DATA: " + candidate.observation
                               + "\n" + exception_prompt(rule))
+            if rule.get("basis") == "workplace_policy":
+                context_prompt += ("\nThis is the user-provided workplace policy, not a public legal clause. "
+                                   "Establish the cashier's work-table context and food consumption across at least "
+                                   "two distinct source times, with citations. An active client transaction is not "
+                                   "required; the staffed cashier workstation and work context must be visible. "
+                                   "A break room, off-duty context or uncertain work context cannot establish applicability.")
             context_answer = ask(context_prompt + "\nUnverified notes whose source frames are supplied: "
                                                + json.dumps(shown_facts(context), ensure_ascii=False),
                                                context, verification_schema(rule, len(context), include_exceptions=True), budget, 1024)
@@ -662,6 +677,9 @@ class Pipeline:
             elif supported_verification(context_answer, rule, context) and exceptions_excluded(context_answer, rule, context):
                 evidence_started = time.perf_counter()
                 action_indices = sorted(set(action["evidence_indices"]), key=lambda i: abs(dense[i].timestamp - candidate.anchor))
+                if rule.get("basis") == "workplace_policy":
+                    food_sources = {dense[i].index for i in action["check_frames"]["food_consumption_visibly_observed"]}
+                    action_indices = [i for i in action_indices if dense[i].index in food_sources]
                 selected, event_time = select_evidence(dense, action_indices, context, context_answer["evidence_indices"], candidate.anchor)
                 originals = refs.get([frame.timestamp for frame in selected], 0)
                 import cv2
@@ -682,7 +700,10 @@ class Pipeline:
                                  "timecode_sec": event_time, "start_sec": candidate.start, "end_sec": candidate.end,
                                  "description": description, "evidence_frames": evidence,
                                  "rule_id": rule["id"], "rule_name": rule["document"], "rule_url": rule["source_url"],
-                                 "paragraph": rule["paragraph"], "uncertainty": "Possible violation; human review is required"})
+                                 "paragraph": rule["paragraph"], "basis": rule.get("basis", "public_regulation"),
+                                 "uncertainty": ("Finding under the user-provided workplace policy; review the source evidence"
+                                                 if rule.get("basis") == "workplace_policy"
+                                                 else "Possible violation; human review is required")})
                 evidence_elapsed += time.perf_counter() - evidence_started
                 candidate_events.append({"timecode_sec": candidate.anchor, "type_id": candidate.type_id,
                                          "episode_id": candidate.episode_id, "disposition": "finding"})
@@ -740,7 +761,8 @@ class Pipeline:
                    "scenario_coverage": {identifier: {"screened_windows": len(observations),
                                                       "proposals": sum(row["type_id"] == identifier for row in scenario_observations),
                                                       "supported_visual_episodes": sum(row["type_id"] == identifier and row.get("visual_scenario_supported", False) for row in queue),
-                                                      "automatic_legal_path": identifier in self.rules and self.rules[identifier].get("auto_emit", True)}
+                                                      "automatic_legal_path": identifier in self.rules and self.rules[identifier].get("auto_emit", True) and self.rules[identifier].get("basis") != "workplace_policy",
+                                                      "automatic_policy_path": identifier in self.rules and self.rules[identifier].get("auto_emit", True) and self.rules[identifier].get("basis") == "workplace_policy"}
                                          for identifier in self.scenarios},
                    "calibration": self.thresholds.provenance, "runtime": self.runtime_metadata,
                    "perception": {k: v for k, v in perception.items() if k not in {"detections", "frames", "frame_samples"}},
@@ -748,7 +770,7 @@ class Pipeline:
                    "detections": detections,
                    "detection_summary": {"items": len(detections), "source_frames": len(detection_evidence),
                                          "method": perception.get("backend", "cpu_perception"), "sampled_only": True, "calibrated": False},
-                   "limitations": ["All curated visual scenarios are screened; three legal categories can emit findings, other visible scenarios require review",
+                   "limitations": ["All curated visual scenarios are screened; three legal categories and the user-provided workplace eating policy can emit supported findings; other visible scenarios require review",
                                     "Continuous scores are uncalibrated model estimates; manual and unobserved checks retain initial scores",
                                     "Procedure estimates require the correct protocol, not a generic action; uncertain boundaries remain window-scoped",
                                     "Unmapped or unconfirmed events remain in the review queue, outside the jury verdict",
@@ -770,7 +792,7 @@ class Pipeline:
                                 + [{"filename": e["filename"]} for item in queue for e in item["evidence_frames"]]
                                 + list(detection_evidence.values())),
                    "versions": {"pipeline": PIPELINE_VERSION, "scoring": "2.1", "catalog": self.catalog["version"],
-                                "model": self.runtime_metadata.get("model_id", "unknown"), "rules": "2026-10-17-v2"}}
+                                "model": self.runtime_metadata.get("model_id", "unknown"), "rules": "2026-10-18-v5.3"}}
         details["case_decision"] = build_case_decision(final, queue, attempts, details["coverage"], assessments)
         reasons = {}
         for item in queue:

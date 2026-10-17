@@ -23,8 +23,10 @@ OBSERVABLE_CHECKS = {
     "damaged_incomplete_strap_count": "Clearly incomplete/damaged payout strap identified; its notes completely counted; intact full straps exempt.",
     "incomplete_coin_sack_count": "Clearly incomplete payout coin sack identified; its coins completely counted; qualifying intact packaging exempt.",
     "client_recount_supervision": "Actual client recount at window/designated counting room with established cashier/controller oversight; ordinary transactions exempt.",
+    "cashier_eating_at_workstation": "Visible food-consumption sequence by the cashier at the operating work table during work; food presence, drinking, medicine or face touching alone insufficient.",
 }
-_EVENT_IDS = frozenset(tuple(OBSERVABLE_CHECKS)[:3])
+_EVENT_IDS = frozenset({"active_intake_departure", "cash_intake_without_client_presence",
+                        "previous_transaction_cash_exposed", "cashier_eating_at_workstation"})
 _FIELDS = {"item_id", "assessment", "confidence", "applicability", "frame_indices"}
 
 

@@ -32,17 +32,17 @@ def response(*items, visibility="clear"):
     return {"visibility": visibility, "catalog_assessments": list(items)}
 
 
-def test_only_eleven_visible_catalog_checks_enter_schema_and_compact_prompt():
+def test_twelve_visible_catalog_checks_enter_schema_and_compact_prompt():
     catalog = json.loads((ROOT / "rules/catalog.json").read_text(encoding="utf-8"))
     visible = {item["id"] for item in catalog["items"] if item["automation"] != "manual"}
     schema = catalog_observation_schema(8)
-    assert set(OBSERVABLE_CHECKS) == visible and len(visible) == 11
+    assert set(OBSERVABLE_CHECKS) == visible and len(visible) == 12
     assert set(schema["items"]["properties"]["item_id"]["enum"]) == visible
     prompt = confidence_prompt(catalog)
     assert all(identifier in prompt for identifier in visible)
     assert "UNCALIBRATED" in prompt and "weakest condition" in prompt
     assert "generic count gesture" in prompt and "unseen conditions stay unknown" in prompt
-    assert len(prompt) < 4200
+    assert len(prompt) < 4500
     with pytest.raises(ValueError):
         catalog_observation_schema(0)
 

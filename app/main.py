@@ -296,6 +296,13 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
     if web.is_dir():
         application.mount("/static", StaticFiles(directory=web), name="static")
 
+    @application.get("/policies/workplace-eating", include_in_schema=False)
+    def workplace_eating_policy():
+        path = settings.root / "rules" / "sources" / "workplace-eating.md"
+        if not path.is_file():
+            raise HTTPException(404, "Workplace policy not found")
+        return FileResponse(path, media_type="text/plain", headers={"Cache-Control": "no-store"})
+
     @application.get("/style.css", include_in_schema=False)
     def stylesheet():
         path = web / "style.css"

@@ -37,6 +37,20 @@ def _negative_only_evidence(identifier: str, evidence: str) -> bool:
     This is a conservative proposal filter, never a compliance decision. In
     particular, absent customers must not suppress a visible cash-counting cue.
     """
+    if identifier == "cashier_eating_at_workstation":
+        # Food presence and hand-to-face gestures must not become consumption
+        # merely because the model supplied affirmative structured checks.
+        lowered = evidence.lower()
+        denied = re.search(
+            r"\b(?:no|not|never|without|isn't|is not|doesn't|does not)\s+(?:visibly\s+|actually\s+)?"
+            r"(?:eat\w*|chew\w*|consum\w*\s+food|tak\w*\s+(?:a\s+)?bite)\b"
+            r"|\b(?:eating|food consumption|chewing)\s+(?:is\s+)?(?:not|unobserved|absent)\b", lowered)
+        affirmative = re.search(
+            r"\b(?:eats?|eating|chews?|chewing|bite|bites|biting)\b"
+            r"|\bconsum\w*\s+(?:food|a snack|a meal)\b"
+            r"|\b(?:brings?|bringing|raises?|raising)\b.{0,55}\b(?:food|sandwich|snack|bread)\b"
+            r".{0,30}\b(?:to|into)\s+(?:the |their |his |her )?mouth\b", lowered)
+        return bool(denied) or not bool(affirmative)
     if identifier == "active_intake_departure":
         subject = r"depart\w*|leav\w*|exit\w*"
     elif identifier == "keys_stamps_secure_handling":
@@ -78,6 +92,7 @@ def scenario_absence_only(identifier: str, text: str) -> bool:
 # Cues describe physical observations. Authorization, ownership, room designation
 # and completion of an unobserved procedure remain downstream unknowns.
 SCENARIO_CUES = {
+    "cashier_eating_at_workstation": "Cashier visibly takes bites or consumes food at the work table; food presence, drinking and face touching are insufficient.",
     "active_intake_departure": "Cash received, followed by actual workstation exit before visible service completion.",
     "cash_intake_without_client_presence": "Cash acceptance/counting while a fully visible customer position is empty.",
     "previous_transaction_cash_exposed": "Same visible cash remains on the counter as a different customer transaction begins.",

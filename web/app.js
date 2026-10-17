@@ -57,7 +57,7 @@
     const milliseconds = Math.max(0, Math.round(Number(value) * 1000));
     return `${String(Math.floor(milliseconds / 60000)).padStart(2, "0")}:${String(Math.floor(milliseconds / 1000) % 60).padStart(2, "0")}.${String(milliseconds % 1000).padStart(3, "0")}`;
   }
-  function friendly(value) { return String(value || "").replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase()); }
+  function friendly(value) { return value === "cashier_eating_at_workstation" ? "Eating at cashier workstation" : String(value || "").replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase()); }
   function syncSubmit() {
     ui["analyze-button"].disabled = !ready || busy || !file || !ui["api-key"].value.trim() || submitting || Boolean(currentJob && polling);
     ui["analyze-button"].firstChild.textContent = submitting ? "Uploading video… " : "Analyze video ";
@@ -146,6 +146,13 @@
       node("p", "score-state", "Applicability: " + (({unknown:"Unknown",applicable:"Applicable",not_applicable:"Not applicable"})[applicability] || "Unknown")));
     const automation = automationLabel(item.automation);
     if (automation) body.append(node("p", "score-state", "Review route: " + automation));
+    const source = safeRuleUrl(item.source_url);
+    if (source) {
+      const policy = item.basis === "workplace_policy";
+      if (policy) body.append(node("p", "score-state", "Basis: User-provided workplace policy"));
+      const link = node("a", "", policy ? "Read workplace policy ↗" : "Read official source ↗");
+      link.href = source; link.target = "_blank"; link.rel = "noopener noreferrer"; body.append(link);
+    }
     if (!initialOnly) {
       const refs = Array.isArray(item.evidence_refs) ? item.evidence_refs : [];
       body.append(node("p", "score-state", refs.length + " evidence " + (refs.length === 1 ? "reference" : "references")));
@@ -396,6 +403,7 @@
     if (video.readyState >= 1) apply(); else video.addEventListener("loadedmetadata", apply, { once: true });
   }
   function safeRuleUrl(value) {
+    if (value === "/policies/workplace-eating") return value;
     try {
       const url = new URL(value);
       if (url.protocol === "https:" && !url.username && !url.password && (!url.port || url.port === "443") && ["adilet.zan.kz", "old.adilet.zan.kz", "nationalbank.kz", "www.nationalbank.kz"].includes(url.hostname)) return url.href;
@@ -731,8 +739,10 @@
   }
   function renderFinding(event, detail, index) {
     const card = node("article", "finding-card card");
+    const policy = detail.basis === "workplace_policy" || detail.rule?.basis === "workplace_policy";
     const top = node("div", "finding-top"), heading = node("div");
     heading.append(node("p", "finding-index", `EVENT ${String(index + 1).padStart(2, "0")}`), node("h3", "", detail.title || detail.type_name || friendly(event.type)));
+    if (policy) heading.append(node("p", "score-state", "Workplace policy violation"));
     const time = node("button", "time-button", `▶ ${formatTime(event.timecode_sec)}`); time.type = "button"; time.setAttribute("aria-label", `Seek video to ${formatTime(event.timecode_sec)}`); time.addEventListener("click", () => seek(event.timecode_sec));
     top.append(heading, time); card.append(top, node("p", "finding-description", event.description || "Review the evidence and applicable rule."));
     const frames = Array.isArray(event.evidence_frames) ? event.evidence_frames.slice(0, 3) : [];
@@ -749,13 +759,13 @@
     const rule = detail.rule || {};
     const ruleName = detail.rule_name || rule.name || rule.title || detail.rule_id;
     const paragraph = detail.paragraph || rule.paragraph;
-    const url = safeRuleUrl(detail.rule_url || rule.url || rule.source_url);
+    const url = safeRuleUrl(detail.rule_url || detail.source_url || rule.url || rule.source_url);
     if (ruleName || paragraph || url) {
       const box = node("div", "rule-box"), content = node("div");
-      content.append(node("strong", "", ruleName || "Applicable regulatory reference"));
-      if (paragraph) content.append(node("p", "", `Paragraph ${paragraph}`));
+      content.append(node("strong", "", ruleName || (policy ? "User-provided workplace policy" : "Applicable regulatory reference")));
+      if (paragraph) content.append(node("p", "", `${policy ? "Section" : "Paragraph"} ${paragraph}`));
       if (detail.rule_explanation || rule.requirement) content.append(node("p", "", detail.rule_explanation || rule.requirement));
-      if (url) { const link = node("a", "", "Read official source ↗"); link.href = url; link.target = "_blank"; link.rel = "noopener noreferrer"; content.append(link); }
+      if (url) { const link = node("a", "", policy ? "Read workplace policy ↗" : "Read official source ↗"); link.href = url; link.target = "_blank"; link.rel = "noopener noreferrer"; content.append(link); }
       box.append(node("span", "rule-symbol", "§"), content); card.append(box);
     }
     const uncertainty = detail.uncertainty || detail.visibility_note;

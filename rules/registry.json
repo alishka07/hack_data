@@ -1,7 +1,17 @@
 {
-  "version": "2026-10-17-v2",
-  "review_notice": "Three positive-action categories are eligible for automatic findings after applicability and exception checks. Loose-cash counting omission is review-only because sparse samples cannot establish a missing procedure. Other observable events remain an unconfirmed review queue.",
+  "version": "2026-10-18-v5.3",
+  "review_notice": "Three public-clause categories and one user-provided workplace-policy category are eligible for automatic findings after applicability and exception checks. Eating at an operating cashier workstation is a workplace-policy violation, not an independently verified public-law claim. Loose-cash counting omission is review-only because sparse samples cannot establish a missing procedure. Other observable events remain an unconfirmed review queue.",
   "sources": [
+    {
+      "id": "user_workplace_policy",
+      "document": "User-provided workplace policy",
+      "title": "Cashiers must not eat at their workstation during work",
+      "source_url": "/policies/workplace-eating",
+      "effective_version": "User instruction supplied 2026-10-18",
+      "reviewed_at": "2026-10-18",
+      "review_record": "rules/sources/workplace-eating.md",
+      "provenance": "The user explicitly instructed that eating at the cashier workplace/table during work is a violation. This is an application workplace policy; no statutory clause or independent employer document is claimed."
+    },
     {
       "id": "nbk_231_2019",
       "document": "National Bank of Kazakhstan Board Resolution No. 231 of 29 November 2019",
@@ -286,6 +296,50 @@
         "Any open door in a teller video."
       ],
       "legal_review_status": "unsupported_visual_mapping_disabled"
+    },
+    {
+      "id": "cashier_eating_at_workstation",
+      "type": "cashier_eating_at_workstation",
+      "label": "Cashier eating at the workstation during work",
+      "basis": "workplace_policy",
+      "enabled": true,
+      "source_id": "user_workplace_policy",
+      "document": "User-provided workplace policy",
+      "paragraph": "Eating at the cashier workstation",
+      "source_url": "/policies/workplace-eating",
+      "effective_version": "User instruction supplied 2026-10-18",
+      "summary": "Under the user-provided workplace policy, a cashier must not eat at the operating cashier workstation/table during work. Require a clearly visible food-consumption sequence such as identified food brought to the mouth and bitten or chewed, together with the person operating the cashier workstation and a visible working context such as a staffed cash desk with work activity. A single hand-to-face gesture, drinking alone, food merely present, medicine, a break-room setting, or an unresolved off-duty context does not establish this violation. Do not infer shift schedules from appearance.",
+      "applicability": [
+        "The person visibly operates the cashier workstation; role follows workstation activity, not appearance or identity.",
+        "The relevant table or counter is a cashier workstation, with visible working context such as a staffed cash desk and work activity.",
+        "An identifiable food-consumption action is visible in a sequence, rather than inferred from food presence or a hand-to-face pose."
+      ],
+      "exceptions": [
+        "Only drinking is observed, without visible food consumption.",
+        "Food is merely present, handled, opened or moved without visible consumption.",
+        "The movement is face touching, medicine taking or another non-food action, or remains ambiguous between those actions and eating.",
+        "The person is outside the cashier workstation, in a break area, or the relevant working context is not established."
+      ],
+      "required_checks": [
+        "food_consumption_visibly_observed",
+        "person_operating_cashier_workstation",
+        "workstation_work_context_visible",
+        "relevant_context_visible"
+      ],
+      "action_checks": [
+        "food_consumption_visibly_observed",
+        "person_operating_cashier_workstation"
+      ],
+      "disabled_examples": [
+        "Food, a plate, a cup or a wrapper on the table without eating.",
+        "A cup raised to the mouth with no visible food consumption.",
+        "A hand near the face without identifiable food and a consumption sequence.",
+        "A person eating in a break room or an unresolved nonworking context."
+      ],
+      "legal_review_status": "user_provided_workplace_policy_not_public_law",
+      "auto_emit": true,
+      "automation": "automatic_when_supported",
+      "context_requirement": "Referenced before/action/after observations must establish food consumption by the cashier at an operating workstation. Work context must be visible; shift schedules and off-duty status are not inferred. All exceptions require affirmative, referenced exclusion before a finding."
     }
   ]
 }

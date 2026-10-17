@@ -204,6 +204,6 @@ def test_real_registry_prompt_keeps_existing_multimodal_context_headroom():
     from worker.scenarios import load_scenarios
     scenarios = load_scenarios(ROOT)
     prompt = scenario_prompt(scenarios)
-    assert len(scenarios) == 9 and len(prompt) < 4200
+    assert len(scenarios) == 10 and len(prompt) < 4500
     for line in prompt.split("Checklist DATA:\n", 1)[1].splitlines():
         assert len(line.split(": ", 1)[1]) <= 220

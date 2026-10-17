@@ -327,6 +327,20 @@ def test_root_html_assets_are_served_locally(service):
     assert client.get("/api-key.txt").status_code == 404
 
 
+def test_workplace_policy_source_is_local_and_separate_from_regulations(service):
+    client, _, settings = service
+    assert client.get("/policies/workplace-eating").status_code == 404
+    directory = settings.root / "rules" / "sources"
+    directory.mkdir(parents=True)
+    text = "User-provided workplace policy: Cashiers must not eat at the work table during work."
+    (directory / "workplace-eating.md").write_text(text, encoding="utf-8")
+    response = client.get("/policies/workplace-eating")
+    assert response.status_code == 200 and response.text == text
+    assert response.headers["content-type"].startswith("text/plain")
+    assert response.headers["cache-control"] == "no-store"
+    assert client.get("/policies/api-key.txt").status_code == 404
+
+
 def test_settings_save_key_and_environment_overrides(tmp_path, monkeypatch):
     monkeypatch.setenv("FORTE_ROOT", str(tmp_path))
     monkeypatch.delenv("FORTE_API_KEY", raising=False)

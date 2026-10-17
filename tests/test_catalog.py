@@ -20,7 +20,7 @@ def test_catalog_automatic_scope_matches_the_enabled_legal_gate():
     automatic = {item["id"] for item in catalog["items"] if item["automation"] == "automatic_when_supported"}
     enabled = {key for key, rule in load_rules(ROOT).items() if rule.get("auto_emit", True)}
     assert automatic == enabled
-    assert len(catalog["items"]) == 33
+    assert len(catalog["items"]) == 34
     assert all(item["initial_score"] == (0 if item["scoring_kind"] == "event_occurrence" else 100)
                for item in catalog["items"])
     items = {item["id"]: item for item in catalog["items"]}
@@ -35,6 +35,23 @@ def test_unmapped_vault_review_does_not_invent_a_clause_or_automatic_finding():
     assert item["automation"] == "manual" and item["legal_status"] == "unmapped_review_only"
     assert item["paragraph"] == "unmapped" and not item["source_url"]
     assert item["id"] not in load_rules(ROOT)
+
+
+def test_eating_policy_is_an_automatic_event_with_explicit_user_provenance():
+    item = next(item for item in load_catalog(ROOT)["items"]
+                if item["id"] == "cashier_eating_at_workstation")
+    rule = load_rules(ROOT)[item["id"]]
+    assert item["basis"] == rule["basis"] == "workplace_policy"
+    assert item["legal_status"] == rule["legal_review_status"] == "user_provided_workplace_policy_not_public_law"
+    assert item["document"] == rule["document"] == "User-provided workplace policy"
+    assert item["source_url"] == rule["source_url"] == "/policies/workplace-eating"
+    assert rule["source_id"] == "user_workplace_policy" and rule["auto_emit"] is True
+    assert item["scoring_kind"] == "event_occurrence" and item["initial_score"] == 0
+    assert item["automation"] == "automatic_when_supported"
+    rows, episodes = clip_assessments(load_catalog(ROOT), [event(identifier=item["id"])], [], 10)
+    assessment = next(row for row in rows if row["item_id"] == item["id"])
+    assert assessment["confirmed_finding"] is True and assessment["confirmed_occurrences"] == 1
+    assert episodes[0]["evidence_refs"] == [{"filename": "event-one.jpg", "timestamp_sec": 1.0}]
 
 
 def test_review_proposals_do_not_change_initial_scores_or_confirm_findings():

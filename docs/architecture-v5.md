@@ -1,4 +1,6 @@
-# Scenario-first video review, version 5.2
+# Scenario-first video review, version 5.3
+
+Version 5.3 adds the [workplace eating policy](workplace-eating.md). Supported food consumption by the operator at the cashier work table can emit a workplace-policy violation with source timestamps and JPEG evidence. Two distinct source times, visible work context, and explicit alternative-action checks are required. The source is the user's policy; the three public-regulation gates retain their existing requirements. Older completed jobs retain their original results.
 
 Version 5.2 adds [candidate consolidation and deadline-aware verification](deadline-fix.md). Each model request preserves a finishing reserve. Checks that cannot be completed remain explicitly unverified, and the UI displays Review incomplete. Full timeline screening remains required before a result can be assembled.
 

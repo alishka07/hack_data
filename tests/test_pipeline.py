@@ -73,7 +73,7 @@ def test_pipeline_multiple_events_real_jpeg_and_timestamps(synthetic_video, tmp_
     assert len(result["violations"]) == 2
     assert details["coverage"]["windows_completed"] == details["coverage"]["windows_planned"]
     assert timings["finding_count"] == 2
-    assert len(details["assessments"]) == 33
+    assert len(details["assessments"]) == 34
     observed = [row for row in details["assessments"] if row["confirmed_finding"]]
     assert len(observed) == 2 and all(row["score"] == 100 for row in observed)
     assert len(details["assessment_episodes"]) == 2
@@ -298,7 +298,7 @@ def test_uncertain_context_gets_targeted_refinement(synthetic_video, tmp_path):
     assert len(result["violations"]) == 2
     assert timings["refinement_passes"] == 2
     assert runtime.call_order[0] == "action"
-    assert details["versions"]["pipeline"] == "5.2"
+    assert details["versions"]["pipeline"] == "5.3"
 
 
 def test_action_uncertainty_is_refined_before_context_rejection(synthetic_video, tmp_path):

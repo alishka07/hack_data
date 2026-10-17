@@ -1,7 +1,35 @@
 {
-  "version": "2026-10-18-v5",
-  "semantics": "Fixed visual review taxonomy. Every supported scenario is a human-review candidate; the independent legal registry controls automatic legal findings. No example video, filename, timestamp or verdict is included.",
+  "version": "2026-10-18-v5.3",
+  "semantics": "Fixed visual review taxonomy. Scenario observations are proposals; the independent rule registry controls automatic public-clause and explicitly user-provided workplace-policy findings. No example video, filename, timestamp or verdict is included.",
   "scenarios": [
+    {
+      "id": "cashier_eating_at_workstation",
+      "label": "Cashier eating at the workstation during work",
+      "visual_checks": [
+        "food_consumption_visibly_observed",
+        "person_operating_cashier_workstation",
+        "workstation_work_context_visible",
+        "relevant_context_visible"
+      ],
+      "check_descriptions": {
+        "food_consumption_visibly_observed": "Identifiable food is brought to the mouth and visibly bitten or chewed in sequence; drinking, face touching and food presence alone do not qualify.",
+        "person_operating_cashier_workstation": "The eater visibly operates the cashier desk/table; identify the role by workstation activity, not appearance.",
+        "workstation_work_context_visible": "The relevant table is visibly a cashier workstation in use, with staff activity; a break room or unresolved off-duty context does not qualify.",
+        "relevant_context_visible": "Readable referenced before/action/after views show the food-consumption sequence and its relationship to the operating workstation."
+      },
+      "visual_cues": [
+        "food_consumption"
+      ],
+      "unknowns": [
+        "A single hand-to-face pose, medicine taking, drinking alone or food merely present cannot establish eating.",
+        "Workstation role and working context require visible support; actual shift schedules are not inferred.",
+        "The prohibition is a user-provided workplace policy, not a verified public-law clause."
+      ],
+      "related_legal_rule_ids": [],
+      "legal_source": null,
+      "disposition": "review_only",
+      "alias_of": null
+    },
     {
       "id": "previous_transaction_cash_exposed",
       "label": "Cash remains exposed across a client-service transition",

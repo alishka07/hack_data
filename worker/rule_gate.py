@@ -82,6 +82,31 @@ def exceptions_excluded(answer: dict, rule: dict, frames: list[FrameRef]) -> boo
     return True
 
 
+def policy_evidence_supported(answer: dict, rule: dict, frames: list[FrameRef]) -> bool:
+    """Require a temporal eating action linked to the same visible operator.
+
+    Multiple crops of one source image do not constitute multiple observations.
+    This validates supplied citations; it does not replace visual verification.
+    """
+    if rule.get("basis") != "workplace_policy":
+        return True
+    if rule.get("id") != "cashier_eating_at_workstation":
+        return False
+    references = answer.get("check_frames", {})
+    food = references.get("food_consumption_visibly_observed", [])
+    operator = references.get("person_operating_cashier_workstation", [])
+    evidence = answer.get("evidence_indices", [])
+    if (not all(isinstance(indices, list) for indices in (food, operator, evidence))
+            or any(type(index) is not int or not 0 <= index < len(frames)
+                   or not _valid_frame(frames[index]) for indices in (food, operator, evidence) for index in indices)):
+        return False
+    food_sources = {frames[index].index for index in food}
+    food_times = {frames[index].timestamp for index in food}
+    return (len(food_sources) >= 2 and len(food_times) >= 2
+            and bool(food_sources & {frames[index].index for index in operator})
+            and bool(food_sources & {frames[index].index for index in evidence}))
+
+
 def factual_description(rule: dict, event_time: float) -> str:
     """Render only trusted registry content and an authoritative source timestamp.
 
@@ -96,5 +121,8 @@ def factual_description(rule: dict, event_time: float) -> str:
         if not isinstance(value, str) or not value.strip():
             raise ValueError(f"A finding description requires trusted rule {key}")
         fields[key] = value.strip()
+    if rule.get("basis") == "workplace_policy":
+        return (f"Workplace-policy violation: {fields['label']}. Event at {event_time:.3f}s. "
+                f"Source: {fields['document']}, section {fields['paragraph']}. {fields['source_url']}")
     return (f"Possible violation: {fields['label']}. Event at {event_time:.3f}s. "
             f"Source: {fields['document']}, paragraph {fields['paragraph']}. {fields['source_url']}")
