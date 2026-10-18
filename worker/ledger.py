@@ -16,6 +16,7 @@ ACTION_KINDS = (
     "cash_storage_closed", "key_handling", "stamp_handling", "key_or_stamp_left_on_surface",
     "bag_or_container_handling", "phone_handling", "cash_processing_activity",
     "person_enters_processing_area", "person_leaves_processing_area", "food_consumption", "food_at_workstation",
+    "computer_screen_visible", "computer_screen_on_unattended",
 )
 
 

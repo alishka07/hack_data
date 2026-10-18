@@ -27,7 +27,7 @@ from worker.localization import collect_detections, deduplicate_detections
 from worker.video import AnalysisError, Budget, FrameCache, FrameRef, nearest_index, probe_video, window_targets
 
 
-PIPELINE_VERSION = "5.4"
+PIPELINE_VERSION = "5.5"
 VERIFICATION_FINISH_RESERVE_SEC = 25.
 
 
@@ -192,7 +192,7 @@ class Pipeline:
         metadata = getattr(runtime, "metadata", None)
         self.runtime_metadata = metadata() if callable(metadata) else {"backend": "injected", "model_id": "injected"}
         if "max_frames" in self.runtime_metadata and self.runtime_metadata["max_frames"] != 8:
-            raise AnalysisError("model_input_budget", "Pipeline 5.4 requires FORTE_VLM_MAX_FRAMES=8 for complete screening")
+            raise AnalysisError("model_input_budget", "Pipeline 5.5 requires FORTE_VLM_MAX_FRAMES=8 for complete screening")
         self.thresholds = ThresholdPolicy(str(self.runtime_metadata.get("model_id", self.runtime_metadata.get("model", "unknown"))), PIPELINE_VERSION)
 
     def run(self, job: dict, progress: Callable[[str, float, str], None]) -> tuple[dict, dict, dict]:
@@ -328,7 +328,8 @@ class Pipeline:
                            + json.dumps([{k: item[k] for k in ("timecode_sec", "reason", "source_indices", "zone", "object_kind") if k in item}
                                          for item in nearby]))
             if number == 0 and not separate_scene:
-                prompt += ("\nAlso propose visible scene_regions for workstation, customer, counter, storage, window, safe and cash_zone. "
+                prompt += ("\nAlso propose visible scene_regions for workstation, customer, counter, storage, window, safe, cash_zone and computer. "
+                           "The computer zone bounds a visible laptop or desktop monitor, not a phone or guessed screen. "
                            "Use normalized original-image xyxy boxes and actual supporting frame indices. "
                            "This is crop guidance, not proof of room type or legal boundaries. "
                            "Do not guess off-camera zones. For unknown zones return status unknown, bbox [], frame_indices [].")
@@ -527,7 +528,8 @@ class Pipeline:
                 progress("verifying", .51 + .40 * (number + 1) / max(1, len(candidates)), f"Reviewed candidate {number + 1} of {len(candidates)}")
                 continue
             dense_start, dense_end = max(0, candidate.anchor - 1), min(info.duration, candidate.anchor + 1)
-            dense = detail_views(refs, refs.get(anchored_targets(dense_start, dense_end, candidate.anchor), 640), scene, candidate.anchor, max_frames=8)
+            preferred_zone = "computer" if candidate.type_id == "workstation_departure_screen_left_on" else "counter"
+            dense = detail_views(refs, refs.get(anchored_targets(dense_start, dense_end, candidate.anchor), 640), scene, candidate.anchor, max_frames=8, preferred_zone=preferred_zone)
             action_rule = {**rule, "required_checks": rule["action_checks"]}
             action_prompt = (SAFETY_PROMPT + "\nCheck only the action in this dense ordered sequence, not its legality. "
                              "Return not_visible for an offscreen/hidden predicate and unknown for ambiguous interpretation. Do not reject the visible action just because transaction context "
@@ -536,7 +538,7 @@ class Pipeline:
                              "that visibly support it. Clear visibility means the relevant action/zone is readable; irrelevant "
                              "room occlusion does not make that action partial. Unverified hypothesis DATA: " + candidate.observation)
             action_prompt += "\nReturn confidence from 0 to 1 that all required visible action predicates jointly hold; do not force certainty to 0 or 1."
-            if rule.get("basis") == "workplace_policy":
+            if rule.get("id") == "personal_food_at_workstation":
                 action_prompt += ("\nWorkplace policy action DATA: " + rule["summary"]
                                   + " Identifiable food or a snack merely present on the cashier work table is "
                                   "prohibited personal belongings under this user policy; eating is NOT required. "
@@ -544,6 +546,16 @@ class Pipeline:
                                   "identification and its work-table location; evidence_indices must include it. "
                                   "An unidentified object, empty wrapper, work equipment or medicine is not food. "
                                   "Do not infer food or drink contents from a cup or an unidentifiable package.")
+            elif rule.get("id") == "workstation_departure_screen_left_on":
+                action_prompt += ("\nWorkplace screen policy DATA: " + rule["summary"]
+                                  + " Cite at least two different source times for workstation_departure_observed: "
+                                  "the operator at the workstation and the actual exit/after-exit view. An empty chair "
+                                  "alone, standing, reaching or a cropped-out person is not an observed departure. "
+                                  "In a common post-departure source image, identify the same computer, the "
+                                  "unattended workstation and a readably illuminated screen; cite that image in "
+                                  "these three checks and evidence_indices. A reflection, glare, a closed laptop, "
+                                  "an off/black screen or unreadable screen state is insufficient. A locked but "
+                                  "visibly illuminated screen is still on; do not infer login or lock status.")
             action = ask(action_prompt, dense, verification_schema(action_rule, len(dense)), budget, 512)
             action_calls += int(not action.get("_host_unverified") or action.get("_host_request_attempted"))
             def frame_sources(frames):
@@ -561,7 +573,7 @@ class Pipeline:
                 onset = max(0, min(candidate.start, candidate.anchor) - 2)
                 ending = min(info.duration, max(candidate.end, candidate.anchor) + 2)
                 expanded_targets = anchored_targets(onset, ending, candidate.anchor)
-                expanded = detail_views(refs, refs.get(expanded_targets, 640), scene, candidate.anchor, max_frames=8)
+                expanded = detail_views(refs, refs.get(expanded_targets, 640), scene, candidate.anchor, max_frames=8, preferred_zone=preferred_zone)
                 refined_action = ask(action_prompt + "\nThis expanded onset/action/ending view resolves "
                                                   "timing or spatial-role ambiguity. Judge only directly visible action, "
                                                   "keeping unseen legal context unknown for its separate check.",
@@ -598,7 +610,7 @@ class Pipeline:
                 add_context(min(unique_samples, key=lambda frame: abs(frame.timestamp - (start + (end - start) * i / 7))))
             # Include detailed source action pixels, not only low-resolution
             # screening context. Every view retains original source identity.
-            context = detail_views(refs, context, scene, candidate.anchor, max_frames=8)
+            context = detail_views(refs, context, scene, candidate.anchor, max_frames=8, preferred_zone=preferred_zone)
             context.sort(key=lambda frame: frame.timestamp)
             def shown_facts(frames):
                 indices = {frame.index for frame in frames}
@@ -618,7 +630,7 @@ class Pipeline:
                               "Confidence is your 0-to-1 estimate that all required predicates jointly hold, including applicability and exceptions; "
                               "do not force it to 0 or 1. Unverified episode DATA: " + candidate.observation
                               + "\n" + exception_prompt(rule))
-            if rule.get("basis") == "workplace_policy":
+            if rule.get("id") == "personal_food_at_workstation":
                 context_prompt += ("\nThis is the user-provided personal-belongings policy, not a public legal clause. "
                                    "Clearly identifiable food on the operating cashier work table is sufficient; "
                                    "no eating, chewing, handling, ownership inference or active client transaction "
@@ -626,6 +638,16 @@ class Pipeline:
                                    "and evidence_indices showing the food, its table location and the working context. "
                                    "A single readable image can establish this static condition. A break area, "
                                    "unidentified object or uncertain work context cannot establish applicability.")
+            elif rule.get("id") == "workstation_departure_screen_left_on":
+                context_prompt += ("\nThis is the user-provided screen-power policy, not a public-law clause. "
+                                   "An active intake or customer transaction is not required. Establish the same "
+                                   "operating workstation before and after an actual departure. Departure citations "
+                                   "must span different source times. Cite a common after-exit image for the "
+                                   "identified computer, unattended workstation and visibly on screen, and cite "
+                                   "before/after images in departure_screen_sequence_visible. A single empty-chair "
+                                   "snapshot cannot establish departure. Preserve unknown for occlusion, scene "
+                                   "changes or unreadable display state. Do not infer screen power or lock state "
+                                   "from hardware presence; a clearly lit lock screen remains visibly on.")
             context_answer = ask(context_prompt + "\nUnverified notes whose source frames are supplied: "
                                                + json.dumps(shown_facts(context), ensure_ascii=False),
                                                context, verification_schema(rule, len(context), include_exceptions=True), budget, 1024)
@@ -644,7 +666,7 @@ class Pipeline:
                 action_targets = anchored_targets(dense[0].timestamp, dense[-1].timestamp, candidate.anchor, 4)
                 action_frames = [min(dense, key=lambda frame: abs(frame.timestamp - target)) for target in action_targets]
                 focused = [context[0], context[-1], before[-1]] + action_frames + [after[0]]
-                focused = detail_views(refs, focused, scene, candidate.anchor, max_frames=8)
+                focused = detail_views(refs, focused, scene, candidate.anchor, max_frames=8, preferred_zone=preferred_zone)
                 focused.sort(key=lambda f: f.timestamp)
                 unknown = [k for k, v in context_answer["checks"].items() if v in {"unknown", "not_visible"}]
                 unknown.extend(k for k, v in context_answer.get("exception_checks", {}).items() if v == "unknown")
@@ -674,7 +696,8 @@ class Pipeline:
                                                                for name, indices in context_answer.get("check_frames", {}).items()
                                                                if context_answer["checks"].get(name) == "yes"]}
             static_food_policy = rule.get("basis") == "workplace_policy" and rule["id"] == "personal_food_at_workstation"
-            if not static_food_policy and (not surrounding or material_source_gap or scene_cut):
+            screen_policy = rule["id"] == "workstation_departure_screen_left_on"
+            if not static_food_policy and ((not surrounding and not screen_policy) or material_source_gap or scene_cut):
                 review(candidate, ["insufficient_before_after" if not surrounding else "scene_change_context" if scene_cut else "source_timestamp_gap"])
             elif supported_verification(context_answer, rule, context) and exceptions_excluded(context_answer, rule, context) and not fusion["accepted"]:
                 review(candidate, ["below_calibrated_threshold"])
@@ -682,11 +705,13 @@ class Pipeline:
                 evidence_started = time.perf_counter()
                 action_indices = sorted(set(action["evidence_indices"]), key=lambda i: abs(dense[i].timestamp - candidate.anchor))
                 if rule.get("basis") == "workplace_policy":
-                    food_table_sources = set.intersection(*(
-                        {dense[i].index for i in action["check_frames"][check]}
-                        for check in rule["action_checks"]))
-                    action_indices = [i for i in action_indices if dense[i].index in food_table_sources]
-                selected, event_time = select_evidence(dense, action_indices, context, context_answer["evidence_indices"], candidate.anchor)
+                    from worker.rule_gate import policy_primary_sources
+                    primary_sources = policy_primary_sources(action, action_rule, dense)
+                    action_indices = [i for i in action_indices if dense[i].index in primary_sources]
+                context_indices = list(context_answer["evidence_indices"])
+                if screen_policy:
+                    context_indices.extend(context_answer["check_frames"]["workstation_departure_observed"])
+                selected, event_time = select_evidence(dense, action_indices, context, sorted(set(context_indices)), candidate.anchor)
                 originals = refs.get([frame.timestamp for frame in selected], 0)
                 import cv2
                 evidence = []
@@ -776,7 +801,7 @@ class Pipeline:
                    "detections": detections,
                    "detection_summary": {"items": len(detections), "source_frames": len(detection_evidence),
                                          "method": perception.get("backend", "cpu_perception"), "sampled_only": True, "calibrated": False},
-                   "limitations": ["All curated visual scenarios are screened; three legal categories and the user-provided personal-food belongings policy can emit supported findings; other visible scenarios require review",
+                   "limitations": ["All curated visual scenarios are screened; three legal categories and the user-provided food-belongings and screen-departure policies can emit supported findings; other visible scenarios require review",
                                     "Continuous scores are uncalibrated model estimates; manual and unobserved checks retain initial scores",
                                     "Procedure estimates require the correct protocol, not a generic action; uncertain boundaries remain window-scoped",
                                     "Unmapped or unconfirmed events remain in the review queue, outside the jury verdict",
@@ -798,7 +823,7 @@ class Pipeline:
                                 + [{"filename": e["filename"]} for item in queue for e in item["evidence_frames"]]
                                 + list(detection_evidence.values())),
                    "versions": {"pipeline": PIPELINE_VERSION, "scoring": "2.1", "catalog": self.catalog["version"],
-                                "model": self.runtime_metadata.get("model_id", "unknown"), "rules": "2026-10-18-v5.4"}}
+                                "model": self.runtime_metadata.get("model_id", "unknown"), "rules": "2026-10-18-v5.5"}}
         details["case_decision"] = build_case_decision(final, queue, attempts, details["coverage"], assessments)
         reasons = {}
         for item in queue:

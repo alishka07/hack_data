@@ -33,7 +33,8 @@ KEYPOINT_NAMES = ("nose", "left_eye", "right_eye", "left_ear", "right_ear", "lef
 OBJECT_QUERIES = (("cash", "a photo of banknotes or paper money"), ("bag", "a photo of a bag"),
                   ("phone", "a photo of a mobile phone"), ("drawer", "a photo of a drawer"),
                   ("safe", "a photo of a metal safe"), ("counter", "a photo of a service counter"),
-                  ("window", "a photo of a teller window"))
+                  ("window", "a photo of a teller window"),
+                  ("computer", "a laptop computer or desktop computer monitor"))
 
 
 def dependency_available(name):
@@ -220,7 +221,7 @@ class RTMPoseONNX:
 
 
 def normalize_owlv2_result(result, source_size, threshold=.15):
-    """Only reviewed fixed query IDs can become object classes."""
+    """Only fixed query IDs become classes; computer presence implies no screen state."""
     height, width = source_size
     def array(value):
         return np.asarray(value.detach().cpu() if hasattr(value, "detach") else value)

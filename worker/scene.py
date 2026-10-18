@@ -5,7 +5,7 @@ import math
 
 from worker.video import AnalysisError
 
-ZONES = ("workstation", "customer", "counter", "storage", "window", "safe", "cash_zone")
+ZONES = ("workstation", "customer", "counter", "storage", "window", "safe", "cash_zone", "computer")
 
 
 def scene_schema(frame_count):
@@ -55,24 +55,31 @@ def collect_scene(regions, frames, *, strict=True):
             "semantics": "Geometry is crop guidance only. Unusable estimates remain unknown, never positive evidence. No room type, ownership, continuous visibility or legal boundary is established."}
 
 
-def interaction_box(scene, timestamp=None):
+def interaction_box(scene, timestamp=None, *, zone="counter"):
     def segment(value):
         return sum(change <= value for change in scene.get("scene_change_timestamps", []))
-    return next((zone["bbox"] for zone in scene.get("zones", [])
-                 if zone.get("zone") == "counter" and zone.get("status") == "supported"
+    return next((region["bbox"] for region in scene.get("zones", [])
+                 if region.get("zone") == zone and region.get("status") == "supported"
                  and (timestamp is None or all(segment(ref["timestamp_sec"]) == segment(timestamp)
-                                               for ref in zone.get("refs", [])))), None)
+                                               for ref in region.get("refs", [])))), None)
 
 
-def detail_views(cache, frames, scene, anchor, max_frames=None):
-    """Preserve all full-scene samples and add two original-pixel interaction crops."""
-    box = interaction_box(scene, anchor)
+def detail_views(cache, frames, scene, anchor, max_frames=None, *, preferred_zone="counter"):
+    """Add source crops for one requested region without asserting screen state.
+
+    Computer crops retain full-scene samples to assess workstation occupancy.
+    An unknown computer box never substitutes another region as device evidence.
+    """
+    if preferred_zone not in ZONES:
+        raise ValueError("Unknown detail-view scene region")
+    box = interaction_box(scene, anchor, zone=preferred_zone)
     if box is None or not frames:
         return frames
     unique = {frame.index: frame for frame in frames}
-    selected = sorted((frame for frame in unique.values() if interaction_box(scene, frame.timestamp) == box),
+    selected = sorted((frame for frame in unique.values()
+                       if interaction_box(scene, frame.timestamp, zone=preferred_zone) == box),
                       key=lambda frame: abs(frame.timestamp - anchor))[:2]
-    crops = cache.crop(selected, box, "counter detail; full scene supplied separately")
+    crops = cache.crop(selected, box, f"{preferred_zone} detail; full scene supplied separately")
     if max_frames is not None and len(frames) + len(crops) > max_frames:
         if max_frames < 4:
             raise ValueError("Detailed verification requires at least four image slots")

@@ -57,6 +57,18 @@ def test_collection_binds_only_supplied_source_metadata_without_mutating_input()
     assert answer == previous
 
 
+def test_computer_annotation_is_source_linked_hardware_and_never_a_power_decision():
+    item = detection(frame_index=1, label="Laptop", kind="computer")
+    _validate_json_schema([item], detection_schema(2))
+    computer, = collect(item)
+    assert computer["kind"] == "computer"
+    assert computer["source_index"] == 60
+    assert computer["timestamp_sec"] == 2.
+    assert set(computer) == {"id", "label", "kind", "confidence", "timestamp_sec", "source_index", "bbox"}
+    prompt = localization_prompt()
+    assert "does not establish screen power or lock state" in prompt
+
+
 def test_missing_and_empty_detections_are_backward_compatible_and_zero_is_not_a_detection():
     assert collect_detections({}, frames(), 0) == []
     assert collect() == []

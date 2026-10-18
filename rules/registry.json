@@ -1,16 +1,20 @@
 {
-  "version": "2026-10-18-v5.4",
-  "review_notice": "Three public-clause categories and one user-provided workplace-policy category are eligible for automatic findings after applicability and exception checks. Identifiable food on an operating cashier work table counts as personal belongings at the workplace under the user-provided policy; visible eating is not required. This is not an independently verified public-law claim. Loose-cash counting omission is review-only because sparse samples cannot establish a missing procedure. Other observable events remain an unconfirmed review queue.",
+  "version": "2026-10-18-v5.5",
+  "review_notice": "Three public-clause categories and two user-provided workplace-policy categories are eligible for automatic findings after applicability and exception checks. Identifiable food on an operating cashier work table counts as personal belongings at the workplace. A visible workstation departure followed by the same identified computer display remaining visibly on at the unattended desk also violates the user-provided policy; screen locking is not screen power-off. These workplace policies are not independently verified public-law claims. Loose-cash counting omission is review-only because sparse samples cannot establish a missing procedure. Other observable events remain an unconfirmed review queue.",
   "sources": [
     {
       "id": "user_workplace_policy",
       "document": "User-provided workplace policy",
-      "title": "Food on the cashier work table counts as personal belongings at the workplace",
+      "title": "User workplace policies for food belongings and switching off computer screens before departure",
       "source_url": "/policies/workplace-belongings",
       "effective_version": "User instruction revised 2026-10-18",
       "reviewed_at": "2026-10-18",
       "review_record": "rules/sources/workplace-eating.md",
-      "provenance": "The user revised the workplace policy on 2026-10-18: food on the cashier work table counts as personal belongings at the workplace and is a violation, without requiring eating. This is an application workplace policy; no statutory clause or independent employer document is claimed."
+      "provenance": "The user revised the food-at-workstation policy and supplied the computer-screen departure policy on 2026-10-18. Identifiable food on the cashier work table is prohibited personal belongings; leaving the workstation with its computer or laptop screen visibly on is also a violation. These are application workplace policies; no statutory clause or independent employer document is claimed.",
+      "review_records": [
+        "rules/sources/workplace-eating.md",
+        "rules/sources/workplace-screen.md"
+      ]
     },
     {
       "id": "nbk_231_2019",
@@ -383,6 +387,53 @@
       "auto_emit": true,
       "automation": "automatic_when_supported",
       "context_requirement": "Referenced evidence must show identifiable food on the operating cashier work table with visible working context. A clear frame may establish food presence and its location; no eating sequence is required. Do not infer shift schedules or personal ownership. All exceptions require affirmative, referenced exclusion before a finding."
+    },
+    {
+      "id": "workstation_departure_screen_left_on",
+      "type": "workstation_departure_screen_left_on",
+      "label": "Workstation left unattended with the computer screen on",
+      "basis": "workplace_policy",
+      "enabled": true,
+      "source_id": "user_workplace_policy",
+      "document": "User-provided workplace policy",
+      "paragraph": "Leaving workstation with computer screen on",
+      "source_url": "/policies/workplace-screen",
+      "effective_version": "User instruction supplied 2026-10-18",
+      "summary": "Under the user-provided workplace policy, a person must switch off the workstation computer or laptop display before leaving the workstation. A violation requires a source-referenced sequence establishing an operator at that work desk, actual departure, the unattended workstation afterwards, and that same identified display visibly still on after departure. A static empty chair, merely standing or reaching within the workplace, an unidentified bright rectangle or reflection, and an unresolved screen state are insufficient. A locked but visibly illuminated screen is still on under this policy. A closed laptop lid or an off, black or standby display cannot be assumed on. This policy applies independently of whether a client intake is active.",
+      "applicability": [
+        "A computer monitor or laptop display is visually identified at the operating workstation.",
+        "The source sequence visibly establishes the operator working at that workstation and actually leaving it.",
+        "After departure the workstation is visibly unattended and the same identified display is visibly still on."
+      ],
+      "exceptions": [
+        "No actual departure is established; only an empty chair, standing, reaching within the workstation or occlusion is observed.",
+        "The workstation remains attended, or the after-departure workstation and its attendance cannot be assessed.",
+        "The computer identity, screen continuity or display power state is unresolved; a reflection or unidentified bright object is insufficient.",
+        "The screen is visibly off, black or in standby, or the laptop lid is closed; these states cannot be assumed to be on."
+      ],
+      "required_checks": [
+        "computer_at_workstation_identified",
+        "workstation_departure_observed",
+        "workstation_unattended_after_departure",
+        "same_screen_visibly_on_after_departure",
+        "departure_screen_sequence_visible"
+      ],
+      "action_checks": [
+        "computer_at_workstation_identified",
+        "workstation_departure_observed",
+        "workstation_unattended_after_departure",
+        "same_screen_visibly_on_after_departure"
+      ],
+      "disabled_examples": [
+        "A single still image of an empty chair and a bright monitor without a departure sequence.",
+        "A person stands up or reaches for a nearby object without leaving the workstation.",
+        "An unidentified reflective rectangle interpreted as an illuminated screen.",
+        "A closed laptop, an off or black screen, or standby treated as a screen left on."
+      ],
+      "legal_review_status": "user_provided_workplace_policy_not_public_law",
+      "auto_emit": true,
+      "automation": "automatic_when_supported",
+      "context_requirement": "Referenced before/action/after source observations must establish an operator at the workstation, actual departure and the now-unattended workstation with the same identified display visibly on. The post-departure display and unattended state must be visible together. A locked but illuminated screen remains on; no unlocked session, personal identity, active client intake or unseen power-switch action is inferred. All exceptions require affirmative referenced exclusion before a finding."
     }
   ]
 }

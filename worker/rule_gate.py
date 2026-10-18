@@ -82,28 +82,59 @@ def exceptions_excluded(answer: dict, rule: dict, frames: list[FrameRef]) -> boo
     return True
 
 
-def policy_evidence_supported(answer: dict, rule: dict, frames: list[FrameRef]) -> bool:
-    """Link identifiable food and its work-table location in a cited source.
-
-    A single readable source image can establish presence. Eating and a temporal
-    consumption sequence are not required by the user's current policy.
-    """
-    if rule.get("basis") != "workplace_policy":
-        return True
-    if rule.get("id") != "personal_food_at_workstation":
-        return False
+def policy_primary_sources(answer: dict, rule: dict, frames: list[FrameRef]) -> set[int]:
+    """Find source images showing the actual policy breach, not just a cue."""
     references = answer.get("check_frames", {})
     fields = rule.get("required_checks", [])
     if not isinstance(references, dict) or not fields:
-        return False
+        return set()
     citations = [references.get(name, []) for name in fields]
     evidence = answer.get("evidence_indices", [])
     if (not all(isinstance(indices, list) and indices for indices in [*citations, evidence])
             or any(type(index) is not int or not 0 <= index < len(frames)
                    or not _valid_frame(frames[index]) for indices in [*citations, evidence] for index in indices)):
-        return False
-    shared = set.intersection(*({frames[index].index for index in indices} for indices in citations))
-    return bool(shared & {frames[index].index for index in evidence})
+        return set()
+    clocks = {}
+    for indices in citations:
+        for index in indices:
+            frame = frames[index]
+            if frame.index in clocks and clocks[frame.index] != frame.timestamp:
+                return set()
+            clocks[frame.index] = frame.timestamp
+    sources = {name: {frames[index].index for index in references[name]} for name in fields}
+    if rule.get("id") == "personal_food_at_workstation":
+        return set.intersection(*sources.values())
+    if rule.get("id") != "workstation_departure_screen_left_on":
+        return set()
+    required = {"computer_at_workstation_identified", "workstation_departure_observed",
+                "workstation_unattended_after_departure", "same_screen_visibly_on_after_departure"}
+    if not required <= sources.keys():
+        return set()
+    departure = sources["workstation_departure_observed"]
+    times = {clocks[index] for index in departure}
+    if len(departure) < 2 or len(times) < 2:
+        return set()
+    before, exited = min(times), max(times)
+    post = (sources["computer_at_workstation_identified"]
+            & sources["workstation_unattended_after_departure"]
+            & sources["same_screen_visibly_on_after_departure"])
+    post = {index for index in post if clocks[index] >= exited and clocks[index] > before}
+    if "departure_screen_sequence_visible" in fields:
+        sequence = sources["departure_screen_sequence_visible"]
+        sequence_times = {clocks[index] for index in sequence}
+        if len(sequence) < 2 or not sequence_times or min(sequence_times) > before:
+            return set()
+        post = {index for index in post if max(sequence_times) >= clocks[index]}
+    return post
+
+
+def policy_evidence_supported(answer: dict, rule: dict, frames: list[FrameRef]) -> bool:
+    """Require cited food presence or an ordered departure-and-lit-screen event."""
+    if rule.get("basis") != "workplace_policy":
+        return True
+    primary = policy_primary_sources(answer, rule, frames)
+    return bool(primary & {frames[index].index for index in answer.get("evidence_indices", [])
+                           if type(index) is int and 0 <= index < len(frames)})
 
 
 def factual_description(rule: dict, event_time: float) -> str:

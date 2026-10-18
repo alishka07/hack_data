@@ -1,4 +1,6 @@
-# Scenario-first video review, version 5.4
+# Scenario-first video review, version 5.5
+
+Version 5.5 adds [departure with a computer screen left on](workplace-screen.md), under the user's workplace policy. It locates computers through OWLv2 and source-linked VLM detections, proposes a per-video computer region for detailed views, and separately verifies the departure and screen state. A finding needs a before/exit/after sequence and a post-departure frame showing the same computer screen visibly on at an unattended workstation. Primary evidence is pinned to that post-departure state and includes before/after JPEGs. The food-belongings policy remains active.
 
 Version 5.4 replaces the eating-only rule with the user's [personal-food belongings policy](workplace-belongings.md). Clearly identifiable food on the operating cashier work table is sufficient for a workplace-policy violation; no eating or consumption sequence is required. Food identity, table location and work context must share a cited source frame. A single readable frame can establish this static condition. The older eating rule is disabled for new analyses; saved results are preserved.
 

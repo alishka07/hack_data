@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from worker.scene import collect_scene, interaction_box, scene_schema
+from worker.scene import ZONES, collect_scene, detail_views, interaction_box, scene_schema
 from worker.runtime import _validate_json_schema
 from worker.video import AnalysisError, FrameRef
 
@@ -20,9 +20,9 @@ def test_source_binding_unknown_zones_and_crop_guidance():
     value = [region()]
     _validate_json_schema(value, scene_schema(2))
     result = collect_scene(value, frames())
-    assert len(result["zones"]) == 7
+    assert len(result["zones"]) == len(ZONES) == 8
     assert result["zones"][0]["refs"] == [{"source_index": 20, "timestamp_sec": 2.}]
-    assert sum(row["status"] == "unknown" for row in result["zones"]) == 6
+    assert sum(row["status"] == "unknown" for row in result["zones"]) == 7
     assert interaction_box(result) == [.1, .2, .8, .6]
     assert not result["calibrated"]
 
@@ -63,3 +63,40 @@ def test_tolerating_geometry_never_tolerates_foreign_sources_or_structure():
     for invalid in (region(frame_indices=[99]), region(zone="invented"), {"zone": "counter"}):
         with pytest.raises(AnalysisError):
             collect_scene([invalid], frames(), strict=False)
+
+
+def test_computer_detail_uses_its_source_box_and_keeps_full_scene_occupancy_context():
+    from dataclasses import replace
+
+    source = frames()
+    computer_box = [.55, .2, .8, .45]
+    scene = collect_scene([region(), region(zone="computer", bbox=computer_box)], source)
+
+    class Cache:
+        def crop(self, selected, box, view):
+            assert box == computer_box
+            assert view == "computer detail; full scene supplied separately"
+            return [replace(frame, crop_bbox=tuple(box), view=view) for frame in selected]
+
+    result = detail_views(Cache(), source, scene, 2., preferred_zone="computer", max_frames=4)
+    assert all(frame in result for frame in source)
+    crops = [frame for frame in result if frame.crop_bbox is not None]
+    assert len(crops) == 2
+    assert {(frame.index, frame.timestamp) for frame in crops} == {(10, 1.), (20, 2.)}
+    assert interaction_box(scene) == [.1, .2, .8, .6]  # default counter behavior survives
+    assert interaction_box(scene, zone="computer") == computer_box
+
+
+def test_unknown_or_previous_camera_computer_never_substitutes_counter_as_device_crop():
+    class NoCrop:
+        def crop(self, *args):
+            pytest.fail("An unknown or previous camera device box cannot establish screen pixels")
+
+    source = frames()
+    scene = collect_scene([region()], source)
+    assert detail_views(NoCrop(), source, scene, 2., preferred_zone="computer") == source
+    scene = collect_scene([region(zone="computer")], source)
+    scene["scene_change_timestamps"] = [3.]
+    assert detail_views(NoCrop(), source, scene, 3.5, preferred_zone="computer") == source
+    with pytest.raises(ValueError):
+        detail_views(NoCrop(), source, scene, 2., preferred_zone="invented")

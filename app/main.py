@@ -324,6 +324,13 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
             raise HTTPException(404, "Workplace policy not found")
         return FileResponse(path, media_type="text/plain", headers={"Cache-Control": "no-store"})
 
+    @application.get("/policies/workplace-screen", include_in_schema=False)
+    def workplace_screen_policy():
+        path = settings.root / "rules" / "sources" / "workplace-screen.md"
+        if not path.is_file():
+            raise HTTPException(404, "Workplace policy not found")
+        return FileResponse(path, media_type="text/plain", headers={"Cache-Control": "no-store"})
+
     @application.get("/style.css", include_in_schema=False)
     def stylesheet():
         path = web / "style.css"

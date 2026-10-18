@@ -58,7 +58,7 @@
     return `${String(Math.floor(milliseconds / 60000)).padStart(2, "0")}:${String(Math.floor(milliseconds / 1000) % 60).padStart(2, "0")}.${String(milliseconds % 1000).padStart(3, "0")}`;
   }
   function friendly(value) {
-    const labels = {personal_food_at_workstation:"Personal belongings at workplace (food)",cashier_eating_at_workstation:"Eating at cashier workstation"};
+    const labels = {workstation_departure_screen_left_on:"Workstation left with computer screen on",personal_food_at_workstation:"Personal belongings at workplace (food)",cashier_eating_at_workstation:"Eating at cashier workstation"};
     return labels[value] || String(value || "").replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase());
   }
   function syncSubmit() {
@@ -406,7 +406,7 @@
     if (video.readyState >= 1) apply(); else video.addEventListener("loadedmetadata", apply, { once: true });
   }
   function safeRuleUrl(value) {
-    if (["/policies/workplace-belongings", "/policies/workplace-eating"].includes(value)) return value;
+    if (["/policies/workplace-belongings", "/policies/workplace-eating", "/policies/workplace-screen"].includes(value)) return value;
     try {
       const url = new URL(value);
       if (url.protocol === "https:" && !url.username && !url.password && (!url.port || url.port === "443") && ["adilet.zan.kz", "old.adilet.zan.kz", "nationalbank.kz", "www.nationalbank.kz"].includes(url.hostname)) return url.href;

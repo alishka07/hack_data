@@ -363,6 +363,7 @@ def test_workplace_policy_source_is_local_and_separate_from_regulations(service)
     client, _, settings = service
     assert client.get("/policies/workplace-eating").status_code == 404
     assert client.get("/policies/workplace-belongings").status_code == 404
+    assert client.get("/policies/workplace-screen").status_code == 404
     directory = settings.root / "rules" / "sources"
     directory.mkdir(parents=True)
     text = "User-provided workplace policy: Cashiers must not eat at the work table during work."
@@ -372,6 +373,12 @@ def test_workplace_policy_source_is_local_and_separate_from_regulations(service)
     assert response.headers["content-type"].startswith("text/plain")
     assert response.headers["cache-control"] == "no-store"
     assert client.get("/policies/workplace-belongings").text == text
+    screen_text = "User-provided workplace policy: Switch off the computer screen before leaving the workstation."
+    (directory / "workplace-screen.md").write_text(screen_text, encoding="utf-8")
+    screen_response = client.get("/policies/workplace-screen")
+    assert screen_response.status_code == 200 and screen_response.text == screen_text
+    assert screen_response.headers["content-type"].startswith("text/plain")
+    assert screen_response.headers["cache-control"] == "no-store"
     assert client.get("/policies/api-key.txt").status_code == 404
 
 

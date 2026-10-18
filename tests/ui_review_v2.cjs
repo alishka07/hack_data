@@ -50,6 +50,7 @@ ids.incompleteCount = "01234567-0123-4123-8123-012345678903";
 ids.food = "01234567-0123-4123-8123-012345678904";
 ids.unsafePolicy = "01234567-0123-4123-8123-012345678905";
 ids.probability = "01234567-0123-4123-8123-012345678906";
+ids.screen = "01234567-0123-4123-8123-012345678907";
 const probabilityDetails = {assessments:[{...assessments[0],item_id:"active_intake_departure",score:99,model_confidence:.99}],case_decision:{status:"review_required",cases:[
   ...[0,1,null,true,"0.9",NaN,-.01,1.01].map((probability,index) => ({...caseDecision.cases[0],episode_id:"separate-episode-" + index,timecode_sec:index,probability,probability_scope:index === 0 ? "event_occurrence" : "joint_checks"})),
   {...caseDecision.cases[0],episode_id:"procedure-episode",probability:.82,probability_scope:"procedure_completion"},
@@ -57,6 +58,7 @@ const probabilityDetails = {assessments:[{...assessments[0],item_id:"active_inta
 ]}};
 let unsafePolicyUrl = "javascript:alert(1)";
 const foodDetails = {findings:[{type_id:"personal_food_at_workstation",timecode_sec:12.5,basis:"workplace_policy",rule_name:"User-provided workplace policy",paragraph:"Personal food at the cashier workstation",rule_url:"/policies/workplace-belongings"}],case_decision:{status:"confirmed",cases:[{type_id:"personal_food_at_workstation",status:"confirmed",timecode_sec:12.5,probability:.94,probability_scope:"event_occurrence",probability_calibrated:false,observed_action:"Personal food is visibly present on the cashier work table during work.",checks:[{stage:"action",name:"personal_food_on_work_table",status:"yes",evidence_refs:[{source_index:375,timestamp_sec:12.5}]}],reasons:["Personal food is visibly present at the workplace."]}]}};
+const screenDetails = {findings:[{type_id:"workstation_departure_screen_left_on",timecode_sec:16,basis:"workplace_policy",rule_name:"User-provided workplace policy",paragraph:"Switch off the screen when leaving the workstation",rule_url:"/policies/workplace-screen"}],case_decision:{status:"confirmed",cases:[{type_id:"workstation_departure_screen_left_on",status:"confirmed",timecode_sec:16,probability:.91,probability_scope:"joint_checks",probability_calibrated:false,observed_action:"The cashier leaves the workstation; later the same workstation is unattended while its computer screen remains visibly on.",checks:[{stage:"action",name:"workstation_departure_observed",status:"yes",evidence_refs:[{source_index:300,timestamp_sec:10},{source_index:480,timestamp_sec:16}]},{stage:"context",name:"same_screen_visibly_on_after_departure",status:"yes",evidence_refs:[{source_index:480,timestamp_sec:16}]}],reasons:["The departure and subsequent illuminated screen are supported by source frames."]}]}};
 const incompleteDetails = {processing_status:"review_incomplete",coverage:{...details.coverage,verification_complete:false,unverified_candidate_count:3},case_decision:{status:"no_supported_violation",cases:[]},review_queue:[{...hostQueue[0],status:"diagnostic",requires_review:false,reason_codes:["verification_budget_exhausted"]}]};
 const denseDetections = Array.from({length:50},(_,index) => {
   const group = Math.floor(index / 24), timestamp = 10 + group * 10;
@@ -136,13 +138,15 @@ const pageErrors = [];
       }
       const id = pathname.split("/").at(-1);
       const food = id === ids.food || id === ids.unsafePolicy;
-      const flagged = id === ids.flagged || id === ids.incompleteFlagged || food;
+      const screen = id === ids.screen;
+      const flagged = id === ids.flagged || id === ids.incompleteFlagged || food || screen;
       if (pathname.startsWith("/api/v1/jobs/")) {
         if (id === runningId) { runningPolls += 1; return route.fulfill({json:{job_id:id,status:"processing"}}); }
-        return route.fulfill({json:{job_id:id,status:"done",verdict:flagged?"violation":"no_violation",violations:flagged?[{type:food?"personal_food_at_workstation":"example_supported_type",timecode_sec:food?12.5:10,description:food?"Personal food is visibly present on the cashier work table during work.":"Synthetic supported event.",evidence_frames:[{timestamp_sec:food?12.5:10,image_base64:syntheticJpeg}]}]:[]}});
+        return route.fulfill({json:{job_id:id,status:"done",verdict:flagged?"violation":"no_violation",violations:flagged?[{type:screen?"workstation_departure_screen_left_on":food?"personal_food_at_workstation":"example_supported_type",timecode_sec:screen?16:food?12.5:10,description:screen?"The workstation is unattended after departure and the same computer screen remains on.":food?"Personal food is visibly present on the cashier work table during work.":"Synthetic supported event.",evidence_frames:[{timestamp_sec:screen?16:food?12.5:10,image_base64:syntheticJpeg}]}]:[]}});
       }
       if (pathname.startsWith("/api/ui/jobs/")) {
         if (id === runningId) return route.fulfill({json:{job_id:id,status:"processing",stage:"verifying",progress:.54}});
+        if (screen) return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:screenDetails}});
         if (food) return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:id === ids.food ? foodDetails : {...foodDetails,findings:[{...foodDetails.findings[0],rule_url:unsafePolicyUrl}]}}});
         if (id === ids.unavailable && unavailableDetails) return route.fulfill({status:500,json:{detail:"Synthetic details failure"}});
         if ([ids.incomplete,ids.incompleteFlagged,ids.incompleteMarker,ids.incompleteStatus,ids.incompleteCount].includes(id)) {
@@ -463,10 +467,24 @@ const pageErrors = [];
     assert.equal(await page.locator("#source-video").evaluate(video=>video.currentTime),12.5,"A food-presence violation has a working result-table timestamp");
     await page.locator(".finding-card .evidence-button").click();
     assert.equal(await page.locator("#source-video").evaluate(video=>video.currentTime),12.5,"Food presence evidence pinpoints its source moment");
+    await open(ids.screen);
+    assert.equal(await page.locator("#verdict-title").textContent(),"Violation detected");
+    assert.equal(await page.locator(".finding-card h3").textContent(),"Workstation left with computer screen on");
+    assert.match(await page.locator(".finding-card").textContent(),/Workplace policy violation/);
+    assert.equal(await page.locator(".finding-card .rule-box a").getAttribute("href"),"/policies/workplace-screen");
+    assert.equal(await page.locator(".finding-card .rule-box a").textContent(),"Read workplace policy ↗");
+    assert.doesNotMatch(await page.locator(".finding-card").textContent(),/NBK|Paragraph|official source|regulatory reference/);
+    assert.match(await page.locator(".case-card .check-name").textContent(),/^Workstation left with computer screen on/);
+    assert.equal(await page.locator(".case-card .case-status").textContent(),"Violation");
+    assert.match(await page.locator(".case-probability").textContent(),/^91%/);
+    await page.locator(".case-card .time-button").click();
+    assert.equal(await page.locator("#source-video").evaluate(video=>video.currentTime),16,"Screen-on violation pinpoints the post-departure source moment");
+    await page.locator(".finding-card .evidence-button").click();
+    assert.equal(await page.locator("#source-video").evaluate(video=>video.currentTime),16,"Screen-on evidence opens the post-departure source frame");
     unsafePolicyUrl = "/policies/workplace-eating";
     await open(ids.unsafePolicy);
     assert.equal(await page.locator(".finding-card .rule-box a").getAttribute("href"),"/policies/workplace-eating","Historical workplace policy references remain readable");
-    for (const unsafeUrl of ["javascript:alert(1)","//evil.example/policies/workplace-belongings","http://forte-synthetic.test/policies/workplace-belongings","http://forte-synthetic.test:8123/policies/workplace-belongings","/policies/workplace-belongings?redirect=evil","/policies/workplace-belongings#fragment","/policies/../workplace-belongings","/policies/workplace-eating?redirect=evil","/policies/workplace-eating#fragment","/other-policy","https://user:secret@adilet.zan.kz/rus/docs/V1900019680","https://adilet.zan.kz.evil.example/rule"]) {
+    for (const unsafeUrl of ["javascript:alert(1)","//evil.example/policies/workplace-belongings","http://forte-synthetic.test/policies/workplace-belongings","http://forte-synthetic.test:8123/policies/workplace-belongings","/policies/workplace-belongings?redirect=evil","/policies/workplace-belongings#fragment","/policies/../workplace-belongings","/policies/workplace-eating?redirect=evil","/policies/workplace-eating#fragment","/policies/workplace-screen?redirect=evil","/policies/workplace-screen#fragment","/other-policy","https://user:secret@adilet.zan.kz/rus/docs/V1900019680","https://adilet.zan.kz.evil.example/rule"]) {
       unsafePolicyUrl = unsafeUrl;
       await open(ids.unsafePolicy);
       assert.equal(await page.locator(".finding-card .rule-box a").count(),0,"Only the exact local workplace policy route and trusted official hosts may be linked: " + unsafeUrl);
@@ -564,6 +582,6 @@ const pageErrors = [];
     assert.equal(await page.locator("#job-id").textContent(),"");
     assert.equal(await page.locator("#open-active-job").count(),0,"Stale authenticated discoveries must be discarded after a key edit");
     assert.deepEqual(pageErrors,[]);
-    console.log("Synthetic UI checks passed: concise decision-first layout, folded technical/catalog/item details, support estimates without baseline false certainty, expandable cases, source links and seeking, legacy/retry behavior, safe authenticated frames, mobile layout, dense pagination, hybrid coverage, busy admission, authenticated running-job recovery, paused/completed/file-selection preservation, 429 races, and stale discovery protection.");
+    console.log("Synthetic UI checks passed: concise decision-first layout, folded technical/catalog/item details, support estimates without baseline false certainty, expandable cases, food-belongings and screen-on workplace-policy findings, source links and seeking, legacy/retry behavior, safe authenticated frames, mobile layout, dense pagination, hybrid coverage, busy admission, authenticated running-job recovery, paused/completed/file-selection preservation, 429 races, and stale discovery protection.");
   } finally { await browser.close(); }
 })().catch(error=>{console.error(error.stack || error.message);process.exitCode=1;});

@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-18-v5.4",
+  "version": "2026-10-18-v5.5",
   "semantics": "Fixed visual review taxonomy. Scenario observations are proposals; the independent rule registry controls automatic public-clause and explicitly user-provided workplace-policy findings. No example video, filename, timestamp or verdict is included.",
   "scenarios": [
     {
@@ -25,6 +25,40 @@
         "Ambiguous containers, unknown cup contents, empty wrappers, medicine and work equipment must not be called food.",
         "Cashier workstation and working context require visible support; break areas and actual shift schedules are not inferred.",
         "The prohibition is a user-provided workplace policy, not a verified public-law clause."
+      ],
+      "related_legal_rule_ids": [],
+      "legal_source": null,
+      "disposition": "review_only",
+      "alias_of": null
+    },
+    {
+      "id": "workstation_departure_screen_left_on",
+      "label": "Workstation left unattended with the computer screen on",
+      "visual_checks": [
+        "computer_at_workstation_identified",
+        "workstation_departure_observed",
+        "workstation_unattended_after_departure",
+        "same_screen_visibly_on_after_departure",
+        "departure_screen_sequence_visible"
+      ],
+      "check_descriptions": {
+        "computer_at_workstation_identified": "A computer monitor or laptop display is visibly identified at the operator's work desk; an unidentified bright rectangle or reflection is insufficient.",
+        "workstation_departure_observed": "The sequence shows the workstation operator before and during an actual exit from the workstation; standing or reaching inside the work area is insufficient.",
+        "workstation_unattended_after_departure": "After that exit, the same workstation is visibly unattended; an empty chair alone without the preceding departure sequence is insufficient.",
+        "same_screen_visibly_on_after_departure": "That same identified display is visibly illuminated after departure while the work desk is unattended. A locked but lit screen is still on. Off, black, standby or closed-lid states cannot be assumed on.",
+        "departure_screen_sequence_visible": "Referenced before/departure/after views establish the operator exit, unattended desk and continuity of the same screen; unresolved sequence or display state remains unknown."
+      },
+      "visual_cues": [
+        "computer_screen_visible",
+        "workstation_departure",
+        "computer_screen_on_unattended"
+      ],
+      "unknowns": [
+        "A static image of an empty chair and a lit screen cannot establish an actual workstation departure.",
+        "Standing, reaching within the workstation and occlusion must not become an exit.",
+        "Screen identity and power state need readable visual support; reflections and unknown bright objects are insufficient.",
+        "Locked but illuminated means on; a closed lid, an off or black screen and standby cannot be assumed on.",
+        "This is a user-provided workplace policy; no active client intake or independently verified public-law clause is required or claimed."
       ],
       "related_legal_rule_ids": [],
       "legal_source": null,

@@ -7,7 +7,7 @@ import math
 from worker.video import AnalysisError, FrameRef
 
 
-KINDS = ("person", "cash", "document", "cash_drawer", "counting_machine", "bag", "phone", "drawer", "safe", "counter", "window", "other")
+KINDS = ("person", "cash", "document", "cash_drawer", "counting_machine", "bag", "phone", "drawer", "safe", "counter", "window", "computer", "other")
 _FIELDS = {"frame_index", "label", "kind", "confidence", "bbox"}
 
 
@@ -39,7 +39,8 @@ def detection_schema(frame_count: int) -> dict:
 def localization_prompt() -> str:
     return (
         "\nAlso return detections: at most 12 clearly visible people or physical items. "
-        "Kinds: person, cash, document, cash_drawer, counting_machine, bag, phone, drawer, safe, counter, window, other. "
+        "Kinds: person, cash, document, cash_drawer, counting_machine, bag, phone, drawer, safe, counter, window, computer, other. "
+        "Computer means laptop or desktop monitor hardware; its box does not establish screen power or lock state. "
         "Choose one best-visible supplied frame per object; do not repeat it in multiple frames. "
         "Use frame_index from this request and a concise visible label, without identities, "
         "ownership, hidden contents or assumed roles. Box only the visible object using "

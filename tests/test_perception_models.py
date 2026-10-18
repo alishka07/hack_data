@@ -58,6 +58,21 @@ def test_object_output_is_normalized_fixed_vocabulary_and_nms_preserves_differen
     assert error.value.code == "object_output_invalid"
 
 
+def test_computer_query_localizes_hardware_without_asserting_display_or_lock_state():
+    kinds = [kind for kind, _ in models.OBJECT_QUERIES]
+    # Existing class indices remain stable when hardware support is extended.
+    assert kinds[:7] == ["cash", "bag", "phone", "drawer", "safe", "counter", "window"]
+    assert kinds.count("computer") == 1
+    index = kinds.index("computer")
+    assert models.OBJECT_QUERIES[index][1] == "a laptop computer or desktop computer monitor"
+    output = {"boxes": np.asarray([[40, 20, 120, 60]]),
+              "scores": np.asarray([.8]), "labels": np.asarray([index])}
+    computer, = normalize_owlv2_result(output, (100, 200))
+    assert computer["kind"] == computer["label"] == "computer"
+    assert computer["bbox"] == pytest.approx([.2, .2, .6, .6])
+    assert set(computer) == {"bbox", "confidence", "kind", "label", "query"}
+
+
 def test_missing_optional_assets_report_unavailable_without_loading_or_download(tmp_path, monkeypatch):
     def forbidden(*args, **kwargs):
         raise AssertionError("Missing assets must not load or download models")

@@ -1,8 +1,8 @@
 {
-  "version": "2026-10-18-v5.4",
-  "scope": "Bounded candidate catalog for teller/cash-unit CCTV and supporting manual checks, including the explicitly user-provided workplace personal-food policy; not all bank-law violations. No private video or label descriptions used.",
-  "scoring_note": "Continuous scoring 2.0: an event starts at 0 and rises to max(previous score, 100 * source-grounded model occurrence confidence); a required procedure starts at 100 and falls to min(previous score, 100 * (1 - source-grounded model confidence in correct completion)). Model self-confidence is uncalibrated, not a measured probability. Source-linked window estimates may update before the separate rule gate, including with unknown applicability; missing evidence leaves the prior score unchanged. Twelve visible checks (4 automatic event checks, including one user-provided workplace policy, and 8 review-only procedures) are assessed in existing window calls; 22 manual checks retain their initial scores unless external evidence is supplied. New observed episode starts create fresh assessments; windows without established episode boundaries are isolated. The summary retains the highest remaining estimate across relevant assessed episodes, including pending procedures; correlated frames are never added. Initial values and unresolved scores do not establish occurrence, omission, compliance or applicability. Evidenced not-applicable items are excluded; related event/procedure views must not be counted as independent breaches.",
-  "source_note": "32 entries retain their prior_primary_review provenance from 2026-10-17. One vault storage review item has no curated legal clause mapping and is explicitly unmapped_review_only. One food-as-personal-belongings event follows the user's explicit workplace policy revised 2026-10-18 and is not a public-law claim. No new legal clause is represented as verified.",
+  "version": "2026-10-18-v5.5",
+  "scope": "Bounded candidate catalog for teller/cash-unit CCTV and supporting manual checks, including explicitly user-provided workplace policies for personal food belongings and switching off computer displays before departure; not all bank-law violations. No private video or label descriptions used.",
+  "scoring_note": "Continuous scoring 2.0: an event starts at 0 and rises to max(previous score, 100 * source-grounded model occurrence confidence); a required procedure starts at 100 and falls to min(previous score, 100 * (1 - source-grounded model confidence in correct completion)). Model self-confidence is uncalibrated, not a measured probability. Source-linked window estimates may update before the separate rule gate, including with unknown applicability; missing evidence leaves the prior score unchanged. Thirteen visible checks (5 automatic event checks, including two user-provided workplace policies, and 8 review-only procedures) are assessed in existing window calls; 22 manual checks retain their initial scores unless external evidence is supplied. New observed episode starts create fresh assessments; windows without established episode boundaries are isolated. The summary retains the highest remaining estimate across relevant assessed episodes, including pending procedures; correlated frames are never added. Initial values and unresolved scores do not establish occurrence, omission, compliance or applicability. Evidenced not-applicable items are excluded; related event/procedure views must not be counted as independent breaches.",
+  "source_note": "32 entries retain their prior_primary_review provenance from 2026-10-17. One vault storage review item has no curated legal clause mapping and is explicitly unmapped_review_only. One food-as-personal-belongings event and one workstation-departure-with-screen-on event follow the user's explicit workplace policies supplied or revised 2026-10-18 and are not public-law claims. No new legal clause is represented as verified.",
   "items": [
     {
       "id": "personal_food_at_workstation",
@@ -19,6 +19,26 @@
         "Ambiguous objects, cash, work equipment, medicine and medical devices do not establish identifiable food.",
         "A cup or container with unknown contents, or an empty wrapper or plate alone, does not establish food presence.",
         "Food outside the cashier work surface, in a designated break area, or with unknown working context does not establish this policy violation."
+      ],
+      "automation": "automatic_when_supported",
+      "legal_status": "user_provided_workplace_policy_not_public_law",
+      "related_ids": []
+    },
+    {
+      "id": "workstation_departure_screen_left_on",
+      "label": "Workstation left unattended with the computer screen on",
+      "basis": "workplace_policy",
+      "scoring_kind": "event_occurrence",
+      "initial_score": 0,
+      "paragraph": "Leaving workstation with computer screen on",
+      "document": "User-provided workplace policy",
+      "source_url": "/policies/workplace-screen",
+      "trigger": "An operator visibly leaves an established workstation and the same identified computer or laptop display remains visibly on while the workstation is unattended.",
+      "required_evidence": "Source-referenced before/departure/after sequence; identified workstation display; actual departure; unattended workstation and that same screen visibly on together after departure. Client intake is not required.",
+      "exceptions": [
+        "A static empty chair, posture change, standing, reaching or occlusion alone does not establish a departure sequence.",
+        "Unresolved display identity or power state, reflections, and unidentified bright objects cannot establish the screen is on.",
+        "An attended desk, a closed laptop lid, or an off, black or standby screen does not establish this violation. A locked but visibly illuminated screen remains on."
       ],
       "automation": "automatic_when_supported",
       "legal_status": "user_provided_workplace_policy_not_public_law",

@@ -24,9 +24,11 @@ OBSERVABLE_CHECKS = {
     "incomplete_coin_sack_count": "Clearly incomplete payout coin sack identified; its coins completely counted; qualifying intact packaging exempt.",
     "client_recount_supervision": "Actual client recount at window/designated counting room with established cashier/controller oversight; ordinary transactions exempt.",
     "personal_food_at_workstation": "Identifiable food or a snack on the operating cashier work table counts as personal belongings under the user policy; eating is not required; unknown objects or cup contents are insufficient.",
+    "workstation_departure_screen_left_on": "Operator actually leaves workstation, then same identified computer/laptop display visibly on at unattended desk; static empty chair or standing insufficient; locked but lit is on; reflection/off/black/standby/closed lid cannot establish on.",
 }
 _EVENT_IDS = frozenset({"active_intake_departure", "cash_intake_without_client_presence",
-                        "previous_transaction_cash_exposed", "personal_food_at_workstation"})
+                        "previous_transaction_cash_exposed", "personal_food_at_workstation",
+                        "workstation_departure_screen_left_on"})
 _FIELDS = {"item_id", "assessment", "confidence", "applicability", "frame_indices"}
 
 

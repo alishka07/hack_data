@@ -18,7 +18,7 @@ from worker.perception_models import ByteTrackAdapter, dependency_available, opt
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ZONE_NAMES = ("workstation", "customer", "counter", "storage", "window", "safe", "cash_zone")
+ZONE_NAMES = ("workstation", "customer", "counter", "storage", "window", "safe", "cash_zone", "computer")
 
 
 def _config_error(message: str):

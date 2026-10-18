@@ -37,6 +37,19 @@ def _negative_only_evidence(identifier: str, evidence: str) -> bool:
     This is a conservative proposal filter, never a compliance decision. In
     particular, absent customers must not suppress a visible cash-counting cue.
     """
+    if identifier == "workstation_departure_screen_left_on":
+        lowered = evidence.lower()
+        device = r"computer|laptop|monitor|display|screen"
+        denied = re.search(
+            r"\b(?:no|not|never|does not|did not|has not)\s+(?:actual\s+|observed\s+)?(?:departure|depart\w*|leav\w*|left|exit\w*)\b"
+            r"|\b(?:remains?|stays?|still)\s+(?:seated|at (?:the |their )?(?:desk|workstation|work table))\b"
+            r"|\b(?:screen|display)\s+(?:is\s+|remains?\s+|stays?\s+)?(?:off|black|dark|not visible|unreadable|unknown|obscured)\b"
+            r"|\b(?:laptop|lid)\s+(?:is\s+)?closed\b"
+            r"|\b(?:only|merely)\s+(?:a\s+)?(?:reflection|glare|reflects)\b"
+            r"|\b(?:screen|display)\s+state\s+(?:is\s+)?unknown\b"
+            r"|\bwhether\s+(?:the\s+)?(?:screen|display)\b.{0,30}\bunknown\b", lowered)
+        on = re.search(r"\b(?:on|lit|illuminated|active|bright|displaying)\b", lowered)
+        return bool(denied) or not bool(re.search(r"\b(?:" + device + r")\b", lowered) and on)
     if identifier == "personal_food_at_workstation":
         # The current policy concerns presence, even when no eating occurs.
         # Do not turn an unidentified object or a cup into identifiable food.
@@ -106,6 +119,7 @@ def scenario_absence_only(identifier: str, text: str) -> bool:
 # Cues describe physical observations. Authorization, ownership, room designation
 # and completion of an unobserved procedure remain downstream unknowns.
 SCENARIO_CUES = {
+    "workstation_departure_screen_left_on": "An operator leaves the workstation; after departure the same computer display remains visibly illuminated at the unattended desk. An empty chair or reflection alone is insufficient.",
     "personal_food_at_workstation": "Identifiable food or a snack visibly on the operating cashier work table; eating is not required. Unknown objects and cup contents remain unknown.",
     "cashier_eating_at_workstation": "Cashier visibly takes bites or consumes food at the work table; food presence, drinking and face touching are insufficient.",
     "active_intake_departure": "Cash received, followed by actual workstation exit before visible service completion.",
@@ -168,7 +182,9 @@ def scenario_prompt(catalog: dict) -> str:
         identifier = item["id"]
         cues = item.get("visual_cues")
         descriptions = item.get("check_descriptions")
-        if (isinstance(descriptions, dict) and descriptions
+        if identifier == "workstation_departure_screen_left_on":
+            cue = SCENARIO_CUES[identifier][:220]
+        elif (isinstance(descriptions, dict) and descriptions
                 and all(isinstance(text, str) for text in descriptions.values())):
             cue = " ".join(list(descriptions.values())[:2])[:220]
         else:

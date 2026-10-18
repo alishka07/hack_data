@@ -32,11 +32,11 @@ def response(*items, visibility="clear"):
     return {"visibility": visibility, "catalog_assessments": list(items)}
 
 
-def test_twelve_visible_catalog_checks_enter_schema_and_compact_prompt():
+def test_thirteen_visible_catalog_checks_enter_schema_and_compact_prompt():
     catalog = json.loads((ROOT / "rules/catalog.json").read_text(encoding="utf-8"))
     visible = {item["id"] for item in catalog["items"] if item["automation"] != "manual"}
     schema = catalog_observation_schema(8)
-    assert set(OBSERVABLE_CHECKS) == visible and len(visible) == 12
+    assert set(OBSERVABLE_CHECKS) == visible and len(visible) == 13
     assert set(schema["items"]["properties"]["item_id"]["enum"]) == visible
     prompt = confidence_prompt(catalog)
     assert all(identifier in prompt for identifier in visible)
@@ -58,6 +58,22 @@ def test_source_references_are_canonical_not_model_supplied_and_input_is_unchang
     assert (rows[0]["start_sec"], rows[0]["end_sec"], rows[0]["window_id"]) == (1., 3., 7)
     assert (rows[0]["window_start_sec"], rows[0]["window_end_sec"]) == (1., 3.)
     assert collect_confidence_observations({"visibility": "clear"}, frames(0.), 0) == []
+
+
+def test_screen_departure_confidence_is_an_event_and_requires_source_references():
+    identifier = "workstation_departure_screen_left_on"
+    answer = response(observation(identifier, confidence=.73, indices=[0, 1, 2]))
+    source = frames(1., 2., 3.)
+    _validate_json_schema(answer["catalog_assessments"], catalog_observation_schema(3))
+    collected = collect_confidence_observations(answer, source, 0)
+    assert collected[0]["item_id"] == identifier and collected[0]["assessment"] == "event_evidence"
+    scoped = scope_confidence_observations(collected, ObservationLedger())
+    rows, _ = clip_assessments(load_catalog(ROOT), [], [], 4, confidence_observations=scoped)
+    row = next(row for row in rows if row["item_id"] == identifier)
+    assert row["score"] == 73 and row["confirmed_finding"] is False
+    assert len(row["evidence_refs"]) == 3
+    with pytest.raises(AnalysisError):
+        collect_confidence_observations(response(observation(identifier, "completion_evidence")), source, 0)
 
 
 @pytest.mark.parametrize("confidence", [float("nan"), float("inf"), True, -.01, 1.01, "0.5"])

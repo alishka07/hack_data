@@ -15,7 +15,8 @@ def test_curated_visual_coverage_and_unmapped_source_are_explicit():
     expected = {"previous_transaction_cash_exposed", "previous_cash_stored",
                 "cash_intake_without_client_presence", "backoffice_processing_control",
                 "keys_stamps_secure_handling", "vault_cash_segregation_storage",
-                "personal_belongings_in_cash_unit", "personal_food_at_workstation"}
+                "personal_belongings_in_cash_unit", "personal_food_at_workstation",
+                "workstation_departure_screen_left_on"}
     assert expected <= set(scenario_type_ids(scenarios))
     assert scenarios["previous_cash_stored"]["alias_of"] == "previous_transaction_cash_exposed"
     assert scenarios["vault_cash_segregation_storage"]["legal_source"] is None
@@ -50,3 +51,18 @@ def test_all_visual_cues_are_valid_observations_without_new_transaction_conclusi
     transactions = build_transactions(ledger)
     assert all(row.get("disposition") != "finding" for row in transactions.get("proposals", []))
     assert not any("ownership" in row for row in data["facts"])
+
+
+def test_screen_departure_scenario_requires_departure_then_same_screen_on():
+    scenario = load_scenarios(ROOT)["workstation_departure_screen_left_on"]
+    assert scenario["visual_cues"] == ["computer_screen_visible", "workstation_departure",
+                                       "computer_screen_on_unattended"]
+    assert scenario["legal_source"] is None and scenario["related_legal_rule_ids"] == []
+    assert scenario["disposition"] == "review_only"
+    descriptions = scenario["check_descriptions"]
+    assert "actual exit" in descriptions["workstation_departure_observed"]
+    assert "empty chair alone" in descriptions["workstation_unattended_after_departure"]
+    screen = descriptions["same_screen_visibly_on_after_departure"]
+    assert "same identified" in screen and "locked but lit" in screen
+    assert "standby" in screen and "closed-lid" in screen
+    assert "before/departure/after" in descriptions["departure_screen_sequence_visible"]

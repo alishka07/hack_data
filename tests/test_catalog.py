@@ -21,7 +21,7 @@ def test_catalog_automatic_scope_matches_the_enabled_legal_gate():
     automatic = {item["id"] for item in catalog["items"] if item["automation"] == "automatic_when_supported"}
     enabled = {key for key, rule in load_rules(ROOT).items() if rule.get("auto_emit", True)}
     assert automatic == enabled
-    assert len(catalog["items"]) == 34
+    assert len(catalog["items"]) == 35
     assert all(item["initial_score"] == (0 if item["scoring_kind"] == "event_occurrence" else 100)
                for item in catalog["items"])
     items = {item["id"]: item for item in catalog["items"]}
@@ -71,6 +71,38 @@ def test_food_presence_replaces_eating_without_broadening_personal_property_law(
     assert "Food presence" in food["summary"] and "are not required" in food["summary"]
     assert catalog["personal_belongings_in_cash_unit"]["automation"] == "manual"
     assert "Medicines, medical devices" in catalog["personal_belongings_in_cash_unit"]["exceptions"][0]
+
+
+def test_screen_departure_policy_has_user_provenance_and_sequence_requirements():
+    identifier = "workstation_departure_screen_left_on"
+    catalog = load_catalog(ROOT)
+    item = next(row for row in catalog["items"] if row["id"] == identifier)
+    rule = load_rules(ROOT)[identifier]
+    assert item["basis"] == rule["basis"] == "workplace_policy"
+    assert item["document"] == rule["document"] == "User-provided workplace policy"
+    assert item["source_url"] == rule["source_url"] == "/policies/workplace-screen"
+    assert rule["source_id"] == "user_workplace_policy" and rule["auto_emit"] is True
+    assert item["legal_status"] == rule["legal_review_status"] == "user_provided_workplace_policy_not_public_law"
+    checks = ["computer_at_workstation_identified", "workstation_departure_observed",
+              "workstation_unattended_after_departure", "same_screen_visibly_on_after_departure",
+              "departure_screen_sequence_visible"]
+    assert rule["required_checks"] == checks and rule["action_checks"] == checks[:4]
+    assert "cash_intake_established" not in checks and "client_service_active" not in checks
+    assert item["scoring_kind"] == "event_occurrence" and item["initial_score"] == 0
+    rows, episodes = clip_assessments(catalog, [event(identifier=identifier)], [], 10)
+    assessment = next(row for row in rows if row["item_id"] == identifier)
+    assert assessment["confirmed_finding"] is True and assessment["confirmed_occurrences"] == 1
+    assert episodes[0]["evidence_refs"] == [{"filename": "event-one.jpg", "timestamp_sec": 1.0}]
+
+
+def test_screen_policy_provenance_file_is_curated_without_a_statutory_claim():
+    registry = json.loads((ROOT / "rules/registry.json").read_text(encoding="utf-8"))
+    source = next(row for row in registry["sources"] if row["id"] == "user_workplace_policy")
+    assert "rules/sources/workplace-screen.md" in source["review_records"]
+    text = (ROOT / "rules/sources/workplace-screen.md").read_text(encoding="utf-8")
+    assert "explicitly supplied" in text and "does not claim" in text
+    assert "A single still" in text and "locked but visibly illuminated" in text
+    assert "active client intake" in text and "unattended" in text
 
 
 def test_review_proposals_do_not_change_initial_scores_or_confirm_findings():
