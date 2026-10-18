@@ -634,29 +634,102 @@
       ...queue.map(item => ({...item,status:"review_required",requires_review:true,reasons:[reviewExplanation(item)],checks:[]}))
     ];
   }
+  function caseResultStatus(item) {
+    return item.status === "confirmed" ? "confirmed" : needsCaseReview(item) ? "review_required" : "rejected";
+  }
+  function validCaseTime(value) {
+    return typeof value === "number" && Number.isFinite(value) && value >= 0;
+  }
+  function displayCaseGroups(cases) {
+    // Presence checks can repeat across sampling windows. Event-specific actions
+    // remain separate, and the underlying decisions and evidence are untouched.
+    const presenceTypes = new Set(["personal_belongings_in_cash_unit", "personal_food_at_workstation"]);
+    const groups = [], byKey = new Map();
+    for (const item of cases) {
+      const status = caseResultStatus(item);
+      const key = presenceTypes.has(item.type_id) && validCaseTime(item.timecode_sec)
+        ? JSON.stringify([item.type_id, status, item.probability_scope || null]) : null;
+      let group = key === null ? null : byKey.get(key);
+      if (!group) {
+        group = {items:[], status, order:groups.length}; groups.push(group);
+        if (key !== null) byKey.set(key, group);
+      }
+      group.items.push(item);
+    }
+    for (const group of groups) {
+      group.items.sort((a, b) => (validCaseTime(a.timecode_sec) ? a.timecode_sec : Infinity) - (validCaseTime(b.timecode_sec) ? b.timecode_sec : Infinity));
+      group.start_sec = validCaseTime(group.items[0].timecode_sec) ? group.items[0].timecode_sec : null;
+      group.end_sec = validCaseTime(group.items.at(-1).timecode_sec) ? group.items.at(-1).timecode_sec : null;
+    }
+    const priority = {review_required:0, confirmed:1, rejected:2};
+    return groups.sort((a, b) => priority[a.status] - priority[b.status]
+      || (a.start_sec ?? Infinity) - (b.start_sec ?? Infinity) || a.order - b.order);
+  }
+  function caseProbabilityScope(item) {
+    return ({joint_checks:"All rule checks",action_only:"Visible action only",procedure_completion:"Procedure completed",event_occurrence:"Event occurs"})[item.probability_scope] || "";
+  }
+  function appendCaseDetails(target, item) {
+    const supported = item.status === "confirmed";
+    const reasons = Array.isArray(item.reasons) ? item.reasons.filter(reason => typeof reason === "string" && reason.trim()) : [];
+    const hasObservation = (supported || item.visual_scenario_supported === true || item.action_decision === "supported")
+      && typeof item.observed_action === "string" && item.observed_action.trim();
+    if (hasObservation) target.append(node("p", "case-observation", item.observed_action));
+    const checks = Array.isArray(item.checks) ? item.checks.filter(check => check && typeof check.name === "string") : [];
+    if (checks.length) {
+      const list = node("ul", "case-checks");
+      for (const check of checks) {
+        const status = ["yes", "no"].includes(check.status) ? check.status : "unknown", row = node("li");
+        const label = node("span", "check-label", (check.stage === "action" ? "Visible action" : check.stage === "exception_exclusion" ? "Exception excluded" : "Rule context") + " · " + friendly(check.name));
+        const refs = Array.isArray(check.evidence_refs) ? check.evidence_refs.filter(ref => validCaseTime(ref?.timestamp_sec)).slice(0, 3) : [];
+        if (refs.length) {
+          const moments = node("span", "check-evidence");
+          for (const ref of refs) {
+            const time = node("button", "text-button", sampleTime(ref.timestamp_sec)); time.type = "button";
+            time.setAttribute("aria-label", "Seek to evidence for " + friendly(check.name) + " at " + sampleTime(ref.timestamp_sec));
+            time.addEventListener("click", () => seek(ref.timestamp_sec)); moments.append(time);
+          }
+          label.append(moments);
+        }
+        row.append(label, node("strong", "check-status " + status, ({yes:"Yes",no:"No",unknown:"Unknown"})[status])); list.append(row);
+      }
+      target.append(list);
+    }
+    if (reasons.length) { const list = node("ul", "case-reasons"); list.append(...reasons.map(reason => node("li", "", reason))); target.append(list); }
+    if (!checks.length && !reasons.length && !hasObservation) target.append(node("p", "case-observation", "No additional check details were saved."));
+  }
   function renderCaseDecisions(metadata, result) {
-    const cases = reviewCases(metadata, result);
-    ui["case-decisions"].replaceChildren(...cases.flatMap((item, index) => {
+    const cases = displayCaseGroups(reviewCases(metadata, result));
+    ui["case-decisions"].replaceChildren(...cases.flatMap((group, index) => {
+      const item = group.items[0], repeated = group.items.length > 1;
       const card = node("tr", "case-card"), name = node("th", "check-name", caseTitle(item.type_id));
       name.setAttribute("scope", "row");
       const reasons = Array.isArray(item.reasons) ? item.reasons.filter(reason => typeof reason === "string" && reason.trim()) : [];
       const short = reasons[0] || reviewExplanation(item);
       if (short) name.append(node("p", "case-reason-short", short.length > 110 ? short.slice(0, 107) + "…" : short));
+      if (repeated) name.append(node("p", "case-observation-count", group.items.length + " observations"));
       const labels = {confirmed:"Violation",review_required:"Needs review",rejected:"Not supported"};
       const outcome = node("td"), probability = node("td", "case-probability"), moment = node("td", "case-time"), detailCell = node("td");
       const active = needsCaseReview(item), supported = item.status === "confirmed";
       outcome.append(node("span", "case-status " + (supported ? "confirmed" : active ? "pending" : "rejected"), supported ? labels.confirmed : active ? labels.review_required : labels.rejected));
-      const estimate = confidenceText(item.probability);
+      const estimates = group.items.filter(member => confidenceText(member.probability) !== null).map(member => member.probability);
+      const low = estimates.length ? confidenceText(Math.min(...estimates)) : null;
+      const high = estimates.length ? confidenceText(Math.max(...estimates)) : null;
+      const estimate = low === high ? low : low + "–" + high;
       probability.append(node("span", "case-probability-value", estimate === null ? "Not assessed" : estimate));
       if (estimate !== null) {
-        probability.title = "Uncalibrated model estimate that the stated check is true; not a measured probability.";
-        const scope = ({joint_checks:"All rule checks",action_only:"Visible action only",procedure_completion:"Procedure completed",event_occurrence:"Event occurs"})[item.probability_scope];
+        probability.title = repeated ? "Range of individual uncalibrated observation estimates; not a combined probability for the time span." : "Uncalibrated model estimate that the stated check is true; not a measured probability.";
+        const scope = caseProbabilityScope(item);
         if (scope) probability.append(node("span", "case-probability-scope", scope));
+        if (repeated) probability.append(node("span", "case-probability-scope", estimates.length < group.items.length ? estimates.length + " of " + group.items.length + " assessed" : "Across observations"));
       }
-      if (typeof item.timecode_sec === "number" && Number.isFinite(item.timecode_sec) && item.timecode_sec >= 0) {
-        const time = node("button", "time-button", "▶ " + formatTime(item.timecode_sec)); time.type = "button";
-        time.setAttribute("aria-label", "Seek to " + caseTitle(item.type_id) + " at " + sampleTime(item.timecode_sec));
-        time.addEventListener("click", () => seek(item.timecode_sec)); moment.append(time);
+      if (group.start_sec !== null) {
+        const range = group.end_sec > group.start_sec;
+        const time = node("button", "time-button" + (range ? " case-time-range" : "")); time.type = "button";
+        time.append(node("span", "", "▶ " + formatTime(group.start_sec)));
+        if (range) time.append(node("span", "", "–" + formatTime(group.end_sec)));
+        time.setAttribute("aria-label", "Seek to " + caseTitle(item.type_id) + " at " + sampleTime(group.start_sec) + (range ? "; observations through " + sampleTime(group.end_sec) : ""));
+        if (range) time.title = "Observation span; seek to the first sampled moment. Individual moments are in Details.";
+        time.addEventListener("click", () => seek(group.start_sec)); moment.append(time);
       } else moment.textContent = "—";
       const detail = node("details", "case-details");
       const summary = node("summary", "", "View"), detailRow = node("tr", "case-detail-row"), detailBody = node("td", "case-detail-body");
@@ -664,29 +737,18 @@
       summary.setAttribute("aria-controls", detailRow.id); detail.append(summary);
       display(detailRow, false);
       detail.addEventListener("toggle", () => display(detailRow, detail.open));
-      if ((supported || item.visual_scenario_supported === true || item.action_decision === "supported") && typeof item.observed_action === "string" && item.observed_action.trim()) detailBody.append(node("p", "case-observation", item.observed_action));
-      const checks = Array.isArray(item.checks) ? item.checks.filter(check => check && typeof check.name === "string") : [];
-      if (checks.length) {
-        const list = node("ul", "case-checks");
-        for (const check of checks) {
-          const status = ["yes", "no"].includes(check.status) ? check.status : "unknown", row = node("li");
-          const label = node("span", "check-label", (check.stage === "action" ? "Visible action" : check.stage === "exception_exclusion" ? "Exception excluded" : "Rule context") + " · " + friendly(check.name));
-          const refs = Array.isArray(check.evidence_refs) ? check.evidence_refs.filter(ref => typeof ref?.timestamp_sec === "number" && Number.isFinite(ref.timestamp_sec) && ref.timestamp_sec >= 0).slice(0, 3) : [];
-          if (refs.length) {
-            const moments = node("span", "check-evidence");
-            for (const ref of refs) {
-              const time = node("button", "text-button", sampleTime(ref.timestamp_sec)); time.type = "button";
-              time.setAttribute("aria-label", "Seek to evidence for " + friendly(check.name) + " at " + sampleTime(ref.timestamp_sec));
-              time.addEventListener("click", () => seek(ref.timestamp_sec)); moments.append(time);
-            }
-            label.append(moments);
-          }
-          row.append(label, node("strong", "check-status " + status, ({yes:"Yes",no:"No",unknown:"Unknown"})[status])); list.append(row);
+      if (repeated) {
+        detailBody.append(node("p", "case-group-note", "Observed at sampled moments within this span. Continuous presence between observations is not established."));
+        for (const member of group.items) {
+          const occurrence = node("section", "case-occurrence"), heading = node("h4", "case-occurrence-heading");
+          const time = node("button", "time-button", "▶ " + sampleTime(member.timecode_sec)); time.type = "button";
+          time.setAttribute("aria-label", "Seek to observation of " + caseTitle(member.type_id) + " at " + sampleTime(member.timecode_sec));
+          time.addEventListener("click", () => seek(member.timecode_sec)); heading.append(time);
+          const estimate = confidenceText(member.probability), scope = caseProbabilityScope(member);
+          heading.append(node("span", "case-occurrence-probability", estimate === null ? "Not assessed" : estimate + (scope ? " · " + scope : "")));
+          occurrence.append(heading); appendCaseDetails(occurrence, member); detailBody.append(occurrence);
         }
-        detailBody.append(list);
-      }
-      if (reasons.length) { const list = node("ul", "case-reasons"); list.append(...reasons.map(reason => node("li", "", reason))); detailBody.append(list); }
-      if (!checks.length && !reasons.length && !item.observed_action) detailBody.append(node("p", "case-observation", "No additional check details were saved."));
+      } else appendCaseDetails(detailBody, item);
       detailCell.append(detail); card.append(name, outcome, probability, moment, detailCell);
       detailRow.append(detailBody);
       return [card, detailRow];
@@ -727,7 +789,7 @@
     ui["verdict-card"].classList.toggle("flagged", flagged); ui["verdict-card"].classList.toggle("review-required", reviewRequired);
     ui["verdict-icon"].textContent = flagged ? "!" : reviewRequired ? "?" : "✓";
     ui["verdict-title"].textContent = flagged ? "Violation detected" : reviewRequired ? "Needs review" : "No violation detected";
-    const count = reviewCases(metadata, result).filter(needsCaseReview).length;
+    const count = displayCaseGroups(reviewCases(metadata, result)).filter(group => group.status === "review_required").length;
     ui["verdict-description"].textContent = flagged ? events.length + (events.length === 1 ? " finding needs human review." : " findings need human review.")
       : verificationIncomplete ? "A violation is not confirmed. Some candidate checks were not completed within the processing budget."
       : reviewRequired ? "A violation is not confirmed. " + (count ? count + (count === 1 ? " case needs a check." : " cases need a check.") : "Review details need a check.")

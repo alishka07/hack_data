@@ -61,6 +61,13 @@ h1 { font-size: 30px; letter-spacing: -1px; }
 .case-detail-row .case-observation { margin-bottom: 12px; }
 .case-detail-row .case-checks { margin: 8px 0; }
 .case-detail-row .case-reasons { font-size: 11px; }
+.case-observation-count { margin-top: 5px; font-size: 10px; font-weight: 500; color: var(--muted); }
+.case-results-table .case-time-range { display: inline-flex; flex-direction: column; align-items: flex-start; max-width: 100%; line-height: 1.5; }
+.case-time-range span { white-space: nowrap; }
+.case-group-note { color: var(--muted); font-size: 11px; line-height: 1.7; margin-bottom: 12px; }
+.case-occurrence + .case-occurrence { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 16px; }
+.case-occurrence-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0 0 8px; }
+.case-occurrence-probability { color: var(--muted); font-size: 11px; font-weight: 400; }
 .disclosure { padding: 0; margin: 0; }
 .disclosure > summary { display: flex; align-items: center; gap: 10px; padding: 15px 20px; cursor: pointer; font-size: 12px; font-weight: 650; list-style: none; }
 .disclosure > summary::-webkit-details-marker { display: none; }

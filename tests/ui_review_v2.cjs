@@ -51,6 +51,8 @@ ids.food = "01234567-0123-4123-8123-012345678904";
 ids.unsafePolicy = "01234567-0123-4123-8123-012345678905";
 ids.probability = "01234567-0123-4123-8123-012345678906";
 ids.screen = "01234567-0123-4123-8123-012345678907";
+ids.grouped = "01234567-0123-4123-8123-012345678908";
+ids.groupedProbability = "01234567-0123-4123-8123-012345678909";
 const probabilityDetails = {assessments:[{...assessments[0],item_id:"active_intake_departure",score:99,model_confidence:.99}],case_decision:{status:"review_required",cases:[
   ...[0,1,null,true,"0.9",NaN,-.01,1.01].map((probability,index) => ({...caseDecision.cases[0],episode_id:"separate-episode-" + index,timecode_sec:index,probability,probability_scope:index === 0 ? "event_occurrence" : "joint_checks"})),
   {...caseDecision.cases[0],episode_id:"procedure-episode",probability:.82,probability_scope:"procedure_completion"},
@@ -59,6 +61,20 @@ const probabilityDetails = {assessments:[{...assessments[0],item_id:"active_inta
 let unsafePolicyUrl = "javascript:alert(1)";
 const foodDetails = {findings:[{type_id:"personal_food_at_workstation",timecode_sec:12.5,basis:"workplace_policy",rule_name:"User-provided workplace policy",paragraph:"Personal food at the cashier workstation",rule_url:"/policies/workplace-belongings"}],case_decision:{status:"confirmed",cases:[{type_id:"personal_food_at_workstation",status:"confirmed",timecode_sec:12.5,probability:.94,probability_scope:"event_occurrence",probability_calibrated:false,observed_action:"Personal food is visibly present on the cashier work table during work.",checks:[{stage:"action",name:"personal_food_on_work_table",status:"yes",evidence_refs:[{source_index:375,timestamp_sec:12.5}]}],reasons:["Personal food is visibly present at the workplace."]}]}};
 const screenDetails = {findings:[{type_id:"workstation_departure_screen_left_on",timecode_sec:16,basis:"workplace_policy",rule_name:"User-provided workplace policy",paragraph:"Switch off the screen when leaving the workstation",rule_url:"/policies/workplace-screen"}],case_decision:{status:"confirmed",cases:[{type_id:"workstation_departure_screen_left_on",status:"confirmed",timecode_sec:16,probability:.91,probability_scope:"joint_checks",probability_calibrated:false,observed_action:"The cashier leaves the workstation; later the same workstation is unattended while its computer screen remains visibly on.",checks:[{stage:"action",name:"workstation_departure_observed",status:"yes",evidence_refs:[{source_index:300,timestamp_sec:10},{source_index:480,timestamp_sec:16}]},{stage:"context",name:"same_screen_visibly_on_after_departure",status:"yes",evidence_refs:[{source_index:480,timestamp_sec:16}]}],reasons:["The departure and subsequent illuminated screen are supported by source frames."]}]}};
+const groupedDetails = {case_decision:{status:"review_required",cases:[
+  {...caseDecision.cases[1],timecode_sec:2},
+  {...screenDetails.case_decision.cases[0],timecode_sec:1,checks:[]},
+  ...[0,8,13,17].map((time,index) => ({type_id:"personal_belongings_in_cash_unit",episode_id:"presence-window-" + index,status:"review_required",requires_review:true,timecode_sec:time,probability:null,probability_scope:"action_only",action_decision:"uncertain",observed_action:"Uncertain synthetic text must stay hidden.",checks:[{stage:"action",name:"belongings_present",status:"unknown",evidence_refs:[{source_index:time*30,timestamp_sec:time}]}],reasons:["Synthetic sampled presence check " + (index + 1)]})),
+  {...caseDecision.cases[0],episode_id:"departure-one",timecode_sec:5},
+  {...caseDecision.cases[0],episode_id:"departure-two",timecode_sec:15},
+  {type_id:"personal_belongings_in_cash_unit",episode_id:"presence-rejected",status:"rejected",requires_review:false,timecode_sec:25,probability:.12,probability_scope:"action_only",checks:[],reasons:["Synthetic rejected presence check."]}
+]}};
+const groupedProbabilityDetails = {case_decision:{status:"review_required",cases:[
+  ...[.6,.8].map((probability,index) => ({...groupedDetails.case_decision.cases[2],timecode_sec:3+index*7,probability})),
+  {...groupedDetails.case_decision.cases[2],timecode_sec:12,probability:.95,probability_scope:"joint_checks"},
+  {...groupedDetails.case_decision.cases[2],timecode_sec:null,probability:null},
+  {...groupedDetails.case_decision.cases[2],timecode_sec:null,probability:null}
+]}};
 const incompleteDetails = {processing_status:"review_incomplete",coverage:{...details.coverage,verification_complete:false,unverified_candidate_count:3},case_decision:{status:"no_supported_violation",cases:[]},review_queue:[{...hostQueue[0],status:"diagnostic",requires_review:false,reason_codes:["verification_budget_exhausted"]}]};
 const denseDetections = Array.from({length:50},(_,index) => {
   const group = Math.floor(index / 24), timestamp = 10 + group * 10;
@@ -147,13 +163,14 @@ const pageErrors = [];
       if (pathname.startsWith("/api/ui/jobs/")) {
         if (id === runningId) return route.fulfill({json:{job_id:id,status:"processing",stage:"verifying",progress:.54}});
         if (screen) return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:screenDetails}});
+        if (id === ids.groupedProbability) return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:groupedProbabilityDetails}});
         if (food) return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:id === ids.food ? foodDetails : {...foodDetails,findings:[{...foodDetails.findings[0],rule_url:unsafePolicyUrl}]}}});
         if (id === ids.unavailable && unavailableDetails) return route.fulfill({status:500,json:{detail:"Synthetic details failure"}});
         if ([ids.incomplete,ids.incompleteFlagged,ids.incompleteMarker,ids.incompleteStatus,ids.incompleteCount].includes(id)) {
           const incomplete = id === ids.incompleteMarker ? {coverage:{verification_complete:false},case_decision:{cases:[]}} : id === ids.incompleteStatus ? {processing_status:"review_incomplete",case_decision:{cases:[]}} : id === ids.incompleteCount ? {coverage:{unverified_candidate_count:3},case_decision:{cases:[]}} : incompleteDetails;
           return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:incomplete}});
         }
-        const jobDetails = id===ids.probability?probabilityDetails:id===ids.dense?denseDetails:id===ids.dismissed?dismissedDetails:id===ids.visibility?{...dismissedDetails,coverage:{visibility_gaps:[{start_sec:1,end_sec:3}],unresolved_verification_count:0}}:id===ids.gap?{...dismissedDetails,coverage:{visibility_gaps:[],unresolved_verification_count:3}}:id===ids.empty?{...dismissedDetails,case_decision:{status:"review_required",counts:{review_required:99},cases:[]}}:id===ids.old?{}:id===ids.legacy?{review_queue:queue}:id===ids.clear?{detections:[],case_decision:{status:"no_supported_violation",cases:[]}}:id===ids.uncertain?{assessments:[{...assessments[2],automation:"review_only",assessment:"unresolved",unscoped_unknown_observation_count:1}]}:id===ids.manual?{assessments:[assessments[2]]}:details;
+        const jobDetails = id===ids.grouped?groupedDetails:id===ids.probability?probabilityDetails:id===ids.dense?denseDetails:id===ids.dismissed?dismissedDetails:id===ids.visibility?{...dismissedDetails,coverage:{visibility_gaps:[{start_sec:1,end_sec:3}],unresolved_verification_count:0}}:id===ids.gap?{...dismissedDetails,coverage:{visibility_gaps:[],unresolved_verification_count:3}}:id===ids.empty?{...dismissedDetails,case_decision:{status:"review_required",counts:{review_required:99},cases:[]}}:id===ids.old?{}:id===ids.legacy?{review_queue:queue}:id===ids.clear?{detections:[],case_decision:{status:"no_supported_violation",cases:[]}}:id===ids.uncertain?{assessments:[{...assessments[2],automation:"review_only",assessment:"unresolved",unscoped_unknown_observation_count:1}]}:id===ids.manual?{assessments:[assessments[2]]}:details;
         return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:jobDetails}});
       }
       return route.fulfill({status:404,body:"Synthetic route unavailable"});
@@ -334,6 +351,47 @@ const pageErrors = [];
     for (const index of [2,3,4,5,6,7,9]) assert.equal(await probabilityCells.nth(index).textContent(),"Not assessed","Unknown or invalid values must not borrow the same check's separate episode estimate: " + index);
     assert.match(await probabilityCells.nth(8).textContent(),/^82%.*Procedure completed/,"Required-procedure confidence must identify completion as the target");
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1),"The probability column must fit the mobile viewport");
+    await open(ids.grouped);
+    assert.equal(await page.locator(".case-card").count(),6,"Repeated presence checks should share one row while independent actions and conflicting results remain separate");
+    assert.deepEqual(await page.locator(".case-card .case-status").allTextContents(),["Needs review","Needs review","Needs review","Violation","Not supported","Not supported"],"Needs-review checks must precede violations and unsupported results even when the source list starts with a rejected check");
+    assert.match(await page.locator("#case-decision-count").textContent(),/^6 checks$/,"The header counts displayed result rows");
+    const groupedCard = page.locator(".case-card").first();
+    assert.match(await groupedCard.locator(".check-name").textContent(),/^Personal belongings in cash unit/);
+    assert.equal(await groupedCard.locator(".case-observation-count").textContent(),"4 observations");
+    assert.equal(await groupedCard.locator(".case-time .time-button").textContent(),"▶ 00:00–00:17");
+    const rangeGeometry = await groupedCard.locator(".case-time").evaluate(cell => {
+      const time = cell.querySelector(".time-button").getBoundingClientRect(), bounds = cell.getBoundingClientRect(), details = cell.nextElementSibling.getBoundingClientRect();
+      return {timeLeft:time.left,timeRight:time.right,cellLeft:bounds.left,cellRight:bounds.right,detailsLeft:details.left};
+    });
+    assert(rangeGeometry.timeLeft >= rangeGeometry.cellLeft-1 && rangeGeometry.timeRight <= rangeGeometry.cellRight+1 && rangeGeometry.timeRight <= rangeGeometry.detailsLeft+1,"The full interval must fit inside the mobile Time cell without overlapping View: " + JSON.stringify(rangeGeometry));
+    assert.equal(await groupedCard.locator(".case-probability-value").textContent(),"Not assessed","Grouping must not create a probability for unassessed checks");
+    await groupedCard.locator(".case-time .time-button").click();
+    assert.equal(await page.locator("#source-video").evaluate(video=>video.currentTime),0,"A grouped interval seeks to its first observation");
+    await groupedCard.locator(".case-details > summary").click();
+    const groupBody = page.locator(".case-detail-body").first();
+    await groupBody.waitFor({state:"visible"});
+    assert.equal(await groupBody.locator(".case-occurrence").count(),4,"Every original occurrence remains available in the expanded result");
+    assert.match(await groupBody.locator(".case-group-note").textContent(),/sampled|sampling/i);
+    assert.match(await groupBody.locator(".case-group-note").textContent(),/continuity|continuous|between/i,"The observed span must not imply uninterrupted presence");
+    assert.equal(await groupBody.locator(".case-checks li").count(),4,"Grouping must preserve every occurrence's check details");
+    for (const [index,time] of [0,8,13,17].entries()) {
+      const occurrence = groupBody.locator(".case-occurrence").nth(index);
+      assert.match(await occurrence.textContent(),new RegExp("Synthetic sampled presence check " + (index+1)));
+      assert.equal(await occurrence.locator(".case-occurrence-probability").textContent(),"Not assessed");
+      await occurrence.locator(".case-occurrence-heading .time-button").click();
+      assert.equal(await page.locator("#source-video").evaluate(video=>video.currentTime),time,"Every original observation keeps its own working source timestamp");
+    }
+    assert.doesNotMatch(await groupBody.textContent(),/Uncertain synthetic text must stay hidden/);
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1),"Grouped intervals and expanded observations fit a mobile viewport");
+    await page.locator("#case-decision-section").screenshot({path:path.join(root,"tmp","ui-grouped-results-mobile.png")});
+    await open(ids.groupedProbability);
+    assert.equal(await page.locator(".case-card").count(),4,"Different probability targets and missing timestamps remain separate result rows");
+    assert.equal(await page.locator(".case-probability-value").nth(0).textContent(),"60%–80%","A grouped row shows the member estimate range rather than a fabricated aggregate");
+    assert.match(await page.locator(".case-probability").nth(0).textContent(),/Visible action only/);
+    assert.match(await page.locator(".case-probability").nth(1).textContent(),/^95%.*All rule checks/);
+    assert.equal(await page.locator(".case-card .case-time .time-button").count(),2,"Missing timestamps must not become zero-second intervals");
+    await page.locator(".case-details > summary").first().click();
+    assert.deepEqual(await page.locator(".case-detail-body").first().locator(".case-occurrence-probability").allTextContents(),["60% · Visible action only","80% · Visible action only"],"Member estimates keep their target scope in Details");
     await open(ids.clear);
     assert.equal(await page.locator("#verdict-title").textContent(),"No violation detected");
     assert.match(await page.locator("#detections").textContent(),/No items were localized/);
@@ -582,6 +640,6 @@ const pageErrors = [];
     assert.equal(await page.locator("#job-id").textContent(),"");
     assert.equal(await page.locator("#open-active-job").count(),0,"Stale authenticated discoveries must be discarded after a key edit");
     assert.deepEqual(pageErrors,[]);
-    console.log("Synthetic UI checks passed: concise decision-first layout, folded technical/catalog/item details, support estimates without baseline false certainty, expandable cases, food-belongings and screen-on workplace-policy findings, source links and seeking, legacy/retry behavior, safe authenticated frames, mobile layout, dense pagination, hybrid coverage, busy admission, authenticated running-job recovery, paused/completed/file-selection preservation, 429 races, and stale discovery protection.");
+    console.log("Synthetic UI checks passed: concise decision-first layout, review-first grouped presence intervals with original observations and estimate scopes retained, folded technical/catalog/item details, support estimates without baseline false certainty, expandable cases, food-belongings and screen-on workplace-policy findings, source links and seeking, legacy/retry behavior, safe authenticated frames, mobile layout, dense pagination, hybrid coverage, busy admission, authenticated running-job recovery, paused/completed/file-selection preservation, 429 races, and stale discovery protection.");
   } finally { await browser.close(); }
 })().catch(error=>{console.error(error.stack || error.message);process.exitCode=1;});
