@@ -109,6 +109,10 @@ h1 { font-size: 30px; letter-spacing: -1px; }
 #findings { display: grid; gap: 12px; }
 #findings:empty { display: none; }
 .video-empty { height: 200px; }
+button.video-empty { width: 100%; border: 0; padding: 0; font: inherit; cursor: pointer; }
+.video-empty .video-empty-title { font-size: 14px; }
+.video-empty:hover .video-empty-icon { border-color: var(--pink); color: #f394be; }
+.video-empty:focus-visible { outline: 3px solid var(--pink); outline-offset: -5px; }
 footer { max-width: 1240px; padding: 18px max(3vw, 20px); }
 @media (max-width: 900px) {
   .workspace { grid-template-columns: 250px minmax(0, 1fr); gap: 16px; }

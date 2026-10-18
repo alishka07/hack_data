@@ -1189,6 +1189,11 @@
   ui["catalog-reload"].addEventListener("click", loadCatalog);
   byId("assessment-toggle")?.addEventListener("click", () => { showAllAssessments = !showAllAssessments; renderAssessments(lastDetails); });
   ui["key-visibility"].addEventListener("click", () => { const shown = ui["api-key"].type === "password"; ui["api-key"].type = shown ? "text" : "password"; ui["key-visibility"].textContent = shown ? "Скрыть" : "Показать"; ui["key-visibility"].setAttribute("aria-label", shown ? "Скрыть ключ API" : "Показать ключ API"); ui["key-visibility"].setAttribute("aria-pressed", String(shown)); });
+  ui["video-empty"].addEventListener("click", () => {
+    if (reviewDirty || reviewSaving) { message(ui["review-error"], "Сохраните изменения проверки перед выбором другого видео."); ui["reviewer-section"].scrollIntoView({block:"center"}); return; }
+    if (submitting || polling) { message(ui["form-error"], "Дождитесь текущего анализа или приостановите обновления перед выбором другого видео."); return; }
+    ui["video-file"].click();
+  });
   ui["video-file"].addEventListener("change", () => selectFile(ui["video-file"].files[0]));
   ui["remove-file"].addEventListener("click", () => { if (submitting || polling) return; if (reviewDirty || reviewSaving) { message(ui["review-error"], "Сохраните изменения проверки перед удалением видео."); return; } file = null; ui["video-file"].value = ""; display(ui["selected-file"], false); display(ui["drop-zone"], true); clearSource(); syncSubmit(); });
   for (const eventName of ["dragenter", "dragover"]) ui["drop-zone"].addEventListener(eventName, (event) => { event.preventDefault(); ui["drop-zone"].classList.add("drag-over"); });

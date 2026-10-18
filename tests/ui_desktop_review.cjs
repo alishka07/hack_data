@@ -60,6 +60,20 @@ const metadata = id => ({job_id:id,status:"done",original_name:id===job?"Кас�
   await page.goto("http://127.0.0.1:48123/");
   assert.equal(await page.locator("html").getAttribute("lang"),"ru");
   await page.fill("#api-key","desktop-test-key");
+  const previewPicker=page.locator("#video-empty");
+  assert.equal(await previewPicker.evaluate(element=>element.tagName),"BUTTON");
+  for(const activation of [()=>previewPicker.click(),()=>previewPicker.press("Enter"),()=>previewPicker.press("Space")]) {
+   const pending=page.waitForEvent("filechooser");await activation();const chooser=await pending;
+   assert.equal(chooser.isMultiple(),false);await chooser.setFiles([]);
+   assert.equal(await previewPicker.isVisible(),true,"Canceling the picker leaves the empty preview available");
+  }
+  let analyzeRequests=0;page.on("request",request=>{if(new URL(request.url()).pathname==="/api/v1/analyze")analyzeRequests++;});
+  const selectedPicker=page.waitForEvent("filechooser");await previewPicker.click();
+  await (await selectedPicker).setFiles({name:"local-preview.mov",mimeType:"video/quicktime",buffer:Buffer.from("synthetic local preview")});
+  assert.equal(await page.locator("#file-name").textContent(),"local-preview.mov");
+  assert.equal(await page.locator("#source-video").isVisible(),true);assert.equal(await previewPicker.isVisible(),false);
+  assert.match(await page.locator("#source-video").getAttribute("src"),/^blob:/);assert.equal(analyzeRequests,0,"Choosing a local video must not start an upload or analysis");
+  await page.locator("#remove-file").click();assert.equal(await previewPicker.isVisible(),true);
   await page.locator(".existing-job summary").click();
   await page.fill("#job-input",job); await page.locator("#open-job-form button").click();
   await page.waitForFunction(()=>!document.getElementById("results").hidden&&document.getElementById("source-video").src.startsWith("blob:"));
