@@ -3,6 +3,7 @@
 (() => {
   const byId = (id) => document.getElementById(id);
   const ui = Object.fromEntries([
+    "report-section", "report-review-status", "report-error", "save-review-final",
     "api-key", "key-visibility", "upload-form", "video-file", "drop-zone", "selected-file", "file-name", "file-size", "remove-file", "analyze-button", "admission-note", "form-error", "service-dot", "service-label", "status-title", "status-badge", "status-description", "progress-section", "progress-track", "progress-fill", "stage-label", "elapsed-label", "job-controls", "job-id", "poll-button", "poll-error", "source-video", "video-empty", "video-caption", "video-name", "video-error", "results", "verdict-card", "verdict-icon", "verdict-title", "verdict-description", "coverage-section", "coverage-metrics", "review-notes-section", "review-notes", "findings-heading", "finding-count", "findings", "review-queue-section", "review-queue-count", "review-queue", "catalog-section", "catalog-version", "catalog-reload", "catalog-status", "catalog-table-wrap", "catalog-items", "assessments-section", "assessments-version", "assessment-items", "open-job-form", "job-input", "video-stage", "detection-overlay", "detection-controls", "show-detections", "overlay-status", "detections-section", "detection-count", "detections", "case-decision-section", "case-decision-count", "case-decisions", "details-warning", "jury-verdict", "reviewer-section", "download-report", "reviewer-name", "review-camera", "review-session", "review-source-group", "review-coverage", "save-review-meta", "review-save-status", "reload-review", "review-error", "case-filters", "case-search", "case-empty", "missed-event-section", "missed-event-form", "missed-type", "missed-start", "missed-end", "missed-comment", "missed-events", "cancel-missed-event", "history-section", "history-search", "history-reload", "history-status", "history-items", "history-more", "quality-section", "quality-reload", "quality-status", "quality-summary", "quality-items", "quality-limitations", "event-navigation", "selected-case-label", "next-case", "event-timeline", "play-context", "play-context-status"
   ].map((id) => [id, byId(id)]));
   let file = null;
@@ -36,6 +37,7 @@
   let reviewState = null;
   let reviewDirty = false;
   let reviewSaving = false;
+  let reportDownloading = false;
   let selectedCaseKey = null;
   let visibleCaseGroups = [];
   let allCaseGroups = [];
@@ -79,6 +81,7 @@
     return labels[value] || String(value || "").replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase());
   }
   function syncSubmit() {
+    syncReportControls();
     ui["analyze-button"].disabled = !ready || busy || !file || !ui["api-key"].value.trim() || submitting || reviewDirty || reviewSaving || Boolean(currentJob && polling);
     ui["analyze-button"].firstChild.textContent = submitting ? "Загружаем видео… " : "Анализировать видео ";
     ui["admission-note"].textContent = !ready ? "Ожидание обработчика анализа." : submitting ? "Загрузка в локальный сервис." : currentJob && polling ? "Идёт анализ вашего видео." : busy ? "Сейчас выполняется анализ. Следующее видео можно загрузить после его завершения." : "Сервис готов к новому анализу.";
@@ -87,6 +90,12 @@
       open.addEventListener("click", () => { message(ui["form-error"], ""); beginJob(activeJobId); });
       ui["admission-note"].append(document.createTextNode(" "), open);
     }
+  }
+  function syncReportControls() {
+    ui["save-review-final"].disabled = !reviewState || !reviewDirty || reviewSaving;
+    ui["download-report"].disabled = !currentJob || !lastResult || Boolean(lastDetails.details_unavailable) || reviewDirty || reviewSaving || reportDownloading;
+    ui["report-review-status"].textContent = reviewSaving ? "Сохраняем решения проверяющего…" : reviewDirty ? "Есть несохранённые правки. Сохраните их перед скачиванием отчёта." : reviewState?.revision ? "В отчёт войдут сохранённые решения · версия " + reviewState.revision + "." : "Проверьте результаты и сохраните решения, чтобы включить их в отчёт.";
+    ui["report-section"].classList.toggle("has-unsaved", reviewDirty);
   }
   async function request(path, options = {}, authenticated = true) {
     // Keep both video data and credentials on this service, including future callers.
@@ -811,6 +820,8 @@
     ui["case-decisions"].replaceChildren(...cases.flatMap((group, index) => {
       const item = group.items[0], repeated = group.items.length > 1;
       const card = node("tr", "case-card"), name = node("th", "check-name", caseTitle(item.type_id));
+      card.setAttribute("role", "row");
+      name.id = "case-name-" + index; name.setAttribute("role", "rowheader"); name.setAttribute("headers", "case-col-check");
       card.dataset.caseKey = group.key; card.tabIndex = 0;
       card.addEventListener("click", event => { if (!event.target.closest("button,input,textarea,select,details,summary,a,label")) selectCase(group.key); });
       card.addEventListener("keydown", event => { if (event.target === card && ["Enter", " "].includes(event.key)) { event.preventDefault(); selectCase(group.key); } });
@@ -818,7 +829,10 @@
       name.append(justificationNode(group.items));
       if (repeated) name.append(node("p", "case-observation-count", group.items.length + " наблюдений"));
       const labels = {confirmed:"Подтверждено моделью",review_required:"Требует проверки",rejected:"Недостаточно данных"};
-      const outcome = node("td"), probability = node("td", "case-probability"), moment = node("td", "case-time"), detailCell = node("td");
+      const outcome = node("td", "case-outcome"), probability = node("td", "case-probability"), moment = node("td", "case-time"), detailCell = node("td", "case-detail-cell");
+      for (const [cell, label, column] of [[outcome,"Модель","model"],[probability,"Оценка модели","estimate"],[moment,"Время","time"],[detailCell,"Подробности","details"]]) {
+        cell.dataset.label = label; cell.setAttribute("role", "cell"); cell.setAttribute("headers", "case-col-" + column + " " + name.id);
+      }
       const active = needsCaseReview(item), supported = item.status === "confirmed";
       outcome.append(node("span", "case-status " + (supported ? "confirmed" : active ? "pending" : "rejected"), supported ? labels.confirmed : active ? labels.review_required : rejectedLabel(item)));
       appendHumanStatus(outcome, group);
@@ -846,6 +860,7 @@
       if (corrected.length && corrected.every(value => value && validCaseTime(value.start_sec) && validCaseTime(value.end_sec) && value.start_sec === corrected[0].start_sec && value.end_sec === corrected[0].end_sec)) moment.append(node("span", "human-interval", "Человек: " + formatTime(corrected[0].start_sec) + "–" + formatTime(corrected[0].end_sec)));
       const detail = node("details", "case-details");
       const summary = node("summary", "", "Подробнее"), detailRow = node("tr", "case-detail-row"), detailBody = node("td", "case-detail-body");
+      detailRow.setAttribute("role", "row"); detailBody.setAttribute("role", "cell"); detailBody.setAttribute("headers", name.id);
       detailBody.colSpan = 5; detailRow.id = "case-detail-" + index;
       summary.setAttribute("aria-controls", detailRow.id); detail.append(summary);
       display(detailRow, false);
@@ -888,12 +903,13 @@
     return {reviewer:ui["reviewer-name"].value.trim(),camera_id:ui["review-camera"].value.trim(),session_id:ui["review-session"].value.trim(),source_group:ui["review-source-group"].value.trim(),coverage_complete:ui["review-coverage"].checked};
   }
   function initializeReview(metadata) {
+    message(ui["report-error"], "");
     const available = metadata.review_state && typeof metadata.review_state === "object" && Array.isArray(metadata.review_cases);
     display(ui["reviewer-section"], true); display(ui["missed-event-section"], Boolean(available));
     ui["download-report"].disabled = Boolean(metadata.details_unavailable);
     for (const id of ["reviewer-name","review-camera","review-session","review-source-group","review-coverage","save-review-meta"]) ui[id].disabled = !available;
     if (!available) {
-      reviewState = null; ui["review-save-status"].textContent = "Сохранение решений недоступно для этой версии сервера. Обновите сервер и повторно откройте анализ."; return;
+      reviewState = null; ui["review-save-status"].textContent = "Сохранение решений недоступно для этой версии сервера. Обновите сервер и повторно откройте анализ."; syncSubmit(); return;
     }
     reviewState = structuredClone(metadata.review_state);
     ui["reviewer-name"].value = reviewState.reviewer || ""; ui["review-camera"].value = reviewState.camera_id || "";
@@ -958,7 +974,7 @@
       for (const item of group.items) decisions.set(item.case_id,{case_id:item.case_id,...draft});
     }
     next.decisions = [...decisions.values()];
-    const job = currentJob; reviewSaving = true;
+    const job = currentJob; reviewSaving = true; syncSubmit();
     const locked = [...document.querySelectorAll("#api-key,#key-visibility,#reviewer-section input,#reviewer-section button,#case-filters button,#case-search,.review-editor input,.review-editor textarea,.review-editor button,#missed-event-form input,#missed-event-form select,#missed-event-form textarea,#missed-event-form button,#open-job-form button,#video-file,#remove-file,#history-items button")];
     locked.forEach(element => { element.disabled = true; }); ui["review-save-status"].textContent = "Сохраняем…"; message(ui["review-error"], "");
     try {
@@ -987,7 +1003,12 @@
     const group = allCaseGroups.find(value => value.key === key); selectedCaseKey = group?.key || null;
     for (const row of ui["case-decisions"].querySelectorAll(".case-card")) { const selected = row.dataset.caseKey === selectedCaseKey; row.classList.toggle("is-selected",selected); row.setAttribute("aria-selected",String(selected)); }
     for (const marker of ui["event-timeline"].querySelectorAll("button")) marker.setAttribute("aria-pressed",String(marker.dataset.caseKey === selectedCaseKey));
-    ui["selected-case-label"].textContent = group ? caseTitle(group.items[0].type_id) : "Выберите событие"; ui["play-context"].disabled = !group || group.start_sec === null;
+    ui["selected-case-label"].textContent = group ? caseTitle(group.items[0].type_id) : "Выберите событие";
+    if (group?.start_sec !== null && group) {
+      const interval = formatTime(group.start_sec) + (group.end_sec > group.start_sec ? "–" + formatTime(group.end_sec) : "");
+      ui["selected-case-label"].append(node("span", "event-selection-time", interval + (group.items.length > 1 ? " · диапазон наблюдений" : " · выбранное событие")));
+    }
+    ui["play-context"].disabled = !group || group.start_sec === null;
     ui["next-case"].disabled = visibleCaseGroups.length < 2;
     if (move && group?.start_sec !== null && group) seek(group.start_sec);
   }
@@ -999,11 +1020,35 @@
   function renderTimeline() {
     const duration = lastDetails.details?.coverage?.duration_sec;
     const max = validCaseTime(duration) && duration > 0 ? duration : Math.max(1,...allCaseGroups.map(group => group.end_sec || 0));
-    ui["event-timeline"].replaceChildren(...allCaseGroups.filter(group => group.start_sec !== null).map((group,index) => {
-      const marker = node("button", "event-marker " + group.status); marker.type = "button"; marker.dataset.caseKey = group.key;
-      marker.style.left = Math.min(98,group.start_sec/max*100) + "%"; marker.style.width = Math.max(1.4,Math.min(100-group.start_sec/max*100,(group.end_sec-group.start_sec)/max*100)) + "%";
-      marker.style.top = (index%3)*12+6 + "px"; marker.title = caseTitle(group.items[0].type_id) + " · " + formatTime(group.start_sec) + "–" + formatTime(group.end_sec); marker.setAttribute("aria-label",marker.title); marker.setAttribute("aria-pressed",String(group.key === selectedCaseKey)); marker.addEventListener("click",() => selectCase(group.key)); return marker;
-    }));
+    const track = node("div", "event-track"), axis = node("div", "event-time-axis"), legend = node("div", "event-legend");
+    axis.setAttribute("aria-label", "Время от начала видео");
+    for (const timestamp of [0,max/2,max]) axis.append(node("span", "", formatTime(timestamp)));
+    for (const [status,label] of [["review_required","Требует проверки"],["confirmed","Подтверждено моделью"],["rejected","Другие результаты"]]) {
+      const groups = allCaseGroups.filter(group => group.start_sec !== null && group.status === status).sort((a,b) => a.start_sec-b.start_sec || a.end_sec-b.end_sec);
+      if (!groups.length) continue;
+      const lane = node("div", "event-lane " + status), laneTrack = node("div", "event-lane-track");
+      lane.setAttribute("role", "group"); lane.setAttribute("aria-label", label);
+      const rowEnds = [];
+      for (const group of groups) {
+        const start = Math.min(100,Math.max(0,group.start_sec/max*100)), end = Math.min(100,Math.max(start,group.end_sec/max*100));
+        // Reserve room around point events as well as intervals. Closely spaced
+        // observations use another row without moving their actual time anchor.
+        const collisionStart = Math.max(0,start-5), collisionEnd = Math.max(end,start+6);
+        let row = rowEnds.findIndex(previousEnd => previousEnd < collisionStart);
+        if (row === -1) { row = rowEnds.length; rowEnds.push(collisionEnd); } else rowEnds[row] = collisionEnd;
+        const marker = node("button", "event-marker " + status + (end > start ? " is-range" : "")); marker.type = "button"; marker.dataset.caseKey = group.key;
+        marker.style.left = start + "%"; marker.style.width = (end-start) + "%"; marker.style.top = row*24+8 + "px";
+        const interval = formatTime(group.start_sec) + (group.end_sec > group.start_sec ? "–" + formatTime(group.end_sec) : "");
+        marker.title = caseTitle(group.items[0].type_id) + " · " + interval + " · " + label + (group.items.length > 1 ? " · диапазон наблюдений" : "");
+        marker.setAttribute("aria-label", marker.title); marker.setAttribute("aria-pressed",String(group.key === selectedCaseKey));
+        const dot = node("span", "event-marker-dot"); dot.setAttribute("aria-hidden", "true"); marker.append(dot);
+        marker.addEventListener("click",() => selectCase(group.key)); laneTrack.append(marker);
+      }
+      laneTrack.style.height = Math.max(28,rowEnds.length*24+12) + "px"; lane.append(laneTrack); track.append(lane);
+      const item = node("span", "event-legend-item"), dot = node("span", "event-legend-dot " + status); dot.setAttribute("aria-hidden", "true");
+      item.append(dot,document.createTextNode(label + " · " + groups.length)); legend.append(item);
+    }
+    ui["event-timeline"].replaceChildren(track,axis,legend);
     display(ui["event-navigation"],allCaseGroups.length > 0);
   }
   function playContext() {
@@ -1013,14 +1058,16 @@
     const playback = video.play(); if (playback?.catch) playback.catch(() => { ui["play-context-status"].textContent = "Нажмите воспроизведение в плеере"; });
   }
   async function downloadReport() {
-    if (!currentJob || reviewDirty) { message(ui["review-error"], "Сохраните изменения перед скачиванием отчёта."); return; }
-    const job = currentJob; ui["download-report"].disabled = true; message(ui["review-error"], "");
+    if (!currentJob || !lastResult || reviewDirty || reviewSaving || reportDownloading || lastDetails.details_unavailable) { message(ui["report-error"], "Сохраните изменения перед скачиванием отчёта."); return; }
+    const job = currentJob, revision = reviewState?.revision; reportDownloading = true; syncReportControls(); message(ui["report-error"], "");
     try {
       const response = await request(`/api/ui/jobs/${encodeURIComponent(job)}/report.html`), blob = await response.blob();
       if (!blob.type.startsWith("text/html")) throw new ApiError("Сервер вернул файл неизвестного формата.",0);
+      if (currentJob !== job) return;
+      if (reviewDirty || reviewSaving || reviewState?.revision !== revision) { message(ui["report-error"], "Проверка изменилась во время подготовки отчёта. Сохраните правки и скачайте отчёт снова."); return; }
       const url = URL.createObjectURL(blob), link = node("a"); link.href = url; link.download = "forte-review-" + job + ".html"; link.hidden = true; document.body.append(link); link.click(); setTimeout(() => { link.remove(); URL.revokeObjectURL(url); },60000);
-    } catch(error) { if (currentJob === job) message(ui["review-error"], "Не удалось скачать отчёт. " + error.message); }
-    finally { ui["download-report"].disabled = false; }
+    } catch(error) { if (currentJob === job) message(ui["report-error"], "Не удалось скачать отчёт. " + error.message); }
+    finally { reportDownloading = false; syncReportControls(); }
   }
   function scheduleHistory() {
     clearTimeout(historyTimer); historyGeneration += 1;
@@ -1160,10 +1207,14 @@
   for (const id of ["reviewer-name","review-camera","review-session","review-source-group","review-coverage"]) ui[id].addEventListener("input",markReviewDirty);
   ui["save-review-meta"].addEventListener("click",() => saveReviewState());
   ui["download-report"].addEventListener("click",downloadReport);
+  ui["save-review-final"].addEventListener("click",async () => {
+    message(ui["report-error"], "");
+    if (!await saveReviewState()) message(ui["report-error"], ui["review-error"].textContent || "Не удалось сохранить изменения. Проверьте введённые данные.");
+  });
   ui["next-case"].addEventListener("click",nextCase); ui["play-context"].addEventListener("click",playContext);
   ui["reload-review"].addEventListener("click",async () => {
     if (reviewSaving) return;
-    const job = currentJob, key = ui["api-key"].value.trim(); reviewSaving = true;
+    const job = currentJob, key = ui["api-key"].value.trim(); reviewSaving = true; syncSubmit();
     const locked = [...document.querySelectorAll("#api-key,#key-visibility,#reviewer-section input,#reviewer-section button,#case-filters button,#case-search,.review-editor input,.review-editor textarea,.review-editor button,#missed-event-form input,#missed-event-form select,#missed-event-form textarea,#missed-event-form button,#open-job-form button,#video-file,#remove-file,#history-items button")];
     locked.forEach(element => { element.disabled = true; });
     try { const metadata = await json(`/api/ui/jobs/${encodeURIComponent(job)}`); if (job === currentJob && key === ui["api-key"].value.trim()) { lastDetails = metadata; initializeReview(metadata); renderCaseDecisions(metadata,lastResult); } }

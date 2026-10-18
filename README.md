@@ -2,7 +2,9 @@
 
 For a fresh laptop, follow the [portable setup guide](docs/local-setup.md). The setup downloads public model weights separately; private videos, API keys and saved jobs are not part of this repository.
 
-The [Russian desktop reviewer workspace](docs/reviewer-workflow.md) keeps the video beside filtered results and an event timeline. Saved reviews are searchable by video name. A reviewer can confirm, dismiss or leave a case uncertain, correct its interval, add missed events and record full-video coverage. Human decisions use durable, versioned storage separate from immutable model results. **Download report** exports one self-contained HTML file with embedded JPEG evidence; there are no additional report formats to install.
+The [Russian reviewer workspace](docs/reviewer-workflow.md) keeps the video beside filtered results and an event timeline on wide screens. Tablets and phones use stacked panels and labelled result cards, with the same saved decisions and controls. Saved reviews are searchable by video name. A reviewer can confirm, dismiss or leave a case uncertain, correct its interval, add missed events and record full-video coverage. Human decisions use durable, versioned storage separate from immutable model results. **Download report** exports one self-contained HTML file with embedded JPEG evidence; there are no additional report formats to install.
+
+`tests/ui_desktop_review.cjs` and `tests/ui_responsive_review.cjs` use Node and Playwright to exercise the review workflow with synthetic endpoints. They cover layouts from 320 to 1366 pixels, landscape and dark mode, dense timeline markers, persistent drafts, version conflicts and the authenticated HTML export at the end of the results. They do not access private videos or saved jobs.
 
 The quality panel and `scripts/evaluate_review_quality.py` report only independently reviewed labels, preserve unknown denominators and audit source/camera/session groups. They do not claim improved detector accuracy or start training. The new review tables are created automatically on startup; existing analyses remain readable without reanalysis or new model downloads.
 
