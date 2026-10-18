@@ -536,17 +536,22 @@ textarea { resize: vertical; }
 .topbar { gap: 20px; }
 .topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 20px; min-width: 0; }
 .language-switcher { display: inline-grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; flex: none; padding: 3px; border: 1px solid var(--border); border-radius: 11px; background: var(--soft); }
-.language-switcher button { min-height: 36px; padding: 8px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 650; line-height: 1.4; white-space: nowrap; }
+.language-switcher button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 8px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 650; line-height: 1.4; white-space: nowrap; }
+.language-flag { display: block; width: 27px; height: 18px; flex: none; border-radius: 2px; box-shadow: 0 0 0 1px #00000020; }
+.intro > .intro-copy { margin-top: 0; }
 .language-switcher button:hover { color: var(--navy); background: var(--surface); }
 .language-switcher button[aria-pressed="true"] { background: var(--pink); color: #fff; box-shadow: 0 2px 6px #d90c6b18; }
 .language-switcher button:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; position: relative; z-index: 1; }
 
 @media (max-width: 760px) {
-  .topbar { height: auto; flex-wrap: wrap; align-items: center; padding-top: 12px; padding-bottom: 12px; gap: 10px; }
-  .topbar-actions { flex-basis: 100%; justify-content: space-between; gap: 12px; }
-  .topbar-actions .service-indicator { flex: 1; max-width: none; align-items: center; }
+  .topbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; height: auto; align-items: center; padding-top: 12px; padding-bottom: 12px; gap: 10px; }
+  .topbar > .brand { min-width: 0; grid-column: 1; grid-row: 1; }
+  .topbar-actions { display: contents; }
+  .topbar-actions .service-indicator { grid-column: 1 / -1; grid-row: 2; max-width: none; align-items: center; }
   .topbar-actions .service-indicator .dot { margin-top: 0; }
-  .language-switcher button { min-height: 44px; padding: 9px 11px; }
+  .language-switcher { grid-column: 2; grid-row: 1; justify-self: end; }
+  .language-switcher button { min-width: 44px; min-height: 44px; padding: 9px 8px; }
+  .language-switcher .language-label { display: none; }
 }
 
 @media (prefers-color-scheme: dark) {

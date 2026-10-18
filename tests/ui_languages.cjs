@@ -32,7 +32,7 @@ async function switchLanguage(page,language) {
  const before = requests.length;
  await page.locator(`#language-switcher button[data-language=${language}]`).click();
  await page.waitForFunction(expected=>document.documentElement.lang===expected,language);
- await page.waitForFunction(expected=>document.querySelector("h1").textContent.includes(expected),language==="en"?"Cash":"Проверка");
+ await page.waitForFunction(expected=>document.querySelector(".upload-panel h2").textContent.includes(expected),language==="en"?"New analysis":"Новый анализ");
  assert.equal(await page.locator(`#language-switcher button[data-language=${language}]`).getAttribute("aria-pressed"),"true");
  assert.equal(await page.locator(`#language-switcher button[data-language=${language==="en"?"ru":"en"}]`).getAttribute("aria-pressed"),"false");
  assert.equal(requests.length,before,"Switching UI language must not fetch, save or restart an analysis");
@@ -72,7 +72,7 @@ async function switchLanguage(page,language) {
   assert.equal(await page.locator("html").getAttribute("lang"),"ru");
   assert.deepEqual(await page.locator("#language-switcher button").allTextContents(),["Русский","English"]);
   await switchLanguage(page,"en");
-  for(const selector of ["h1",".intro-copy",".upload-panel h2","#video-empty","#status-title","#status-description","#service-label","footer"])await english(page.locator(selector),selector);
+  for(const selector of [".intro-copy",".upload-panel h2","#video-empty","#status-title","#status-description","#service-label","footer"])await english(page.locator(selector),selector);
   for(const selector of ["#api-key","#job-input"])assert.doesNotMatch(await page.locator(selector).getAttribute("placeholder"),/[А-Яа-яЁё]/);
   assert.doesNotMatch(await page.locator("#video-empty").getAttribute("aria-label"),/[А-Яа-яЁё]/);
   for(const width of [320,390,768,1366]){await page.setViewportSize({width,height:900});await layout(page,`English upload ${width}px`);}
@@ -115,7 +115,7 @@ async function switchLanguage(page,language) {
   await page.locator("#catalog-section > summary").click();await page.waitForFunction(()=>document.querySelectorAll("#catalog-items tr").length===4);await english(page.locator("#catalog-items"),"Check catalog");
   await page.setViewportSize({width:390,height:900});await page.emulateMedia({colorScheme:"dark"});await layout(page,"English mobile dark review");await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(root,"tmp","ui-languages-390-en.png"),fullPage:false});
   assert.equal(await page.evaluate(()=>localStorage.getItem("forte-ui-language")),"en");assert(!await page.evaluate(secret=>JSON.stringify({...localStorage,...sessionStorage}).includes(secret),key));
-  await page.reload();await page.waitForFunction(()=>document.documentElement.lang==="en");await english(page.locator("h1"),"Persisted English preference");assert.equal(await page.locator("#api-key").inputValue(),"","Only language persists, never credentials");
+  await page.reload();await page.waitForFunction(()=>document.documentElement.lang==="en");await english(page.locator(".upload-panel h2"),"Persisted English preference");assert.equal(await page.locator("#api-key").inputValue(),"","Only language persists, never credentials");
   await switchLanguage(page,"ru");assert.equal(await page.locator("#video-empty .video-empty-title").textContent(),"Предпросмотр видео");assert.equal(await page.evaluate(()=>localStorage.getItem("forte-ui-language")),"ru");assert.deepEqual(errors,[]);assert.deepEqual(untranslated,[],"All controlled interface copy is translated into English");
   console.log("Russian/English UI passed: static and dynamic copy, accessible labels, translated search, preserved review drafts/media/filters, unchanged user text, atomic saves, language-only persistence, and 320–1366px layouts.");
  } finally {await browser.close();}
