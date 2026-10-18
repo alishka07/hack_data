@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 from contextlib import asynccontextmanager
 import hmac
+import hashlib
 import json
 import math
 import os
@@ -15,12 +16,13 @@ import time
 from typing import Any
 from uuid import UUID, uuid4
 
-from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile, Query, Request
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 
-from app.db import BusyError, JobStore
+from app.db import BusyError, JobStore, ReviewConflictError
+from app.reviews import InvalidReview, default_review_state, duration_sec, review_cases, validate_review
 from app.settings import Settings, load_settings
 from worker.catalog import load_catalog
 
@@ -46,7 +48,8 @@ class BodyLimitMiddleware:
             length = int(headers.get(b"content-length", b"0"))
         except ValueError:
             return await JSONResponse({"detail": "Invalid Content-Length"}, status_code=400)(scope, receive, send)
-        if length > self.max_body_bytes:
+        body_budget = min(self.max_body_bytes, 256 * 1024) if path.endswith("/review") else self.max_body_bytes
+        if length > body_budget:
             return await JSONResponse({"detail": "Upload exceeds the configured size limit"}, status_code=413)(scope, receive, send)
         consumed = 0
 
@@ -55,7 +58,7 @@ class BodyLimitMiddleware:
             message = await receive()
             if message["type"] == "http.request":
                 consumed += len(message.get("body", b""))
-                if consumed > self.max_body_bytes:
+                if consumed > body_budget:
                     raise HTTPException(413, "Upload exceeds the configured size limit")
             return message
 
@@ -199,12 +202,14 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
             accepted = False
             try:
                 size = 0
+                source_digest = hashlib.sha256()
                 with path.open("xb") as output:
                     while chunk := await file.read(1024 * 1024):
                         size += len(chunk)
                         if size > settings.max_upload_bytes:
                             raise HTTPException(413, "Upload exceeds the configured size limit")
                         output.write(chunk)
+                        source_digest.update(chunk)
                     output.flush()
                     os.fsync(output.fileno())
                 if size == 0:
@@ -214,7 +219,7 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
                     raise HTTPException(503, "The local inference worker is not ready", headers={"Retry-After": "5"})
                 def commit_admission():
                     nonlocal accepted
-                    store.create_job(job_id, path, original_name, settings.job_timeout_sec)
+                    store.create_job(job_id, path, original_name, settings.job_timeout_sec, source_digest.hexdigest())
                     # Set in the committing thread so cancellation cannot delete an
                     # accepted source between the transaction and the await return.
                     accepted = True
@@ -249,7 +254,40 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
     @application.get("/api/ui/jobs/{job_id}", dependencies=auth)
     def ui_job(job_id: str):
         job = lookup(job_id)
+        details = ui_details(job)
+        result = _json(job["result_json"], None)
+        return {"job_id": job_id, "status": job["status"], "stage": job["internal_stage"],
+                "progress": job["progress"], "message": job["message"], "original_name": job["original_name"],
+                "created_at": job["created_at"], "deadline_at": job["deadline_at"],
+                "result": result, "details": details,
+                "review_cases": review_cases(details, result) if job["status"] == "done" else [],
+                "review_state": store.get_review(job_id) or default_review_state(),
+                "source_fingerprint": source_fingerprint(job) if job["status"] == "done" else "",
+                "timings": _json(job["timings_json"], {}),
+                "error": {"code": job["error_code"], "message": job["error_message"]} if job["error_code"] else None}
+
+    def source_fingerprint(job: dict) -> str:
+        """Backfill exact-source identity for saved videos without exposing source paths."""
+        existing = store.get_source_sha256(job["id"])
+        if existing:
+            return existing
+        path = Path(job["video_path"]).resolve()
+        try:
+            if path.parent != uploads.resolve() or not path.is_file():
+                return ""
+            digest = hashlib.sha256()
+            with path.open("rb") as source:
+                while chunk := source.read(1024 * 1024):
+                    digest.update(chunk)
+            store.record_source_sha256(job["id"], digest.hexdigest())
+            return digest.hexdigest()
+        except OSError:
+            return ""
+
+    def ui_details(job: dict) -> dict:
         details = _json(job["details_json"], {})
+        if not isinstance(details, dict):
+            details = {}
         decision = details.get("case_decision") if isinstance(details, dict) else None
         cases = decision.get("cases") if isinstance(decision, dict) else None
         if (job["status"] == "done" and isinstance(cases, list)
@@ -258,7 +296,7 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
             # Add its display estimate without re-running inference or changing
             # the saved verdict, findings, case status, or review requirements.
             attempts = []
-            path = settings.data_dir / "jobs" / job_id / "verification.json"
+            path = settings.data_dir / "jobs" / job["id"] / "verification.json"
             try:
                 if path.is_file() and path.stat().st_size <= 8 * 1024 * 1024:
                     value = json.loads(path.read_text(encoding="utf-8"))
@@ -269,12 +307,68 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
             from worker.decision import enrich_case_probabilities
             details = {**details, "case_decision": {**decision, "cases": enrich_case_probabilities(
                 cases, attempts, details.get("findings", []), details.get("assessments", []))}}
-        return {"job_id": job_id, "status": job["status"], "stage": job["internal_stage"],
-                "progress": job["progress"], "message": job["message"], "original_name": job["original_name"],
-                "created_at": job["created_at"], "deadline_at": job["deadline_at"],
-                "result": _json(job["result_json"], None), "details": details,
-                "timings": _json(job["timings_json"], {}),
-                "error": {"code": job["error_code"], "message": job["error_message"]} if job["error_code"] else None}
+        return details
+
+    @application.get("/api/ui/history", dependencies=auth)
+    def history(query: str = Query(default="", max_length=200), limit: int = Query(default=20, ge=1, le=100),
+                offset: int = Query(default=0, ge=0, le=1000000)):
+        recover()
+        return store.list_history(query.strip(), limit, offset)
+
+    @application.put("/api/ui/jobs/{job_id}/review", dependencies=auth)
+    async def save_review(job_id: str, request: Request):
+        job = await run_in_threadpool(lookup, job_id)
+        if job["status"] != "done":
+            raise HTTPException(409, "Only completed jobs can be reviewed")
+        try:
+            body = await request.json()
+        except (ValueError, UnicodeDecodeError, RecursionError):
+            raise HTTPException(422, "Review must be valid JSON") from None
+        details = _json(job["details_json"], {})
+        cases = review_cases(details, _json(job["result_json"], None))
+        allowed_types = {case["type_id"] for case in cases if isinstance(case.get("type_id"), str)}
+        try:
+            allowed_types.update(item["id"] for item in load_catalog(settings.root)["items"])
+        except (OSError, ValueError, KeyError, TypeError):
+            # Existing cases remain reviewable if the optional catalog is damaged.
+            pass
+        try:
+            state = validate_review(body, cases, duration_sec(details), allowed_types)
+            saved = await run_in_threadpool(store.save_review, job_id, state)
+        except InvalidReview as error:
+            raise HTTPException(422, str(error)) from None
+        except ReviewConflictError:
+            raise HTTPException(409, "The review changed; reload before saving") from None
+        return saved
+
+    @application.get("/api/ui/jobs/{job_id}/report.html", dependencies=auth)
+    def report(job_id: str):
+        job = lookup(job_id)
+        if job["status"] != "done":
+            raise HTTPException(409, "The report is available after analysis finishes")
+        evidence_root = (settings.data_dir / "evidence").resolve()
+        evidence_directory = (evidence_root / job_id).resolve()
+        if evidence_directory.parent != evidence_root:
+            raise HTTPException(404, "Evidence directory not found")
+        from app.report import build_report
+        content = build_report(job, ui_details(job), store.get_review(job_id) or default_review_state(),
+                               evidence_directory)
+        return HTMLResponse(content, headers={
+            "Cache-Control": "no-store", "Content-Disposition": f'attachment; filename="review-{job_id}.html"',
+            "Content-Security-Policy": "default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"})
+
+    @application.get("/api/ui/quality", dependencies=auth)
+    def quality():
+        from app.review_metrics import build_review_quality
+        records = []
+        for job in store.list_review_jobs():
+            details = _json(job["details_json"], {})
+            result = _json(job["result_json"], {})
+            state = store.get_review(job["id"]) or default_review_state()
+            records.append({"job_id": job["id"], "source_fingerprint": job.get("sha256") or source_fingerprint(job),
+                            "model_cases": review_cases(details, result), "review_state": state,
+                            "created_at": job["created_at"], "review_updated_at": state.get("updated_at")})
+        return build_review_quality(records)
 
     @application.get("/api/ui/jobs/{job_id}/video", dependencies=auth)
     def source_video(job_id: str):

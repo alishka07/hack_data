@@ -1,85 +1,103 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>Forte · Cash review</title>
+  <title>Forte · Проверка кассы</title>
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <a href="/" class="brand" aria-label="Forte cash review home"><span class="brand-mark" aria-hidden="true">f.</span><span>Forte<span class="brand-divider">/</span><span class="brand-product">Cash review</span></span></a>
-    <div class="service-indicator" role="status"><span id="service-dot" class="dot"></span><span id="service-label">Checking service</span></div>
+    <a href="/" class="brand" aria-label="Forte — проверка кассы"><span class="brand-mark" aria-hidden="true">f.</span><span>Forte<span class="brand-divider">/</span><span class="brand-product">Проверка кассы</span></span></a>
+    <div class="service-indicator" role="status"><span id="service-dot" class="dot"></span><span id="service-label">Проверяем сервис</span></div>
   </header>
   <main>
-    <section class="intro"><div><h1>Cash desk review</h1><p class="intro-copy">Upload a video. See the result and the moments that need attention.</p></div></section>
+    <section class="intro"><div><h1>Проверка работы кассы</h1><p class="intro-copy">Видео, доказательства и решения проверяющего в одном рабочем пространстве.</p></div></section>
     <div class="workspace">
       <aside class="upload-panel card">
-        <div class="panel-heading"><h2>Review a video</h2></div>
+        <div class="panel-heading"><h2>Новый анализ</h2></div>
         <form id="upload-form">
-          <label class="field-label" for="api-key">API key</label>
-          <div class="key-input"><input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your API key" required aria-describedby="key-help"><button id="key-visibility" class="text-button" type="button" aria-label="Show API key" aria-pressed="false">Show</button></div>
-          <p id="key-help" class="field-help">Kept in this tab only.</p>
+          <label class="field-label" for="api-key">Ключ API</label>
+          <div class="key-input"><input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Введите ключ API" required aria-describedby="key-help"><button id="key-visibility" class="text-button" type="button" aria-label="Показать ключ API" aria-pressed="false">Показать</button></div>
+          <p id="key-help" class="field-help">Хранится только в памяти этой вкладки.</p>
           <div id="drop-zone" class="drop-zone">
-            <span class="upload-icon" aria-hidden="true">↑</span><strong>Drop a MOV video</strong>
-            <label class="button button-secondary file-picker" for="video-file">Choose video</label>
+            <span class="upload-icon" aria-hidden="true">↑</span><strong>Перетащите видео MOV</strong>
+            <label class="button button-secondary file-picker" for="video-file">Выбрать видео</label>
             <input id="video-file" class="visually-hidden" type="file" accept=".mov,video/quicktime" aria-describedby="file-help">
-            <span id="file-help" class="field-help">Processed locally</span>
+            <span id="file-help" class="field-help">Обрабатывается локально</span>
           </div>
-          <div id="selected-file" class="selected-file" hidden><span class="file-symbol" aria-hidden="true">▶</span><div><strong id="file-name"></strong><span id="file-size"></span></div><button id="remove-file" type="button" class="icon-button" aria-label="Remove selected video">×</button></div>
-          <button id="analyze-button" class="button button-primary" type="submit" disabled>Analyze video <span aria-hidden="true">→</span></button>
-          <p id="admission-note" class="field-help centered">Waiting for the worker.</p>
+          <div id="selected-file" class="selected-file" hidden><span class="file-symbol" aria-hidden="true">▶</span><div><strong id="file-name"></strong><span id="file-size"></span></div><button id="remove-file" type="button" class="icon-button" aria-label="Убрать выбранное видео">×</button></div>
+          <button id="analyze-button" class="button button-primary" type="submit" disabled>Анализировать видео <span aria-hidden="true">→</span></button>
+          <p id="admission-note" class="field-help centered">Ожидание обработчика.</p>
           <div id="form-error" class="message message-error" role="alert" hidden></div>
         </form>
-        <details class="existing-job"><summary>Open a saved review</summary><form id="open-job-form"><label class="field-label" for="job-input">Review ID</label><input id="job-input" autocomplete="off" placeholder="Paste a review ID" required><button type="submit" class="button button-secondary">Open review</button></form></details>
+        <details class="existing-job"><summary>Открыть анализ по ID</summary><form id="open-job-form"><label class="field-label" for="job-input">ID анализа</label><input id="job-input" autocomplete="off" placeholder="Введите ID анализа" required><button type="submit" class="button button-secondary">Открыть анализ</button></form></details>
+        <details id="history-section" class="history-section" hidden><summary>История анализов</summary><label class="visually-hidden" for="history-search">Поиск в истории</label><input id="history-search" type="search" placeholder="Название видео или ID"><button id="history-reload" type="button" class="text-button">Обновить</button><p id="history-status" role="status"></p><div id="history-items"></div><button id="history-more" type="button" class="text-button" hidden>Показать ещё</button></details>
+        <details id="quality-section" class="history-section" hidden><summary>Качество по проверенной разметке</summary><button id="quality-reload" type="button" class="text-button">Обновить метрики</button><p id="quality-status" role="status"></p><div id="quality-summary"></div><div id="quality-items"></div><ul id="quality-limitations"></ul></details>
         <details id="catalog-section" class="catalog-card catalog-disclosure" hidden aria-labelledby="catalog-title">
-          <summary id="catalog-title">Available checks</summary>
-          <div class="disclosure-body"><div class="catalog-heading"><p id="catalog-version" class="catalog-version"></p><button id="catalog-reload" class="text-button" type="button">Reload</button></div><p id="catalog-status" class="catalog-status" role="status"></p><div id="catalog-table-wrap" class="score-table-wrap" hidden><table class="score-table"><caption class="visually-hidden">Available checks before analysis</caption><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Estimate</th></tr></thead><tbody id="catalog-items"></tbody></table></div></div>
+          <summary id="catalog-title">Доступные проверки</summary>
+          <div class="disclosure-body"><div class="catalog-heading"><p id="catalog-version" class="catalog-version"></p><button id="catalog-reload" class="text-button" type="button">Обновить</button></div><p id="catalog-status" class="catalog-status" role="status"></p><div id="catalog-table-wrap" class="score-table-wrap" hidden><table class="score-table"><caption class="visually-hidden">Список доступных проверок</caption><thead><tr><th scope="col">Проверка</th><th scope="col">Модель</th><th scope="col">Оценка</th></tr></thead><tbody id="catalog-items"></tbody></table></div></div>
         </details>
       </aside>
 
-      <section class="review-panel" aria-label="Video review">
+      <section class="review-panel" aria-label="Просмотр видео">
         <div class="status-card card">
-          <div class="status-top"><h2 id="status-title">Choose a video</h2><span id="status-badge" class="status-badge">Ready</span></div>
-          <p id="status-description" class="muted">Results will appear here.</p>
-          <div id="progress-section" hidden><div class="progress-track" id="progress-track" role="progressbar" aria-label="Analysis progress" aria-valuemin="0" aria-valuemax="100"><div id="progress-fill"></div></div><div class="progress-meta"><span id="stage-label">Queued</span><span id="elapsed-label"></span></div></div>
-          <div id="job-controls" class="job-controls" hidden><details class="job-details"><summary>Review ID</summary><code id="job-id"></code></details><button id="poll-button" type="button" class="text-button">Pause updates</button></div>
+          <div class="status-top"><h2 id="status-title">Выберите видео</h2><span id="status-badge" class="status-badge">Готово</span></div>
+          <p id="status-description" class="muted">Здесь появятся результаты.</p>
+          <div id="progress-section" hidden><div class="progress-track" id="progress-track" role="progressbar" aria-label="Ход анализа" aria-valuemin="0" aria-valuemax="100"><div id="progress-fill"></div></div><div class="progress-meta"><span id="stage-label">В очереди</span><span id="elapsed-label"></span></div></div>
+          <div id="job-controls" class="job-controls" hidden><details class="job-details"><summary>ID анализа</summary><code id="job-id"></code></details><button id="poll-button" type="button" class="text-button">Приостановить обновления</button></div>
           <div id="poll-error" class="message message-error" role="alert" hidden></div>
         </div>
 
+        <div class="analysis-columns">
+          <div class="video-column">
+        <div class="video-card card">
+          <div id="video-empty" class="video-empty"><span class="video-empty-icon" aria-hidden="true">▷</span><p>Предпросмотр видео</p></div>
+          <div id="video-stage" class="video-stage"><video id="source-video" controls muted playsinline preload="metadata" hidden aria-label="Исходное загруженное видео"></video><div id="detection-overlay" class="detection-overlay" aria-hidden="true" hidden></div></div>
+          <div id="video-caption" class="video-caption" hidden><span id="video-name">Исходное видео</span><span>Оригинал</span></div>
+          <div id="detection-controls" class="detection-controls" hidden><label><input id="show-detections" type="checkbox" checked> Показывать рамки</label><span id="overlay-status"></span></div>
+          <p id="video-error" class="video-error" hidden></p>
+          <div id="event-navigation" class="event-navigation" hidden><div class="event-heading"><strong id="selected-case-label">Выберите событие</strong><button id="next-case" type="button" class="text-button">Следующий случай →</button></div><div id="event-timeline" class="event-timeline" role="group" aria-label="События на временной шкале"></div><div class="event-playback"><button id="play-context" type="button" class="button button-secondary">▶ Фрагмент ±3 сек.</button><span id="play-context-status" role="status"></span></div></div>
+        </div>
+          </div>
+          <div class="decision-column">
         <div id="results" hidden aria-live="polite">
-          <section id="verdict-card" class="verdict-card card"><div id="verdict-icon" class="verdict-icon" aria-hidden="true"></div><div><p class="eyebrow">Violation status</p><h2 id="verdict-title"></h2><p id="verdict-description"></p></div></section>
+          <section id="verdict-card" class="verdict-card card"><div id="verdict-icon" class="verdict-icon" aria-hidden="true"></div><div><p class="eyebrow">Результат модели</p><h2 id="verdict-title"></h2><p id="verdict-description"></p></div></section>
           <div id="details-warning" class="message message-error" role="alert" hidden></div>
-          <section id="case-decision-section" class="case-decision-section card" hidden aria-labelledby="case-decision-title">
-            <div class="catalog-heading"><h3 id="case-decision-title">Results</h3><span id="case-decision-count" class="catalog-version"></span></div>
-            <p id="case-probability-note" class="coverage-note">Probabilities are uncalibrated model estimates. “Visible action only” does not confirm a violation.</p>
-            <div class="case-table-wrap"><table class="case-results-table" aria-describedby="case-probability-note"><caption class="visually-hidden">Results, estimated probabilities and evidence by check</caption><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Probability</th><th scope="col">Time</th><th scope="col">Details</th></tr></thead><tbody id="case-decisions"></tbody></table></div>
+          <section id="reviewer-section" class="reviewer-section card" hidden aria-labelledby="reviewer-title">
+            <div class="catalog-heading"><h3 id="reviewer-title" class="visually-hidden">Решение проверяющего</h3><label class="reviewer-identity">Проверяющий<input id="reviewer-name" autocomplete="name" maxlength="120" placeholder="Имя проверяющего"></label><button id="download-report" type="button" class="button button-secondary">Скачать отчёт · HTML</button></div>
+            <div class="review-save-bar"><button id="save-review-meta" type="button" class="button button-secondary">Сохранить</button><span id="review-save-status" role="status"></span><button id="reload-review" type="button" class="text-button" hidden>Отменить изменения и загрузить сохранённую версию</button></div>
+            <details id="review-quality-metadata" class="review-quality-metadata"><summary>Данные для оценки качества</summary><p class="coverage-note">Решение человека хранится отдельно. Отчёт — один HTML-файл с кадрами.</p><div class="review-metadata"><label>Камера<input id="review-camera" maxlength="120" placeholder="Камера / точка"></label><label>Сессия<input id="review-session" maxlength="120" placeholder="Смена / дата"></label><label>Исходная группа<input id="review-source-group" maxlength="200" placeholder="Один исходный ролик и все его варианты"></label></div><label class="coverage-checkbox"><input id="review-coverage" type="checkbox"> Я просмотрел(а) весь ролик и добавил(а) пропущенные события</label></details>
+            <div id="review-error" class="message message-error" role="alert" hidden></div>
           </section>
-          <div id="findings-heading" class="findings-heading" hidden><h2>Violation evidence</h2><span id="finding-count"></span></div><div id="findings"></div>
-          <details id="detections-section" class="detections-section card disclosure" hidden aria-labelledby="detections-title"><summary><span id="detections-title">Detected items</span><span id="detection-count" class="catalog-version"></span></summary><div class="disclosure-body"><p class="coverage-note">Estimated boxes at sampled moments.</p><div id="detections" class="detections-grid"></div></div></details>
+          <section id="case-decision-section" class="case-decision-section card" hidden aria-labelledby="case-decision-title">
+            <div class="catalog-heading"><h3 id="case-decision-title">Результаты</h3><span id="case-decision-count" class="catalog-version"></span></div>
+            <p id="case-probability-note" class="coverage-note">Проценты — некалиброванная оценка модели. Оценка видимого действия не означает, что все условия нарушения подтверждены. Для объединённых наблюдений показан диапазон отдельных оценок.</p>
+            <div class="case-toolbar"><div id="case-filters" class="case-filters" role="group" aria-label="Фильтр результатов"><button data-filter="review_required" type="button" aria-pressed="false">Требует проверки <span></span></button><button data-filter="confirmed" type="button" aria-pressed="false">Подтверждено моделью <span></span></button><button data-filter="rejected" type="button" aria-pressed="false">Остальные <span></span></button><button data-filter="all" type="button" aria-pressed="true">Все <span></span></button></div><label class="case-search-label"><span class="visually-hidden">Поиск по результатам</span><input id="case-search" type="search" placeholder="Поиск по проверке или обоснованию"></label></div>
+            <p id="case-empty" class="coverage-note" hidden>По этому фильтру событий нет.</p>
+            <div class="case-table-wrap"><table class="case-results-table" aria-describedby="case-probability-note"><caption class="visually-hidden">Проверки, оценки модели, время и доказательства</caption><thead><tr><th scope="col">Проверка</th><th scope="col">Модель</th><th scope="col">Оценка модели</th><th scope="col">Время</th><th scope="col">Подробности</th></tr></thead><tbody id="case-decisions"></tbody></table></div>
+          </section>
+          <details id="missed-event-section" class="card disclosure" hidden><summary>Добавить пропущенное событие</summary><div class="disclosure-body"><p class="coverage-note">Отметьте событие, которого нет в результатах модели. Оно сохраняется как разметка проверяющего.</p><form id="missed-event-form" class="missed-event-form"><label>Тип проверки<select id="missed-type" required></select></label><label>Начало, сек.<input id="missed-start" type="number" min="0" step="0.01" required></label><label>Конец, сек.<input id="missed-end" type="number" min="0" step="0.01" required></label><label class="missed-comment">Наблюдаемое действие<textarea id="missed-comment" maxlength="2000" required placeholder="Что видно в кадрах"></textarea></label><button type="submit" class="button button-secondary">Добавить и сохранить</button><button id="cancel-missed-event" type="button" class="text-button">Очистить форму</button></form><ul id="missed-events"></ul></div></details>
+          <div id="findings-heading" class="findings-heading" hidden><h2>Кадры подтверждённых моделью событий</h2><span id="finding-count"></span></div><div id="findings"></div>
+          <details id="detections-section" class="detections-section card disclosure" hidden aria-labelledby="detections-title"><summary><span id="detections-title">Найденные предметы и люди</span><span id="detection-count" class="catalog-version"></span></summary><div class="disclosure-body"><p class="coverage-note">Рамки определены только в отдельных проанализированных кадрах.</p><div id="detections" class="detections-grid"></div></div></details>
           <details id="technical-details" class="technical-details card disclosure">
-            <summary>Analysis details</summary><div class="disclosure-body">
-              <section id="assessments-section" class="catalog-card assessment-card" hidden aria-labelledby="assessments-title"><div class="catalog-heading"><div><h3 id="assessments-title">Check estimates</h3><p id="assessments-version" class="catalog-version"></p></div><button id="assessment-toggle" class="text-button" type="button" hidden>Show all checks</button></div><p class="score-explanation">Model estimates support review; they are not confirmed violations.</p><div class="score-table-wrap"><table class="score-table"><caption class="visually-hidden">Assessed checks and model support</caption><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Estimate</th></tr></thead><tbody id="assessment-items"></tbody></table></div></section>
-              <section id="coverage-section" class="coverage-card" hidden aria-labelledby="coverage-title"><h3 id="coverage-title">Video coverage</h3><dl id="coverage-metrics" class="coverage-metrics"></dl></section>
-              <section id="review-queue-section" class="review-queue-section" hidden aria-labelledby="review-queue-title"><div class="review-queue-heading"><h3 id="review-queue-title">Review observations</h3><span id="review-queue-count"></span></div><div id="review-queue"></div></section>
-              <section id="review-notes-section" class="notes-card" hidden><h3>Limitations</h3><ul id="review-notes"></ul></section>
+            <summary>Технические сведения анализа</summary><div class="disclosure-body">
+              <section id="assessments-section" class="catalog-card assessment-card" hidden aria-labelledby="assessments-title"><div class="catalog-heading"><div><h3 id="assessments-title">Оценки проверок</h3><p id="assessments-version" class="catalog-version"></p></div><button id="assessment-toggle" class="text-button" type="button" hidden>Все проверки</button></div><p class="score-explanation">Оценки модели помогают проверке и сами по себе не подтверждают нарушение.</p><div class="score-table-wrap"><table class="score-table"><caption class="visually-hidden">Оценённые проверки и данные модели</caption><thead><tr><th scope="col">Проверка</th><th scope="col">Модель</th><th scope="col">Оценка</th></tr></thead><tbody id="assessment-items"></tbody></table></div></section>
+              <section id="coverage-section" class="coverage-card" hidden aria-labelledby="coverage-title"><h3 id="coverage-title">Охват видео</h3><dl id="coverage-metrics" class="coverage-metrics"></dl></section>
+              <section id="review-queue-section" class="review-queue-section" hidden aria-labelledby="review-queue-title"><div class="review-queue-heading"><h3 id="review-queue-title">Наблюдения для проверки</h3><span id="review-queue-count"></span></div><div id="review-queue"></div></section>
+              <section id="review-notes-section" class="notes-card" hidden><h3>Ограничения</h3><ul id="review-notes"></ul></section>
               <p id="jury-verdict" class="jury-verdict"></p>
             </div>
           </details>
         </div>
 
-        <div class="video-card card">
-          <div id="video-empty" class="video-empty"><span class="video-empty-icon" aria-hidden="true">▷</span><p>Video preview</p></div>
-          <div id="video-stage" class="video-stage"><video id="source-video" controls muted playsinline preload="metadata" hidden aria-label="Uploaded source video"></video><div id="detection-overlay" class="detection-overlay" aria-hidden="true" hidden></div></div>
-          <div id="video-caption" class="video-caption" hidden><span id="video-name">Source video</span><span>Original video</span></div>
-          <div id="detection-controls" class="detection-controls" hidden><label><input id="show-detections" type="checkbox" checked> Show boxes</label><span id="overlay-status"></span></div>
-          <p id="video-error" class="video-error" hidden></p>
+          </div>
         </div>
       </section>
     </div>
   </main>
-  <footer>Local video analysis</footer>
+  <footer>Локальный анализ видео</footer>
 </body>
 </html>

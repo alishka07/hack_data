@@ -3,7 +3,7 @@
 (() => {
   const byId = (id) => document.getElementById(id);
   const ui = Object.fromEntries([
-    "api-key", "key-visibility", "upload-form", "video-file", "drop-zone", "selected-file", "file-name", "file-size", "remove-file", "analyze-button", "admission-note", "form-error", "service-dot", "service-label", "status-title", "status-badge", "status-description", "progress-section", "progress-track", "progress-fill", "stage-label", "elapsed-label", "job-controls", "job-id", "poll-button", "poll-error", "source-video", "video-empty", "video-caption", "video-name", "video-error", "results", "verdict-card", "verdict-icon", "verdict-title", "verdict-description", "coverage-section", "coverage-metrics", "review-notes-section", "review-notes", "findings-heading", "finding-count", "findings", "review-queue-section", "review-queue-count", "review-queue", "catalog-section", "catalog-version", "catalog-reload", "catalog-status", "catalog-table-wrap", "catalog-items", "assessments-section", "assessments-version", "assessment-items", "open-job-form", "job-input", "video-stage", "detection-overlay", "detection-controls", "show-detections", "overlay-status", "detections-section", "detection-count", "detections", "case-decision-section", "case-decision-count", "case-decisions", "details-warning", "jury-verdict"
+    "api-key", "key-visibility", "upload-form", "video-file", "drop-zone", "selected-file", "file-name", "file-size", "remove-file", "analyze-button", "admission-note", "form-error", "service-dot", "service-label", "status-title", "status-badge", "status-description", "progress-section", "progress-track", "progress-fill", "stage-label", "elapsed-label", "job-controls", "job-id", "poll-button", "poll-error", "source-video", "video-empty", "video-caption", "video-name", "video-error", "results", "verdict-card", "verdict-icon", "verdict-title", "verdict-description", "coverage-section", "coverage-metrics", "review-notes-section", "review-notes", "findings-heading", "finding-count", "findings", "review-queue-section", "review-queue-count", "review-queue", "catalog-section", "catalog-version", "catalog-reload", "catalog-status", "catalog-table-wrap", "catalog-items", "assessments-section", "assessments-version", "assessment-items", "open-job-form", "job-input", "video-stage", "detection-overlay", "detection-controls", "show-detections", "overlay-status", "detections-section", "detection-count", "detections", "case-decision-section", "case-decision-count", "case-decisions", "details-warning", "jury-verdict", "reviewer-section", "download-report", "reviewer-name", "review-camera", "review-session", "review-source-group", "review-coverage", "save-review-meta", "review-save-status", "reload-review", "review-error", "case-filters", "case-search", "case-empty", "missed-event-section", "missed-event-form", "missed-type", "missed-start", "missed-end", "missed-comment", "missed-events", "cancel-missed-event", "history-section", "history-search", "history-reload", "history-status", "history-items", "history-more", "quality-section", "quality-reload", "quality-status", "quality-summary", "quality-items", "quality-limitations", "event-navigation", "selected-case-label", "next-case", "event-timeline", "play-context", "play-context-status"
   ].map((id) => [id, byId(id)]));
   let file = null;
   let ready = false;
@@ -33,6 +33,23 @@
   let detectionController = null;
   const detectionImageUrls = new Map();
 
+  let reviewState = null;
+  let reviewDirty = false;
+  let reviewSaving = false;
+  let selectedCaseKey = null;
+  let visibleCaseGroups = [];
+  let allCaseGroups = [];
+  let caseFilter = "all";
+  let historyGeneration = 0;
+  let historyTimer = null;
+  let historyOffset = 0;
+  let historyTotal = 0;
+  let qualityGeneration = 0;
+  let contextEnd = null;
+  let pendingManualId = null;
+  let manualFormDirty = false;
+  const reviewDrafts = new Map();
+
   class ApiError extends Error {
     constructor(message, status, retryAfter) { super(message); this.status = status; this.retryAfter = retryAfter; }
   }
@@ -58,15 +75,15 @@
     return `${String(Math.floor(milliseconds / 60000)).padStart(2, "0")}:${String(Math.floor(milliseconds / 1000) % 60).padStart(2, "0")}.${String(milliseconds % 1000).padStart(3, "0")}`;
   }
   function friendly(value) {
-    const labels = {workstation_departure_screen_left_on:"Workstation left with computer screen on",personal_food_at_workstation:"Personal belongings at workplace (food)",cashier_eating_at_workstation:"Eating at cashier workstation"};
+    const labels = {"personal_food_at_workstation": "Личные вещи на рабочем месте: продукты питания", "workstation_departure_screen_left_on": "Уход с рабочего места с включённым экраном", "cashier_eating_at_workstation": "Приём пищи на рабочем месте", "active_intake_departure": "Уход во время незавершённого приёма наличных", "cash_intake_without_client_presence": "Приём наличных без присутствия клиента", "previous_transaction_cash_exposed": "Наличные предыдущего клиента вне места хранения", "intake_banknotes_counted": "Пересчёт принимаемых банкнот по одной", "intake_coins_counted": "Пересчёт принимаемых монет поштучно", "intake_client_presence_required": "Приём и пересчёт наличных при клиенте", "previous_cash_stored": "Хранение ранее принятых наличных", "loose_cash_issued_without_observed_count": "Пересчёт выдаваемых наличных при клиенте", "damaged_incomplete_strap_count": "Пересчёт банкнот из неполных или повреждённых пачек", "incomplete_coin_sack_count": "Пересчёт монет из неполных мешков", "payout_bank_packaging": "Выдача наличных в разрешённой упаковке", "client_recount_supervision": "Присутствие сотрудника при пересчёте клиентом", "backoffice_processing_control": "Контроль обработки наличных", "intake_authenticity_validity_checks": "Проверка подлинности и платёжности наличных", "machine_security_features": "Проверка защитных признаков оборудованием", "intake_client_identification": "Идентификация клиента при приёме наличных", "payout_client_identification": "Идентификация клиента при выдаче наличных", "intake_confirmation_document": "Документ о приёме наличных", "payout_confirmation_document": "Документ о выдаче наличных", "personal_belongings_in_cash_unit": "Личные вещи в кассовом узле", "personal_cash_valuables_in_cash_unit": "Личные деньги и ценности в кассовом узле", "personal_device_exception_eligibility": "Основание для использования личного устройства", "vault_entry_authorization": "Право доступа в хранилище", "vault_other_person_accompaniment": "Сопровождение посетителей хранилища", "keys_stamps_secure_handling": "Сохранность ключей, кодов, штампов и ценностей", "cash_unit_isolation": "Изоляция кассового узла и закрытие входов", "cashier_room_lockable_entrance": "Отдельный запираемый вход в кассу", "cash_transfer_device_serviceable": "Исправность устройства передачи наличных", "cash_transfer_controls_inside": "Управление передаточным устройством из кассы", "counting_room_lockable_entrance": "Запираемый вход в помещение пересчёта", "collection_loading_access_restriction": "Ограничение доступа при погрузке инкассации", "collection_loading_view_restriction": "Ограничение обзора погрузки инкассации", "vault_cash_segregation_storage": "Разделение и хранение наличных в хранилище", "unmapped_visual_event": "Другое наблюдаемое действие", "person": "Человек", "hand": "Рука", "cash": "Наличные", "computer": "Компьютер", "phone": "Телефон", "bag": "Сумка", "counter": "Рабочая поверхность", "drawer": "Ящик", "safe": "Сейф", "window": "Окно", "queued": "В очереди", "ingest": "Подготовка видео", "perception": "Поиск людей и предметов", "scene_calibration": "Определение зон", "screening": "Просмотр сцен", "verification": "Проверка событий", "finalizing": "Подготовка результата", "processing": "Обработка", "done": "Завершено", "workstation_departure": "Уход с рабочего места", "actual_workstation_departure": "Наблюдаемый уход с рабочего места", "workstation_departure_observed": "Наблюдаемый уход с рабочего места", "computer_at_workstation_identified": "Компьютер на рабочем месте определён", "workstation_unattended_after_departure": "Рабочее место без оператора после ухода", "same_screen_visibly_on_after_departure": "Тот же экран включён после ухода", "departure_screen_sequence_visible": "Последовательность ухода и состояния экрана видна", "non_cash_object_visually_supported": "Виден предмет, не относящийся к наличным", "object_cash_area_relationship_visible": "Расположение предмета в кассовой зоне видно", "food_item_visually_identified": "Продукты питания определены по кадру", "food_on_cashier_work_surface": "Продукты на рабочей поверхности кассира", "personal_food_on_work_table": "Продукты на рабочем столе", "unfinished_intake": "Приём наличных не завершён", "cash_exposed": "Наличные вне хранения", "cash_acceptance_or_count_observed": "Видимый приём или пересчёт наличных", "cash_form_visible": "Видимость формы и упаковки наличных", "cash_handling_observed": "Обращение с наличными", "cash_handover_observed": "Передача наличных", "cash_intake_established": "Установленный приём наличных", "cash_on_work_surface_observed": "Наличные вне контейнера", "cash_outside_designated_storage": "Наличные вне места хранения", "cash_payout_established": "Установленная выдача наличных", "cash_persistence_visually_supported": "Наличные в последовательных кадрах", "cash_processing_observed": "Обработка наличных", "cash_storage_relationship_observed": "Расположение наличных у хранилища", "client_absence_visually_supported": "Отсутствие клиента в обозреваемой зоне", "client_area_visible": "Видимость клиентской зоны", "client_cash_lineage_established": "Связь наличных с операцией клиента", "client_demonstrably_absent": "Подтверждение отсутствия клиента", "client_service_active": "Продолжение обслуживания клиента", "client_service_transition_observed": "Переход к другой операции", "complete_preparation_to_handover_visible": "Видимость подготовки и передачи целиком", "food_consumption_visibly_observed": "Видимый приём пищи", "handling_or_placement_observed": "Перемещение или размещение предмета", "key_or_stamp_visually_supported": "Опознание ключа или штампа", "loose_cash_established": "Неупакованные наличные", "next_distinct_client_transaction_active": "Начало следующей операции другого клиента", "no_earlier_or_offscreen_count_possible": "Исключение более раннего или скрытого пересчёта", "no_manual_or_machine_count_observed": "Отсутствие видимого ручного или машинного пересчёта", "object_continuity_established": "Непрерывность наблюдения одного предмета", "packaging_exception_excluded": "Исключение допустимой выдачи в упаковке", "person_operating_cashier_workstation": "Работа человека на кассовом месте", "previous_client_cash_identified": "Идентификация наличных предыдущего клиента", "previous_transaction_completed": "Завершение предыдущей операции", "processing_area_visible": "Видимость зоны обработки наличных", "relevant_context_visible": "Видимость необходимого контекста", "service_not_completed": "Незавершённое обслуживание", "storage_container_visible": "Видимость контейнера или хранилища", "storage_relationship_visible": "Расположение наличных относительно поверхности или хранилища", "workstation_work_context_visible": "Рабочий контекст кассового места", "verifying": "Проверка событий"};
     return labels[value] || String(value || "").replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase());
   }
   function syncSubmit() {
-    ui["analyze-button"].disabled = !ready || busy || !file || !ui["api-key"].value.trim() || submitting || Boolean(currentJob && polling);
-    ui["analyze-button"].firstChild.textContent = submitting ? "Uploading video… " : "Analyze video ";
-    ui["admission-note"].textContent = !ready ? "Waiting for the analysis worker." : submitting ? "Uploading to the local service." : currentJob && polling ? "Your review is in progress." : busy ? "An analysis is already running. Wait for it to finish before uploading another video." : "The service is ready for a new review.";
+    ui["analyze-button"].disabled = !ready || busy || !file || !ui["api-key"].value.trim() || submitting || reviewDirty || reviewSaving || Boolean(currentJob && polling);
+    ui["analyze-button"].firstChild.textContent = submitting ? "Загружаем видео… " : "Анализировать видео ";
+    ui["admission-note"].textContent = !ready ? "Ожидание обработчика анализа." : submitting ? "Загрузка в локальный сервис." : currentJob && polling ? "Идёт анализ вашего видео." : busy ? "Сейчас выполняется анализ. Следующее видео можно загрузить после его завершения." : "Сервис готов к новому анализу.";
     if (busy && activeJobId && activeJobId !== currentJob && !submitting) {
-      const open = node("button", "text-button", "Open running analysis"); open.type = "button"; open.id = "open-active-job";
+      const open = node("button", "text-button", "Открыть текущий анализ"); open.type = "button"; open.id = "open-active-job";
       open.addEventListener("click", () => { message(ui["form-error"], ""); beginJob(activeJobId); });
       ui["admission-note"].append(document.createTextNode(" "), open);
     }
@@ -74,26 +91,26 @@
   async function request(path, options = {}, authenticated = true) {
     // Keep both video data and credentials on this service, including future callers.
     if (typeof path !== "string" || !path.startsWith("/api/") || path.includes("\\")) {
-      throw new ApiError("Only this service’s local API routes may be requested.", 0);
+      throw new ApiError("Разрешены только локальные API-маршруты этого сервиса.", 0);
     }
     const headers = new Headers(options.headers || {});
     if (authenticated) {
       const key = ui["api-key"].value.trim();
-      if (!key) throw new ApiError("Enter your service API key to continue.", 401);
+      if (!key) throw new ApiError("Введите ключ API сервиса.", 401);
       headers.set("X-API-Key", key);
     }
     let response;
     try { response = await fetch(path, { ...options, headers, cache: "no-store", credentials: "same-origin", redirect: "error" }); }
-    catch (error) { if (error.name === "AbortError") throw error; throw new ApiError("The local service could not be reached. Check that it is running, then retry.", 0); }
+    catch (error) { if (error.name === "AbortError") throw error; throw new ApiError("Не удалось связаться с локальным сервисом. Проверьте, что он запущен, и повторите.", 0); }
     if (!response.ok) {
       let detail = "";
       try {
         const data = await response.json();
         detail = typeof data.detail === "string" ? data.detail : typeof data.error === "string" ? data.error : typeof data.message === "string" ? data.message : "";
       } catch (_) { /* A plain error response still gets a clear status-specific message. */ }
-      const errors = {401:"The API key was not accepted. Check the key and retry.",403:"This API key does not have access to this review.",404:"This review was not found. Check the job ID.",413:"This video exceeds the service upload limit.",429:"An analysis is already running. Open its progress or wait for it to finish.",503:"The analysis worker is unavailable or still loading. Retry when it is ready."};
+      const errors = {400:"Не удалось выполнить запрос. Проверьте введённые данные.",401:"Ключ API не принят. Проверьте ключ и повторите.",403:"У этого ключа API нет доступа к анализу.",404:"Анализ не найден. Проверьте ID.",409:"Сохранённая версия изменилась. Загрузите актуальную версию.",413:"Видео превышает допустимый размер загрузки.",415:"Выберите видео в формате MOV.",422:"Проверьте имя, решение и границы интервалов. Интервал должен находиться внутри видео.",429:"Уже выполняется анализ. Откройте его или дождитесь завершения.",503:"Обработчик недоступен или загружается. Повторите после его запуска."};
       const retryAfter = response.headers.get("Retry-After");
-      throw new ApiError(errors[response.status] || detail || `The request failed (HTTP ${response.status}).`, response.status, retryAfter);
+      throw new ApiError(errors[response.status] || detail || `Запрос завершился ошибкой (HTTP ${response.status}).`, response.status, retryAfter);
     }
     return response;
   }
@@ -105,16 +122,16 @@
     return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100 ? `${Number(value.toFixed(2))}%` : null;
   }
   function scoringKind(value) {
-    return ({event_occurrence:"Event occurrence",required_procedure:"Required procedure"})[value] || "Unknown";
+    return ({event_occurrence:"Наличие события",required_procedure:"Обязательная процедура"})[value] || "Неизвестно";
   }
   function confidenceText(value) {
     return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1 ? scoreText(value * 100) : null;
   }
   function automationLabel(value) {
-    return ({automatic_when_supported:"Automatic when supported",review_only:"Review only",manual:"Manual",excluded:"Excluded"})[value] || null;
+    return ({automatic_when_supported:"Автоматически при наличии доказательств",review_only:"Проверка человеком",manual:"Ручная проверка",excluded:"Исключено"})[value] || null;
   }
   function assessmentLabel(value) {
-    return ({unassessed:"Unassessed",observed:"Event evidence",completion_evidence:"Correct procedure evidence",completed:"Procedure completed",unresolved:"Unresolved"})[value] || "Unassessed";
+    return ({unassessed:"Не оценено",observed:"Данные о событии",completion_evidence:"Данные о выполнении процедуры",completed:"Процедура выполнена",unresolved:"Не установлено"})[value] || "Не оценено";
   }
   function episodeLabel(item) {
     const summary = item.scope === "per_episode_summary";
@@ -123,12 +140,12 @@
     const startTime = summary ? item.latest_episode_start_sec : item.start_sec;
     const endTime = summary ? item.latest_episode_end_sec : item.end_sec;
     const start = finite(startTime) ? ` · ${formatTime(startTime)}${finite(endTime) ? `–${formatTime(endTime)}` : ""}` : "";
-    return "Episode" + start;
+    return "Эпизод" + start;
   }
   function scoreRow(item, initialOnly, episodes = []) {
     const row = node("tr");
     const id = typeof item.item_id === "string" ? item.item_id : typeof item.id === "string" ? item.id : "";
-    const label = node("th", "", typeof item.label === "string" && item.label ? item.label : friendly(id) || "Untitled check");
+    const label = node("th", "", /[А-Яа-яЁё]/.test(friendly(id)) ? friendly(id) : typeof item.label === "string" && item.label ? item.label : friendly(id) || "Проверка без названия");
     label.setAttribute("scope", "row");
     const applicability = initialOnly ? "unknown" : item.applicability;
     const assessment = initialOnly ? "unassessed" : item.assessment;
@@ -137,57 +154,57 @@
       && !["unassessed", "unresolved"].includes(assessment)
       && scoreText(item.score) !== null;
     const untouched = initialOnly || item.automation === "manual" || assessment === "unassessed";
-    const result = excluded ? "Not applicable" : untouched ? "Not checked" : item.confirmed_finding === true ? "Violation"
-      : assessment === "completed" && applicability === "applicable" ? "Completed" : "Needs review";
+    const result = excluded ? "Не применимо" : untouched ? "Не проверено" : item.confirmed_finding === true ? "Подтверждено моделью"
+      : assessment === "completed" && applicability === "applicable" ? "Выполнено" : "Требует проверки";
     const confidence = confidenceText(item.model_confidence);
-    const estimate = checked && confidence ? confidence + (item.scoring_kind === "required_procedure" ? " completion support" : " event support") : "—";
+    const estimate = checked && confidence ? confidence + (item.scoring_kind === "required_procedure" ? " · выполнение процедуры" : " · наличие события") : "—";
     row.append(label, node("td", "score-result", result), node("td", "score-value", estimate));
     if (excluded) row.classList.add("score-excluded");
     const detail = node("details", "score-details"), body = node("div", "score-detail-body");
-    detail.append(node("summary", "", "Details"));
+    detail.append(node("summary", "", "Подробности"));
     body.append(node("p", "score-state", scoringKind(item.scoring_kind) + " · " + assessmentLabel(assessment)),
-      node("p", "score-state", "Applicability: " + (({unknown:"Unknown",applicable:"Applicable",not_applicable:"Not applicable"})[applicability] || "Unknown")));
+      node("p", "score-state", "Применимость: " + (({unknown:"Неизвестно",applicable:"Применимо",not_applicable:"Не применимо"})[applicability] || "Неизвестно")));
     const automation = automationLabel(item.automation);
-    if (automation) body.append(node("p", "score-state", "Review route: " + automation));
+    if (automation) body.append(node("p", "score-state", "Способ проверки: " + automation));
     const source = safeRuleUrl(item.source_url);
     if (source) {
       const policy = item.basis === "workplace_policy";
-      if (policy) body.append(node("p", "score-state", "Basis: User-provided workplace policy"));
-      const link = node("a", "", policy ? "Read workplace policy ↗" : "Read official source ↗");
+      if (policy) body.append(node("p", "score-state", "Основание: правило рабочего места от пользователя"));
+      const link = node("a", "", policy ? "Открыть правило рабочего места ↗" : "Открыть официальный источник ↗");
       link.href = source; link.target = "_blank"; link.rel = "noopener noreferrer"; body.append(link);
     }
     if (!initialOnly) {
       const refs = Array.isArray(item.evidence_refs) ? item.evidence_refs : [];
-      body.append(node("p", "score-state", refs.length + " evidence " + (refs.length === 1 ? "reference" : "references")));
-      if (confidence) body.append(node("p", "score-state", (item.scoring_kind === "required_procedure" ? "Correct-procedure confidence: " : "Event confidence: ") + confidence + " · uncalibrated"));
-      if (checked && scoreText(item.score)) body.append(node("p", "score-state", (item.scoring_kind === "required_procedure" ? "Remaining procedure estimate: " : "Event estimate: ") + scoreText(item.score) + " · uncalibrated; estimates do not determine the verdict"));
-      const scope = ({clip_event_summary:"Strongest event evidence in this clip",per_episode_summary:"Highest remaining estimate across assessed transactions",episode_assessment:"One transaction or event episode",per_episode_verification_required:"Verify each applicable transaction",verified_finding_episode:"One verified event episode"})[item.scope];
-      if (scope) body.append(node("p", "score-state", "Scope: " + scope));
-      if (item.unassessed_episode_count > 0) body.append(node("p", "score-state", "Incomplete coverage: " + item.unassessed_episode_count + " known episodes have no assessment for this check; applicability may be unknown"));
-      if (Number.isSafeInteger(item.unscoped_unknown_observation_count) && item.unscoped_unknown_observation_count > 0) body.append(node("p", "score-state", "Incomplete coverage: " + item.unscoped_unknown_observation_count + " uncertain windows have no established procedure trigger; existing completion evidence is retained"));
-      if (item.scope_certainty === "window_only") body.append(node("p", "score-state", "Window-scoped evidence · transaction boundary unconfirmed"));
+      body.append(node("p", "score-state", refs.length + " ссылок на кадры"));
+      if (confidence) body.append(node("p", "score-state", (item.scoring_kind === "required_procedure" ? "Оценка выполнения процедуры: " : "Оценка события: ") + confidence + " · без калибровки"));
+      if (checked && scoreText(item.score)) body.append(node("p", "score-state", (item.scoring_kind === "required_procedure" ? "Остаточная оценка процедуры: " : "Оценка события: ") + scoreText(item.score) + " · без калибровки; оценка не определяет итог"));
+      const scope = ({clip_event_summary:"Самое сильное подтверждение события в ролике",per_episode_summary:"Максимальная остаточная оценка среди проверенных операций",episode_assessment:"Один эпизод операции или события",per_episode_verification_required:"Проверяйте каждую применимую операцию",verified_finding_episode:"Один проверенный эпизод события"})[item.scope];
+      if (scope) body.append(node("p", "score-state", "Область оценки: " + scope));
+      if (item.unassessed_episode_count > 0) body.append(node("p", "score-state", "Неполный охват: " + item.unassessed_episode_count + " известных эпизодов без оценки этой проверки; применимость может быть неизвестна"));
+      if (Number.isSafeInteger(item.unscoped_unknown_observation_count) && item.unscoped_unknown_observation_count > 0) body.append(node("p", "score-state", "Неполный охват: " + item.unscoped_unknown_observation_count + " окон с неопределённым началом процедуры; данные о выполнении сохранены"));
+      if (item.scope_certainty === "window_only") body.append(node("p", "score-state", "Данные ограничены фрагментом · границы операции не подтверждены"));
       const latest = episodeLabel(item);
-      if (latest) body.append(node("p", "score-state", "Latest assessed " + latest.toLowerCase()));
+      if (latest) body.append(node("p", "score-state", "Последний оценённый " + latest.toLowerCase()));
       const moments = node("div", "check-evidence");
       for (const ref of refs.slice(0, 3)) {
         if (typeof ref?.timestamp_sec !== "number" || !Number.isFinite(ref.timestamp_sec) || ref.timestamp_sec < 0) continue;
         const time = node("button", "text-button", sampleTime(ref.timestamp_sec)); time.type = "button";
-        time.setAttribute("aria-label", "Seek to check evidence at " + sampleTime(ref.timestamp_sec));
+        time.setAttribute("aria-label", "Перейти к доказательству: " + sampleTime(ref.timestamp_sec));
         time.addEventListener("click", () => seek(ref.timestamp_sec)); moments.append(time);
       }
       if (moments.childElementCount) body.append(moments);
       if (episodes.length) {
         const unresolved = Number.isSafeInteger(item.pending_episode_count) && item.pending_episode_count >= 0 ? item.pending_episode_count : episodes.filter(episode => episode.applicability !== "not_applicable" && (episode.assessment !== "completed" || episode.applicability === "unknown")).length;
         const count = Number.isSafeInteger(item.episode_count) && item.episode_count >= episodes.length ? item.episode_count : episodes.length;
-        body.append(node("p", "score-state", count + " episodes · " + unresolved + " pending or unknown"));
+        body.append(node("p", "score-state", count + " эпизодов · " + unresolved + " требуют проверки или неизвестны"));
         const history = node("details", "score-episodes"), list = node("ul");
-        history.append(node("summary", "", "Episode scores"));
+        history.append(node("summary", "", "Оценки эпизодов"));
         for (const [index, episode] of episodes.entries()) {
           const assessed = episode.applicability !== "not_applicable" && episode.automation !== "manual" && !["unassessed", "unresolved"].includes(episode.assessment);
-          const estimate = episode.applicability === "not_applicable" ? "Not applicable" : assessed ? scoreText(episode.score) || "Not checked" : "Not checked";
+          const estimate = episode.applicability === "not_applicable" ? "Не применимо" : assessed ? scoreText(episode.score) || "Не проверено" : "Не проверено";
           const certainty = confidenceText(episode.model_confidence);
           const interval = finite(episode.start_sec) ? " · " + formatTime(episode.start_sec) + (finite(episode.end_sec) ? "–" + formatTime(episode.end_sec) : "") : "";
-          list.append(node("li", "", "Episode " + (index + 1) + interval + ": " + estimate + " · " + assessmentLabel(episode.assessment) + (certainty ? " · " + (episode.scoring_kind === "required_procedure" ? "correct-procedure" : "event") + " confidence " + certainty : "") + (episode.applicability === "unknown" ? " · applicability unknown" : "")));
+          list.append(node("li", "", "Эпизод " + (index + 1) + interval + ": " + estimate + " · " + assessmentLabel(episode.assessment) + (certainty ? " · " + (episode.scoring_kind === "required_procedure" ? "выполнение процедуры" : "event") + " оценка " + certainty : "") + (episode.applicability === "unknown" ? " · применимость неизвестна" : "")));
         }
         history.append(list); body.append(history);
       }
@@ -202,9 +219,9 @@
     const shown = showAllAssessments ? entries : relevant;
     ui["assessment-items"].replaceChildren(...shown.map((item) => scoreRow(item, false, episodes.filter((episode) => (episode.item_id || episode.id) === (item.item_id || item.id)))));
     const version = metadata.details?.catalog_version;
-    ui["assessments-version"].textContent = shown.length + " of " + entries.length + " checks" + (typeof version === "string" || typeof version === "number" ? " · Catalog version " + version : "");
+    ui["assessments-version"].textContent = shown.length + " из " + entries.length + " проверок" + (typeof version === "string" || typeof version === "number" ? " · Версия каталога " + version : "");
     const toggle = byId("assessment-toggle");
-    if (toggle) { toggle.textContent = showAllAssessments ? "Show relevant checks" : "Show all checks"; display(toggle, relevant.length < entries.length); }
+    if (toggle) { toggle.textContent = showAllAssessments ? "Значимые проверки" : "Все проверки"; display(toggle, relevant.length < entries.length); }
     display(ui["assessments-section"], entries.length > 0);
   }
   async function loadCatalog() {
@@ -216,20 +233,21 @@
     display(ui["catalog-table-wrap"], false);
     if (!ui["api-key"].value.trim()) { display(ui["catalog-section"], false); return; }
     display(ui["catalog-section"], true);
-    ui["catalog-status"].textContent = "Loading the authenticated initial catalog…";
+    ui["catalog-status"].textContent = "Загружаем каталог проверок…";
     catalogController = new AbortController();
     try {
       const catalog = await json("/api/ui/catalog", {signal:catalogController.signal});
       if (generation !== catalogGeneration) return;
-      if (!catalog || !Array.isArray(catalog.items)) throw new ApiError("The service returned an invalid review catalog.", 0);
+      if (!catalog || !Array.isArray(catalog.items)) throw new ApiError("Сервис вернул некорректный каталог проверок.", 0);
       const entries = catalogEntries(catalog.items);
+      ui["missed-type"].replaceChildren(...entries.map(item => { const option = node("option", "", caseTitle(item.id || item.item_id)); option.value = item.id || item.item_id; return option; }));
       ui["catalog-items"].replaceChildren(...entries.map((item) => scoreRow(item, true)));
-      ui["catalog-version"].textContent = typeof catalog.version === "string" || typeof catalog.version === "number" ? `Catalog version ${catalog.version}` : "";
+      ui["catalog-version"].textContent = typeof catalog.version === "string" || typeof catalog.version === "number" ? `Версия каталога ${catalog.version}` : "";
       const automaticEvents = entries.filter((item) => item.scoring_kind === "event_occurrence" && item.automation === "automatic_when_supported").length;
-      ui["catalog-status"].textContent = entries.length ? `${entries.length} catalog items · ${automaticEvents} event checks eligible for automatic findings` : "The catalog has no items.";
+      ui["catalog-status"].textContent = entries.length ? `${entries.length} проверок в каталоге · ${automaticEvents} проверок событий с автоматическим подтверждением` : "В каталоге нет проверок.";
       display(ui["catalog-table-wrap"], entries.length > 0);
     } catch (error) {
-      if (error.name !== "AbortError" && generation === catalogGeneration) ui["catalog-status"].textContent = `Catalog unavailable. ${error.message}`;
+      if (error.name !== "AbortError" && generation === catalogGeneration) ui["catalog-status"].textContent = `Каталог недоступен. ${error.message}`;
     }
   }
   function scheduleCatalog() {
@@ -240,7 +258,7 @@
     ui["catalog-version"].textContent = "";
     display(ui["catalog-table-wrap"], false);
     display(ui["catalog-section"], Boolean(ui["api-key"].value.trim()));
-    ui["catalog-status"].textContent = "Waiting to load the initial catalog…";
+    ui["catalog-status"].textContent = "Ожидание загрузки каталога…";
     if (ui["api-key"].value.trim()) catalogTimer = setTimeout(loadCatalog, 400);
   }
   async function checkHealth() {
@@ -250,8 +268,8 @@
       busy = health.busy === true;
       if (!busy) activeJobId = null;
       ui["service-dot"].className = `dot ${ready ? "ready" : "failed"}`;
-      ui["service-label"].textContent = ready ? busy ? "Analysis running" : "Worker ready" : "Worker loading / unavailable";
-    } catch (_) { ready = false; ui["service-dot"].className = "dot failed"; ui["service-label"].textContent = "Service unavailable"; }
+      ui["service-label"].textContent = ready ? busy ? "Идёт анализ" : "Обработчик готов" : "Обработчик загружается / недоступен";
+    } catch (_) { ready = false; ui["service-dot"].className = "dot failed"; ui["service-label"].textContent = "Сервис недоступен"; }
     syncSubmit();
     if (busy && ui["api-key"].value.trim()) recoverActiveJob();
   }
@@ -283,7 +301,7 @@
     sourceUrl = url;
     ui["source-video"].src = url;
     ui["source-video"].load();
-    ui["video-name"].textContent = name || "Source video";
+    ui["video-name"].textContent = name || "Исходное видео";
     display(ui["source-video"], true); display(ui["video-empty"], false); display(ui["video-caption"], true);
     message(ui["video-error"], "");
   }
@@ -296,15 +314,16 @@
   }
   function selectFile(selected) {
     if (!selected) return;
-    if (!/\.mov$/i.test(selected.name)) { message(ui["form-error"], "Choose a MOV video (.mov) to match the analysis API."); return; }
-    if (selected.size === 0) { message(ui["form-error"], "The selected video is empty. Choose another file."); return; }
-    if (submitting || polling) { message(ui["form-error"], "Wait for the current review, or pause its updates before selecting another video."); return; }
+    if (reviewDirty || reviewSaving) { message(ui["review-error"], "Сохраните изменения проверки перед выбором другого видео."); ui["reviewer-section"].scrollIntoView({block:"center"}); return; }
+    if (!/\.mov$/i.test(selected.name)) { message(ui["form-error"], "Выберите видео в формате MOV (.mov)."); return; }
+    if (selected.size === 0) { message(ui["form-error"], "Выбран пустой файл. Выберите другое видео."); return; }
+    if (submitting || polling) { message(ui["form-error"], "Дождитесь текущего анализа или приостановите обновления перед выбором другого видео."); return; }
     stopPolling(); resetDetections(); currentJob = null; lastDetails = {}; lastResult = null; loadedJobVideo = null;
     file = selected; ui["file-name"].textContent = file.name; ui["file-size"].textContent = formatSize(file.size);
     display(ui["selected-file"], true); display(ui["drop-zone"], false);
     display(ui["results"], false); display(ui["job-controls"], false); display(ui["progress-section"], false);
-    ui["status-title"].textContent = "Video selected"; ui["status-description"].textContent = "Start an analysis to review the visible sequence against the supported rules.";
-    setBadge("Ready to analyze", ""); message(ui["form-error"], ""); message(ui["poll-error"], "");
+    ui["status-title"].textContent = "Видео выбрано"; ui["status-description"].textContent = "Начните анализ для проверки наблюдаемых действий.";
+    setBadge("Готово к анализу", ""); message(ui["form-error"], ""); message(ui["poll-error"], "");
     setSource(URL.createObjectURL(file), file.name); syncSubmit();
   }
   function setBadge(text, className) { ui["status-badge"].textContent = text; ui["status-badge"].className = `status-badge ${className}`; }
@@ -312,25 +331,27 @@
     polling = false; pollGeneration += 1;
     clearTimeout(pollTimer); clearInterval(elapsedTimer);
     if (pollController) pollController.abort();
-    pollController = null; ui["poll-button"].textContent = "Resume updates";
+    pollController = null; ui["poll-button"].textContent = "Возобновить обновления";
     syncSubmit();
   }
   function updateElapsed() {
     if (!acceptedAt) { ui["elapsed-label"].textContent = ""; return; }
-    ui["elapsed-label"].textContent = `${formatTime((Date.now() - acceptedAt) / 1000)} elapsed`;
+    ui["elapsed-label"].textContent = `${formatTime((Date.now() - acceptedAt) / 1000)} прошло`;
   }
   function beginJob(id, localUpload = false) {
     if (localUpload) { busy = true; activeJobId = id; }
+    if ((reviewDirty || reviewSaving) && currentJob) { message(ui["review-error"], "Есть несохранённые изменения. Сохраните их перед открытием анализа."); ui["reviewer-section"].scrollIntoView({block:"center"}); return; }
+    reviewState = null; reviewDirty = false; reviewDrafts.clear(); selectedCaseKey = null; caseFilter = "all"; ui["case-search"].value = "";
     stopPolling(); resetDetections(); showAllAssessments = false; currentJob = id; lastDetails = {}; lastResult = null;
     if (!localUpload) { file = null; display(ui["selected-file"], false); display(ui["drop-zone"], true); ui["video-file"].value = ""; clearSource(); loadedJobVideo = null; }
     acceptedAt = localUpload ? Date.now() : null;
     ui["job-id"].textContent = id; display(ui["job-controls"], true); display(ui["poll-button"], true); display(ui["results"], false); display(ui["progress-section"], true);
-    ui["status-title"].textContent = "Review in progress"; ui["status-description"].textContent = "The worker is checking the visual sequence and preparing evidence.";
-    setBadge("Processing", "processing"); message(ui["poll-error"], ""); resumePolling();
+    ui["status-title"].textContent = "Идёт анализ"; ui["status-description"].textContent = "Обработчик проверяет видео и подготавливает доказательства.";
+    setBadge("Обработка", "processing"); message(ui["poll-error"], ""); resumePolling();
   }
   function resumePolling() {
     if (!currentJob) return;
-    stopPolling(); polling = true; ui["poll-button"].textContent = "Pause updates"; message(ui["poll-error"], "");
+    stopPolling(); polling = true; ui["poll-button"].textContent = "Приостановить обновления"; message(ui["poll-error"], "");
     elapsedTimer = setInterval(updateElapsed, 1000); updateElapsed(); syncSubmit();
     poll(pollGeneration);
   }
@@ -341,7 +362,7 @@
     ui["progress-track"].classList.toggle("indeterminate", !known);
     if (known) { ui["progress-fill"].style.width = `${percent}%`; ui["progress-track"].setAttribute("aria-valuenow", String(Math.round(percent))); }
     else ui["progress-track"].removeAttribute("aria-valuenow");
-    ui["stage-label"].textContent = friendly(metadata.stage || "Processing video");
+    ui["stage-label"].textContent = friendly(metadata.stage || "Обработка видео");
     const began = metadata.accepted_at || metadata.created_at;
     const parsed = typeof began === "number" ? began * (began < 100000000000 ? 1000 : 1) : Date.parse(began);
     if (!acceptedAt && began && Number.isFinite(parsed)) acceptedAt = parsed;
@@ -359,10 +380,10 @@
       if (metadata.original_name) ui["video-name"].textContent = String(metadata.original_name);
       updateProgress(metadata);
       if (result.status === "done") {
-        if (!["violation", "no_violation"].includes(result.verdict)) throw new ApiError("The completed response has no valid verdict. The review cannot be displayed as clear.", 0);
+        if (!["violation", "no_violation"].includes(result.verdict)) throw new ApiError("Ответ завершённого анализа не содержит корректного итога. Результат нельзя считать отсутствием нарушений.", 0);
         stopPolling(); lastResult = result;
         display(ui["progress-section"], false); display(ui["poll-button"], metadata.details_unavailable === true);
-        if (metadata.details_unavailable) ui["poll-button"].textContent = "Retry review details";
+        if (metadata.details_unavailable) ui["poll-button"].textContent = "Повторить загрузку подробностей";
         renderResult(result, metadata);
         checkHealth();
         if (!sourceUrl) await loadJobVideo(currentJob, metadata.original_name);
@@ -370,15 +391,15 @@
       }
       if (result.status === "failed") {
         stopPolling(); display(ui["progress-section"], false); display(ui["poll-button"], false); display(ui["results"], false);
-        setBadge("Failed", "failed"); ui["status-title"].textContent = "Analysis could not finish";
-        ui["status-description"].textContent = "No verdict was produced. Review the error and submit the video again when the service is ready.";
-        const error = metadata.error?.message || metadata.error || metadata.details?.error || "The worker reported a processing failure.";
-        message(ui["poll-error"], typeof error === "string" ? error : "The worker reported a processing failure.");
+        setBadge("Ошибка", "failed"); ui["status-title"].textContent = "Не удалось завершить анализ";
+        ui["status-description"].textContent = "Итог не сформирован. Проверьте ошибку и загрузите видео снова, когда сервис будет готов.";
+        const error = metadata.error?.message || metadata.error || metadata.details?.error || "Обработчик сообщил об ошибке анализа.";
+        message(ui["poll-error"], typeof error === "string" ? error : "Обработчик сообщил об ошибке анализа.");
         checkHealth();
         if (!sourceUrl) await loadJobVideo(currentJob, metadata.original_name);
         return;
       }
-      if (result.status !== "processing") throw new ApiError("The service returned an unrecognized job status. Resume updates to retry.", 0);
+      if (result.status !== "processing") throw new ApiError("Сервис вернул неизвестный статус. Возобновите обновления.", 0);
       busy = true; activeJobId = currentJob; syncSubmit();
       display(ui["poll-button"], true);
       if (!sourceUrl && loadedJobVideo !== currentJob) await loadJobVideo(currentJob, metadata.original_name);
@@ -386,8 +407,8 @@
     } catch (error) {
       if (error.name === "AbortError" || generation !== pollGeneration) return;
       stopPolling(); display(ui["poll-button"], true);
-      ui["status-title"].textContent = "Updates paused";
-      ui["status-description"].textContent = "The server job may still be running. Resume updates to retrieve its latest status.";
+      ui["status-title"].textContent = "Обновления приостановлены";
+      ui["status-description"].textContent = "Анализ на сервере может продолжаться. Возобновите обновления, чтобы получить результат.";
       message(ui["poll-error"], error.message); if (error.status === 401) ui["api-key"].focus();
     }
   }
@@ -396,13 +417,14 @@
     try {
       const response = await request(`/api/ui/jobs/${encodeURIComponent(id)}/video`);
       const blob = await response.blob();
-      if (id === currentJob && !sourceUrl) setSource(URL.createObjectURL(blob), name || "Source video");
-    } catch (_) { if (id === currentJob) message(ui["video-error"], "The source video could not be loaded. The evidence frames below remain available."); }
+      if (id === currentJob && !sourceUrl) setSource(URL.createObjectURL(blob), name || "Исходное видео");
+    } catch (_) { if (id === currentJob) message(ui["video-error"], "Исходное видео не загрузилось. Сохранённые кадры доказательств остаются доступны."); }
   }
   function seek(value) {
     if (!sourceUrl || !finite(value)) return;
     const video = ui["source-video"];
-    const apply = () => { video.currentTime = Math.max(0, Math.min(Number(value), Number.isFinite(video.duration) ? video.duration : Number(value))); video.focus({ preventScroll: true }); video.scrollIntoView({ behavior: "smooth", block: "center" }); };
+    contextEnd = null;
+    const apply = () => { video.currentTime = Math.max(0, Math.min(Number(value), Number.isFinite(video.duration) ? video.duration : Number(value))); video.focus({ preventScroll: true }); if (video.getBoundingClientRect().top < 0) video.scrollIntoView({ behavior: "smooth", block: "start" }); };
     if (video.readyState >= 1) apply(); else video.addEventListener("loadedmetadata", apply, { once: true });
   }
   function safeRuleUrl(value) {
@@ -436,40 +458,40 @@
       metrics.push(metric);
     };
     if (coverage && typeof coverage === "object" && !Array.isArray(coverage)) {
-      if (number(coverage.duration_sec)) add("Video duration", formatTime(coverage.duration_sec));
+      if (number(coverage.duration_sec)) add("Длительность видео", formatTime(coverage.duration_sec));
       if (number(coverage.windows_completed)) {
         const planned = number(coverage.windows_planned) ? ` / ${Math.floor(coverage.windows_planned)}` : "";
-        add("Screening windows checked", `${Math.floor(coverage.windows_completed)}${planned}`);
+        add("Просмотрено фрагментов", `${Math.floor(coverage.windows_completed)}${planned}`);
       }
-      if (number(coverage.max_sample_gap_sec)) add("Largest sample gap", `${coverage.max_sample_gap_sec.toFixed(2)} s`);
-      if (number(coverage.source_frames_total)) add("Source frames", Math.floor(coverage.source_frames_total).toLocaleString("en-US"));
+      if (number(coverage.max_sample_gap_sec)) add("Наибольший промежуток между кадрами", `${coverage.max_sample_gap_sec.toFixed(2)} s`);
+      if (number(coverage.source_frames_total)) add("Кадров в исходном видео", Math.floor(coverage.source_frames_total).toLocaleString("en-US"));
       const context = Array.isArray(coverage.context_windows_used) ? coverage.context_windows_used.length : coverage.context_windows_used;
-      if (number(context)) add("Context windows checked", Math.floor(context).toLocaleString("en-US"));
-      if (Array.isArray(coverage.visibility_gaps)) add("Intervals with limited view", coverage.visibility_gaps.length.toLocaleString("en-US"));
-      if (Number.isSafeInteger(coverage.unresolved_verification_count) && coverage.unresolved_verification_count > 0) add("Checks not established", coverage.unresolved_verification_count.toLocaleString("en-US"));
-      if (Number.isSafeInteger(coverage.unverified_candidate_count) && coverage.unverified_candidate_count > 0) add("Candidate checks not completed", coverage.unverified_candidate_count.toLocaleString("en-US"));
-      if (coverage.verification_complete === false) add("Candidate verification", "Incomplete");
-      if (number(coverage.perception?.frames_analyzed)) add("Motion and person samples", coverage.perception.frames_analyzed.toLocaleString("en-US"));
-      if (number(coverage.perception?.max_gap_sec)) add("Perception sample gap", coverage.perception.max_gap_sec.toFixed(2) + " s");
-      if (Array.isArray(metadata.details?.transactions?.episodes)) add("Tentative transaction episodes", metadata.details.transactions.episodes.length.toLocaleString("en-US"));
+      if (number(context)) add("Проверено контекстных фрагментов", Math.floor(context).toLocaleString("en-US"));
+      if (Array.isArray(coverage.visibility_gaps)) add("Интервалов с ограниченным обзором", coverage.visibility_gaps.length.toLocaleString("en-US"));
+      if (Number.isSafeInteger(coverage.unresolved_verification_count) && coverage.unresolved_verification_count > 0) add("Проверок без установленного результата", coverage.unresolved_verification_count.toLocaleString("en-US"));
+      if (Number.isSafeInteger(coverage.unverified_candidate_count) && coverage.unverified_candidate_count > 0) add("Незавершённых проверок кандидатов", coverage.unverified_candidate_count.toLocaleString("en-US"));
+      if (coverage.verification_complete === false) add("Проверка кандидатов", "Не завершено");
+      if (number(coverage.perception?.frames_analyzed)) add("Кадров анализа людей и движения", coverage.perception.frames_analyzed.toLocaleString("en-US"));
+      if (number(coverage.perception?.max_gap_sec)) add("Промежуток анализа движения", coverage.perception.max_gap_sec.toFixed(2) + " s");
+      if (Array.isArray(metadata.details?.transactions?.episodes)) add("Предварительных эпизодов операций", metadata.details.transactions.episodes.length.toLocaleString("en-US"));
       const unknownZones = metadata.details?.scene?.zones?.filter(zone => zone.status !== "supported");
-      if (Array.isArray(unknownZones)) add("Unresolved scene regions", unknownZones.length.toLocaleString("en-US"));
+      if (Array.isArray(unknownZones)) add("Неопределённых зон сцены", unknownZones.length.toLocaleString("en-US"));
       const capabilities = metadata.details?.perception?.capabilities;
-      for (const [key, label] of [["pose", "Hand position analysis"], ["open_vocabulary_objects", "Object analysis"]]) {
+      for (const [key, label] of [["pose", "Анализ положения рук"], ["open_vocabulary_objects", "Анализ предметов"]]) {
         const capability = capabilities?.[key];
         if (capability && typeof capability.status === "string") {
           const count = number(capability.frames_inspected) ? ` · ${Math.floor(capability.frames_inspected)} frames` : "";
-          add(label, (capability.status === "enabled" ? "Available" : "Unavailable") + count);
+          add(label, (capability.status === "enabled" ? "Доступен" : "Недоступен") + count);
         }
       }
-      if (Array.isArray(metadata.details?.event_proposals?.proposals)) add("Activity proposals", metadata.details.event_proposals.proposals.length.toLocaleString("en-US"));
+      if (Array.isArray(metadata.details?.event_proposals?.proposals)) add("Предложено событий", metadata.details.event_proposals.proposals.length.toLocaleString("en-US"));
       const scenarios = metadata.details?.scenario_coverage;
       if (scenarios && typeof scenarios === "object" && !Array.isArray(scenarios)) {
         const rows = Object.values(scenarios).filter(row => row && typeof row === "object");
-        add("Scenario families screened", rows.length.toLocaleString("en-US"));
-        add("Visible scenarios verified", rows.reduce((count, row) => count + (Number.isSafeInteger(row.supported_visual_episodes) ? row.supported_visual_episodes : 0), 0).toLocaleString("en-US"));
+        add("Просмотрено типов сценариев", rows.length.toLocaleString("en-US"));
+        add("Проверено видимых сценариев", rows.reduce((count, row) => count + (Number.isSafeInteger(row.supported_visual_episodes) ? row.supported_visual_episodes : 0), 0).toLocaleString("en-US"));
       }
-      if (typeof metadata.details?.calibration?.status === "string") add("Decision thresholds", metadata.details.calibration.status === "empirical_thresholds" ? "Reviewed calibration available" : "Awaiting reviewed calibration");
+      if (typeof metadata.details?.calibration?.status === "string") add("Пороги решения", metadata.details.calibration.status === "empirical_thresholds" ? "Калибровка по проверенной разметке доступна" : "Ожидается калибровка по разметке");
     }
     ui["coverage-metrics"].replaceChildren(...metrics);
     display(ui["coverage-section"], metrics.length > 0);
@@ -494,16 +516,16 @@
   }
   function reviewExplanation(item) {
     const labels = {
-      visible_scenario_supported:"The physical scenario is visible. Check whether the rule applies.",
-      action_uncertain:"The visible action could not be established.", action_visibility_limited:"The action is obscured or outside the sampled view.",
-      action_checks_unresolved:"The visible action could not be established.", context_not_verified:"The transaction context has not been verified.",
-      legal_context_uncertain:"The transaction context remains unclear.", context_checks_unresolved:"The rule's applicability remains unclear.",
-      limited_visibility:"The sampled view is incomplete.", insufficient_context:"More transaction context is needed.",
-      source_timestamp_gap:"A gap in the source video limits this check.", review_only_rule:"This rule requires a human policy check.",
-      rule_not_mapped:"The visible observation needs a human policy check."
+      visible_scenario_supported:"Сценарий виден. Проверьте применимость правила.",
+      action_uncertain:"По доступным кадрам действие не установлено.", action_visibility_limited:"Действие скрыто или вне проанализированной области.",
+      action_checks_unresolved:"По доступным кадрам действие не установлено.", context_not_verified:"Контекст операции не проверен.",
+      legal_context_uncertain:"Контекст операции неясен.", context_checks_unresolved:"Применимость правила не установлена.",
+      limited_visibility:"Проанализированный обзор неполон.", insufficient_context:"Нужен дополнительный контекст операции.",
+      source_timestamp_gap:"Разрыв исходного видео ограничивает проверку.", review_only_rule:"Применимость правила должен проверить человек.",
+      rule_not_mapped:"Наблюдение требует проверки применимости правила человеком."
     };
     const code = Array.isArray(item.reason_codes) ? item.reason_codes.find(value => labels[value]) : null;
-    return labels[code] || (item.visual_scenario_supported === true ? labels.visible_scenario_supported : "The available evidence does not establish a violation. Check the source video.");
+    return labels[code] || (item.visual_scenario_supported === true ? labels.visible_scenario_supported : "Доказательств недостаточно для подтверждения нарушения. Проверьте исходное видео.");
   }
   function renderReviewQueue(metadata) {
     const entries = activeReviewQueue(metadata);
@@ -511,12 +533,12 @@
       const card = node("article", "review-item");
       const heading = node("div", "review-item-heading");
       const title = node("div");
-      title.append(node("p", "review-item-label", `${entry.visual_scenario_supported === true ? "VISIBLE SCENARIO · REVIEW POLICY" : "UNCONFIRMED"} ${String(index + 1).padStart(2, "0")}`), node("h4", "", typeof entry.type_id === "string" && entry.type_id ? friendly(entry.type_id) : "Visible action to review"));
+      title.append(node("p", "review-item-label", `${entry.visual_scenario_supported === true ? "СЦЕНАРИЙ ВИДЕН · ПРОВЕРЬТЕ ПРАВИЛО" : "НЕ ПОДТВЕРЖДЕНО"} ${String(index + 1).padStart(2, "0")}`), node("h4", "", typeof entry.type_id === "string" && entry.type_id ? friendly(entry.type_id) : "Действие для проверки"));
       heading.append(title);
       if (typeof entry.timecode_sec === "number" && Number.isFinite(entry.timecode_sec) && entry.timecode_sec >= 0) {
         const time = node("button", "time-button", `▶ ${formatTime(entry.timecode_sec)}`);
         time.type = "button";
-        time.setAttribute("aria-label", `Seek to unconfirmed observation at ${formatTime(entry.timecode_sec)}`);
+        time.setAttribute("aria-label", `Перейти к неподтверждённому наблюдению: ${formatTime(entry.timecode_sec)}`);
         time.addEventListener("click", () => seek(entry.timecode_sec));
         heading.append(time);
       }
@@ -524,13 +546,13 @@
       card.append(node("p", "review-item-message", reviewExplanation(entry)));
       if (entry.visual_scenario_supported === true && typeof entry.observed_action === "string" && entry.observed_action.trim()) {
         const observation = node("p", "review-observation");
-        observation.append(node("strong", "", "Local observation: "), document.createTextNode(entry.observed_action));
+        observation.append(node("strong", "", "Исходное наблюдение модели: "), document.createTextNode(entry.observed_action));
         card.append(observation);
       }
       return card;
     });
     ui["review-queue"].replaceChildren(...cards);
-    ui["review-queue-count"].textContent = `${entries.length} ${entries.length === 1 ? "item" : "items"}`;
+    ui["review-queue-count"].textContent = `${entries.length} ${entries.length === 1 ? "объект" : "объектов"}`;
     display(ui["review-queue-section"], entries.length > 0);
   }
   function resetDetections() {
@@ -561,7 +583,7 @@
     // Exact source-frame matches only. A sampled box must never become a track.
     const matches = detections.filter(item => Math.abs(item.timestamp_sec - time) <= .001);
     const shown = sourceUrl && ui["show-detections"].checked && matches.length && video.videoWidth > 0 && video.videoHeight > 0;
-    ui["overlay-status"].textContent = !ui["show-detections"].checked ? "Boxes hidden" : matches.length ? matches.length + " localized items at " + sampleTime(time) : "No boxes at this unsampled moment";
+    ui["overlay-status"].textContent = !ui["show-detections"].checked ? "Рамки скрыты" : matches.length ? matches.length + " найденных объектов в " + sampleTime(time) : "Этот момент не анализировался: рамок нет";
     overlay.replaceChildren(); display(overlay, Boolean(shown));
     if (!shown) return;
     const scale = Math.min(video.clientWidth / video.videoWidth, video.clientHeight / video.videoHeight);
@@ -583,7 +605,7 @@
         const response = await request("/api/ui/jobs/" + encodeURIComponent(job) + "/evidence/" + encodeURIComponent(filename), {signal});
         const blob = await response.blob();
         if (generation !== detectionGeneration || job !== currentJob) return null;
-        if (blob.type !== "image/jpeg") throw new ApiError("Source frame was not a JPEG image.", 0);
+        if (blob.type !== "image/jpeg") throw new ApiError("Исходный кадр не является изображением JPEG.", 0);
         const url = URL.createObjectURL(blob); detectionImageUrls.set(filename, url); return url;
       })());
       return pendingImages.get(filename);
@@ -595,42 +617,42 @@
       const card = node("article", "detection-card"), top = node("div", "detection-card-heading");
       top.append(node("h4", "", item.label), node("span", "detection-confidence", confidenceText(item.confidence)));
       const time = node("button", "time-button", "▶ " + sampleTime(item.timestamp_sec)); time.type = "button";
-      time.setAttribute("aria-label", "Seek to " + item.label + " at " + sampleTime(item.timestamp_sec));
+      time.setAttribute("aria-label", "Перейти к " + item.label + " в " + sampleTime(item.timestamp_sec));
       time.addEventListener("click", () => seek(item.timestamp_sec));
-      card.append(top, node("p", "detection-kind", friendly(item.kind || "visible item") + " · model estimate"), time);
+      card.append(top, node("p", "detection-kind", friendly(item.kind || "видимый предмет") + " · оценка модели"), time);
       const filename = item.evidence_frame?.filename;
       if (typeof filename === "string" && filename && !/[\\/]/.test(filename) && filename !== "." && filename !== "..") {
-        const frame = node("div", "detection-frame"), image = node("img"), state = node("p", "detection-frame-state", "Loading source frame…");
-        image.alt = item.label + " in sampled source frame at " + sampleTime(item.timestamp_sec);
+        const frame = node("div", "detection-frame"), image = node("img"), state = node("p", "detection-frame-state", "Загружаем исходный кадр…");
+        image.alt = item.label + " в исходном кадре: " + sampleTime(item.timestamp_sec);
         display(image, false); frame.append(image); card.append(frame, state);
         image.addEventListener("load", () => { display(image, true); frame.append(detectionBox(item)); display(state, false); });
-        image.addEventListener("error", () => { state.textContent = "Source frame could not be displayed. Seek the video to inspect this item."; });
+        image.addEventListener("error", () => { state.textContent = "Не удалось показать кадр. Откройте соответствующий момент видео."; });
         imageFor(filename).then(url => { if (url && generation === detectionGeneration) image.src = url; }).catch(error => {
-          if (error.name !== "AbortError" && generation === detectionGeneration) state.textContent = "Source frame unavailable. Seek the video to inspect this item.";
+          if (error.name !== "AbortError" && generation === detectionGeneration) state.textContent = "Исходный кадр недоступен. Откройте соответствующий момент видео.";
         });
-      } else card.append(node("p", "detection-frame-state", "Source-frame preview unavailable. Use the timestamp to inspect the video."));
+      } else card.append(node("p", "detection-frame-state", "Предпросмотр кадра недоступен. Откройте соответствующий момент видео."));
       ui["detections"].append(card);
     }
     shown = Math.min(detections.length, shown + 24);
-    more.textContent = "Show more sampled items (" + shown + " of " + detections.length + ")";
+    more.textContent = "Ещё найденные объекты (" + shown + " из " + detections.length + ")";
     display(more, shown < detections.length); ui["detections"].append(more);
     };
     more.addEventListener("click", appendPage); appendPage();
-    ui["detection-count"].textContent = detections.length + " localized " + (detections.length === 1 ? "item" : "items");
-    if (Array.isArray(supplied) && !detections.length) ui["detections"].append(node("p", "detection-frame-state", "No items were localized in the sampled frames. This does not establish that an object is absent."));
+    ui["detection-count"].textContent = detections.length + " найденных " + (detections.length === 1 ? "объект" : "объектов");
+    if (Array.isArray(supplied) && !detections.length) ui["detections"].append(node("p", "detection-frame-state", "В проанализированных кадрах объекты не локализованы. Это не доказывает их отсутствие."));
     display(ui["detections-section"], Array.isArray(supplied)); display(ui["detection-controls"], detections.length > 0);
     refreshDetectionOverlay();
   }
   function caseTitle(type) {
-    return ({active_intake_departure:"Leaving an unfinished cash intake",cash_intake_without_client_presence:"Cash intake without the client",previous_transaction_cash_exposed:"Earlier client's cash left exposed",loose_cash_issued_without_observed_count:"Payout counting",unmapped_visual_event:"Other visible observation"})[type] || friendly(type) || "Visible observation";
+    return friendly(type) || "Наблюдаемое действие";
   }
   function reviewCases(metadata, result) {
-    const cases = metadata.details?.case_decision?.cases;
+    const cases = Array.isArray(metadata.review_cases) ? metadata.review_cases : metadata.details?.case_decision?.cases;
     if (Array.isArray(cases)) return catalogEntries(cases);
     const events = Array.isArray(result?.violations) ? result.violations : [];
     const queue = activeReviewQueue(metadata);
     return [
-      ...events.map(event => ({type_id:event.type,status:"confirmed",timecode_sec:event.timecode_sec,observed_action:event.description,reasons:["The source evidence supports a finding."],checks:[]})),
+      ...events.map(event => ({type_id:event.type,status:"confirmed",timecode_sec:event.timecode_sec,observed_action:event.description,reasons:["Исходные кадры подтверждают событие."],checks:[]})),
       ...queue.map(item => ({...item,status:"review_required",requires_review:true,reasons:[reviewExplanation(item)],checks:[]}))
     ];
   }
@@ -640,6 +662,12 @@
   function validCaseTime(value) {
     return typeof value === "number" && Number.isFinite(value) && value >= 0;
   }
+  function newEventId() {
+    if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+    const bytes = crypto.getRandomValues(new Uint8Array(16)); bytes[6] = (bytes[6] & 15) | 64; bytes[8] = (bytes[8] & 63) | 128;
+    const hex = [...bytes].map(value => value.toString(16).padStart(2,"0")).join("");
+    return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+  }
   function displayCaseGroups(cases) {
     // Presence checks can repeat across sampling windows. Event-specific actions
     // remain separate, and the underlying decisions and evidence are untouched.
@@ -648,7 +676,7 @@
     for (const item of cases) {
       const status = caseResultStatus(item);
       const key = presenceTypes.has(item.type_id) && validCaseTime(item.timecode_sec)
-        ? JSON.stringify([item.type_id, status, item.probability_scope || null]) : null;
+        ? JSON.stringify([item.type_id, status, status === "rejected" ? rejectedLabel(item) : null, item.probability_scope || null]) : null;
       let group = key === null ? null : byKey.get(key);
       if (!group) {
         group = {items:[], status, order:groups.length}; groups.push(group);
@@ -666,7 +694,7 @@
       || (a.start_sec ?? Infinity) - (b.start_sec ?? Infinity) || a.order - b.order);
   }
   function caseProbabilityScope(item) {
-    return ({joint_checks:"All rule checks",action_only:"Visible action only",procedure_completion:"Procedure completed",event_occurrence:"Event occurs"})[item.probability_scope] || "";
+    return ({joint_checks:"Все условия правила",action_only:"Только видимое действие",procedure_completion:"Процедура выполнена",event_occurrence:"Наличие события"})[item.probability_scope] || "";
   }
   function caseObservationFacts(item) {
     const checks = new Map();
@@ -733,7 +761,7 @@
       if (sentences.length === 2) break;
     }
     return sentences.join(" ") || (items.length > 1 && facts.some(rows => rows.length)
-      ? "Наблюдения в этом диапазоне различаются; подробности — в «View»."
+      ? "Наблюдения в этом диапазоне различаются; отдельные кадры — в подробностях."
       : items.every(item => item.status === "confirmed") ? "Для описания действия недостаточно сохранённых данных; проверьте кадры."
       : "По доступным кадрам действие не подтверждено.");
   }
@@ -750,81 +778,292 @@
       const list = node("ul", "case-checks");
       for (const check of checks) {
         const status = ["yes", "no"].includes(check.status) ? check.status : "unknown", row = node("li");
-        const label = node("span", "check-label", (check.stage === "action" ? "Visible action" : check.stage === "exception_exclusion" ? "Exception excluded" : "Rule context") + " · " + friendly(check.name));
+        const label = node("span", "check-label", (check.stage === "action" ? "Видимое действие" : check.stage === "exception_exclusion" ? "Исключение проверено" : "Контекст правила") + " · " + friendly(check.name));
         const refs = Array.isArray(check.evidence_refs) ? check.evidence_refs.filter(ref => validCaseTime(ref?.timestamp_sec)).slice(0, 3) : [];
         if (refs.length) {
           const moments = node("span", "check-evidence");
           for (const ref of refs) {
             const time = node("button", "text-button", sampleTime(ref.timestamp_sec)); time.type = "button";
-            time.setAttribute("aria-label", "Seek to evidence for " + friendly(check.name) + " at " + sampleTime(ref.timestamp_sec));
+            time.setAttribute("aria-label", "Перейти к доказательству: " + friendly(check.name) + " в " + sampleTime(ref.timestamp_sec));
             time.addEventListener("click", () => seek(ref.timestamp_sec)); moments.append(time);
           }
           label.append(moments);
         }
-        row.append(label, node("strong", "check-status " + status, ({yes:"Yes",no:"No",unknown:"Unknown"})[status])); list.append(row);
+        row.append(label, node("strong", "check-status " + status, ({yes:"Да",no:"Нет",unknown:"Неизвестно"})[status])); list.append(row);
       }
       target.append(list);
     }
-    if (reasons.length) { const list = node("ul", "case-reasons"); list.append(...reasons.map(reason => node("li", "", reason))); target.append(list); }
-    if (!checks.length && !reasons.length) target.append(node("p", "case-observation", "No additional check details were saved."));
+    if (reasons.length) { const list = node("ul", "case-reasons"); list.append(...reasons.map(reason => node("li", "", /[А-Яа-яЁё]/.test(reason) ? reason : reviewExplanation(item)))); target.append(list); }
+    if (!checks.length && !reasons.length) target.append(node("p", "case-observation", "Дополнительные сведения о проверке не сохранены."));
   }
   function renderCaseDecisions(metadata, result) {
-    const cases = displayCaseGroups(reviewCases(metadata, result));
+    allCaseGroups = displayCaseGroups(reviewCases(metadata, result));
+    for (const group of allCaseGroups) group.key = group.items.map(item => item.case_id || String(reviewCases(metadata, result).indexOf(item))).join("|");
+    for (const button of ui["case-filters"].querySelectorAll("button")) {
+      const count = button.dataset.filter === "all" ? allCaseGroups.length : allCaseGroups.filter(group => group.status === button.dataset.filter).length;
+      button.querySelector("span").textContent = count;
+      button.setAttribute("aria-pressed", String(caseFilter === button.dataset.filter));
+    }
+    const query = ui["case-search"].value.trim().toLocaleLowerCase("ru");
+    const cases = allCaseGroups.filter(group => (caseFilter === "all" || group.status === caseFilter) && (!query || (caseTitle(group.items[0].type_id) + " " + caseJustification(group.items)).toLocaleLowerCase("ru").includes(query)));
+    visibleCaseGroups = cases;
+    display(ui["case-empty"], !cases.length);
     ui["case-decisions"].replaceChildren(...cases.flatMap((group, index) => {
       const item = group.items[0], repeated = group.items.length > 1;
       const card = node("tr", "case-card"), name = node("th", "check-name", caseTitle(item.type_id));
+      card.dataset.caseKey = group.key; card.tabIndex = 0;
+      card.addEventListener("click", event => { if (!event.target.closest("button,input,textarea,select,details,summary,a,label")) selectCase(group.key); });
+      card.addEventListener("keydown", event => { if (event.target === card && ["Enter", " "].includes(event.key)) { event.preventDefault(); selectCase(group.key); } });
       name.setAttribute("scope", "row");
       name.append(justificationNode(group.items));
-      if (repeated) name.append(node("p", "case-observation-count", group.items.length + " observations"));
-      const labels = {confirmed:"Violation",review_required:"Needs review",rejected:"Not supported"};
+      if (repeated) name.append(node("p", "case-observation-count", group.items.length + " наблюдений"));
+      const labels = {confirmed:"Подтверждено моделью",review_required:"Требует проверки",rejected:"Недостаточно данных"};
       const outcome = node("td"), probability = node("td", "case-probability"), moment = node("td", "case-time"), detailCell = node("td");
       const active = needsCaseReview(item), supported = item.status === "confirmed";
-      outcome.append(node("span", "case-status " + (supported ? "confirmed" : active ? "pending" : "rejected"), supported ? labels.confirmed : active ? labels.review_required : labels.rejected));
+      outcome.append(node("span", "case-status " + (supported ? "confirmed" : active ? "pending" : "rejected"), supported ? labels.confirmed : active ? labels.review_required : rejectedLabel(item)));
+      appendHumanStatus(outcome, group);
       const estimates = group.items.filter(member => confidenceText(member.probability) !== null).map(member => member.probability);
       const low = estimates.length ? confidenceText(Math.min(...estimates)) : null;
       const high = estimates.length ? confidenceText(Math.max(...estimates)) : null;
       const estimate = low === high ? low : low + "–" + high;
-      probability.append(node("span", "case-probability-value", estimate === null ? "Not assessed" : estimate));
+      probability.append(node("span", "case-probability-value", estimate === null ? "Нет оценки" : estimate));
       if (estimate !== null) {
-        probability.title = repeated ? "Range of individual uncalibrated observation estimates; not a combined probability for the time span." : "Uncalibrated model estimate that the stated check is true; not a measured probability.";
+        probability.title = repeated ? "Диапазон отдельных некалиброванных оценок; не общая вероятность за интервал." : "Некалиброванная оценка модели для указанной проверки, не измеренная вероятность.";
         const scope = caseProbabilityScope(item);
         if (scope) probability.append(node("span", "case-probability-scope", scope));
-        if (repeated) probability.append(node("span", "case-probability-scope", estimates.length < group.items.length ? estimates.length + " of " + group.items.length + " assessed" : "Across observations"));
+        if (repeated) probability.append(node("span", "case-probability-scope", estimates.length < group.items.length ? estimates.length + " из " + group.items.length + " оценено" : "По отдельным наблюдениям"));
       }
       if (group.start_sec !== null) {
         const range = group.end_sec > group.start_sec;
         const time = node("button", "time-button" + (range ? " case-time-range" : "")); time.type = "button";
         time.append(node("span", "", "▶ " + formatTime(group.start_sec)));
         if (range) time.append(node("span", "", "–" + formatTime(group.end_sec)));
-        time.setAttribute("aria-label", "Seek to " + caseTitle(item.type_id) + " at " + sampleTime(group.start_sec) + (range ? "; observations through " + sampleTime(group.end_sec) : ""));
-        if (range) time.title = "Observation span; seek to the first sampled moment. Individual moments are in Details.";
-        time.addEventListener("click", () => seek(group.start_sec)); moment.append(time);
+        time.setAttribute("aria-label", "Перейти к " + caseTitle(item.type_id) + " в " + sampleTime(group.start_sec) + (range ? "; наблюдения до " + sampleTime(group.end_sec) : ""));
+        if (range) time.title = "Диапазон наблюдений. Переход к первому кадру; отдельные моменты — в подробностях.";
+        time.addEventListener("click", () => selectCase(group.key)); moment.append(time);
       } else moment.textContent = "—";
+      const corrected = groupDecisions(group);
+      if (corrected.length && corrected.every(value => value && validCaseTime(value.start_sec) && validCaseTime(value.end_sec) && value.start_sec === corrected[0].start_sec && value.end_sec === corrected[0].end_sec)) moment.append(node("span", "human-interval", "Человек: " + formatTime(corrected[0].start_sec) + "–" + formatTime(corrected[0].end_sec)));
       const detail = node("details", "case-details");
-      const summary = node("summary", "", "View"), detailRow = node("tr", "case-detail-row"), detailBody = node("td", "case-detail-body");
+      const summary = node("summary", "", "Подробнее"), detailRow = node("tr", "case-detail-row"), detailBody = node("td", "case-detail-body");
       detailBody.colSpan = 5; detailRow.id = "case-detail-" + index;
       summary.setAttribute("aria-controls", detailRow.id); detail.append(summary);
       display(detailRow, false);
       detail.addEventListener("toggle", () => display(detailRow, detail.open));
       if (repeated) {
-        detailBody.append(node("p", "case-group-note", "Observed at sampled moments within this span. Continuous presence between observations is not established."));
+        detailBody.append(node("p", "case-group-note", "Наблюдения относятся к отдельным кадрам внутри диапазона. Непрерывное присутствие между кадрами не установлено."));
         for (const member of group.items) {
           const occurrence = node("section", "case-occurrence"), heading = node("h4", "case-occurrence-heading");
           const time = node("button", "time-button", "▶ " + sampleTime(member.timecode_sec)); time.type = "button";
-          time.setAttribute("aria-label", "Seek to observation of " + caseTitle(member.type_id) + " at " + sampleTime(member.timecode_sec));
+          time.setAttribute("aria-label", "Перейти к наблюдению: " + caseTitle(member.type_id) + " в " + sampleTime(member.timecode_sec));
           time.addEventListener("click", () => seek(member.timecode_sec)); heading.append(time);
           const estimate = confidenceText(member.probability), scope = caseProbabilityScope(member);
-          heading.append(node("span", "case-occurrence-probability", estimate === null ? "Not assessed" : estimate + (scope ? " · " + scope : "")));
+          heading.append(node("span", "case-occurrence-probability", estimate === null ? "Нет оценки" : estimate + (scope ? " · " + scope : "")));
           occurrence.append(heading); appendCaseDetails(occurrence, member); detailBody.append(occurrence);
         }
       } else appendCaseDetails(detailBody, item);
+      appendReviewEditor(detailBody, group);
       detailCell.append(detail); card.append(name, outcome, probability, moment, detailCell);
       detailRow.append(detailBody);
       return [card, detailRow];
     }));
-    ui["case-decision-count"].textContent = cases.length + (cases.length === 1 ? " check" : " checks");
-    display(ui["case-decision-section"], cases.length > 0);
+    ui["case-decision-count"].textContent = cases.length + (cases.length === 1 ? " проверка" : " проверок");
+    display(ui["case-decision-section"], allCaseGroups.length > 0);
+    renderTimeline();
+    if (selectedCaseKey && !cases.some(group => group.key === selectedCaseKey)) selectedCaseKey = null;
+    selectCase(selectedCaseKey || cases[0]?.key, false);
   }
+  function rejectedLabel(item) {
+    const contradiction = ["action_rejected", "action_contradiction", "legal_context_rejected", "context_contradiction"];
+    const negative = item.action_decision === "rejected" || item.context_decision === "rejected" || (Array.isArray(item.reason_codes) && item.reason_codes.some(code => contradiction.includes(code))) || (Array.isArray(item.checks) && item.checks.some(check => check?.status === "no"));
+    return negative ? "Не подтвердилось" : "Недостаточно данных";
+  }
+  function markReviewDirty() {
+    reviewDirty = true;
+    ui["review-save-status"].textContent = "Есть несохранённые изменения";
+    ui["reviewer-section"].classList.add("has-unsaved");
+    syncSubmit();
+  }
+  function reviewMetadata() {
+    return {reviewer:ui["reviewer-name"].value.trim(),camera_id:ui["review-camera"].value.trim(),session_id:ui["review-session"].value.trim(),source_group:ui["review-source-group"].value.trim(),coverage_complete:ui["review-coverage"].checked};
+  }
+  function initializeReview(metadata) {
+    const available = metadata.review_state && typeof metadata.review_state === "object" && Array.isArray(metadata.review_cases);
+    display(ui["reviewer-section"], true); display(ui["missed-event-section"], Boolean(available));
+    ui["download-report"].disabled = Boolean(metadata.details_unavailable);
+    for (const id of ["reviewer-name","review-camera","review-session","review-source-group","review-coverage","save-review-meta"]) ui[id].disabled = !available;
+    if (!available) {
+      reviewState = null; ui["review-save-status"].textContent = "Сохранение решений недоступно для этой версии сервера. Обновите сервер и повторно откройте анализ."; return;
+    }
+    reviewState = structuredClone(metadata.review_state);
+    ui["reviewer-name"].value = reviewState.reviewer || ""; ui["review-camera"].value = reviewState.camera_id || "";
+    ui["review-session"].value = reviewState.session_id || ""; ui["review-source-group"].value = reviewState.source_group || ""; ui["review-coverage"].checked = reviewState.coverage_complete === true;
+    reviewDirty = false; reviewDrafts.clear(); pendingManualId = null; manualFormDirty = false; ui["missed-event-form"].reset(); ui["reviewer-section"].classList.remove("has-unsaved"); syncSubmit();
+    ui["review-save-status"].textContent = reviewState.revision ? "Сохранено · версия " + reviewState.revision : "Решения проверяющего ещё не сохранены";
+    display(ui["reload-review"], false); message(ui["review-error"], ""); renderMissedEvents();
+  }
+  function groupDecisions(group) {
+    return group.items.map(item => (reviewState?.decisions || []).find(decision => decision.case_id === item.case_id) || null);
+  }
+  function appendHumanStatus(target, group) {
+    const decisions = groupDecisions(group), values = new Set(decisions.map(decision => decision?.decision || "unreviewed"));
+    const status = values.size === 1 ? [...values][0] : "mixed";
+    const labels = {confirmed:"Человек: подтверждено",dismissed:"Человек: отклонено",uncertain:"Человек: недостаточно данных",unreviewed:"Человек: не проверено",mixed:"Человек: разные решения"};
+    target.append(node("span", "human-status " + status, labels[status]));
+  }
+  function appendReviewEditor(target, group) {
+    if (!reviewState || group.items.some(item => typeof item.case_id !== "string" || !item.case_id)) return;
+    const editor = node("form", "review-editor"), title = node("h4", "", "Решение проверяющего");
+    editor.append(title, node("p", "coverage-note", (group.items.length > 1 ? "Решение применяется ко всем " + group.items.length + " наблюдениям строки. " : "Оценка модели сохраняется отдельно. ") + "Проверьте границы события по видео; указанные границы сохраняются как разметка человека."));
+    const existing = groupDecisions(group), first = existing[0];
+    const common = key => first && existing.every(value => value && value[key] === first[key]) ? first[key] : "";
+    const saved = reviewDrafts.get(group.key) || {decision:common("decision"),comment:common("comment"),start_sec:common("start_sec") === "" ? group.start_sec ?? "" : common("start_sec"),end_sec:common("end_sec") === "" ? group.end_sec ?? "" : common("end_sec")};
+    const choices = node("div", "review-decision-choices");
+    for (const [value,label] of [["confirmed","Подтвердить"],["dismissed","Отклонить"],["uncertain","Недостаточно данных"]]) {
+      const choice = node("label", "review-decision-choice"), input = node("input"); input.type = "radio"; input.name = "human-decision-" + group.order; input.value = value; input.checked = saved.decision === value; input.required = true;
+      choice.append(input, document.createTextNode(label)); choices.append(choice);
+    }
+    const times = node("div", "review-interval");
+    const timeInput = (label,value,name) => { const wrap = node("label", "", label), input = node("input"); input.type = "number"; input.min = "0"; input.step = "0.01"; input.name = name; input.value = value ?? ""; wrap.append(input); times.append(wrap); return input; };
+    const start = timeInput("Начало, сек.",saved.start_sec,"start_sec"), end = timeInput("Конец, сек.",saved.end_sec,"end_sec");
+    const commentLabel = node("label", "", "Комментарий проверяющего"), comment = node("textarea"); comment.name = "comment"; comment.maxLength = 2000; comment.rows = 2; comment.placeholder = "Кратко опишите наблюдаемое действие и основание решения"; comment.value = saved.comment || ""; commentLabel.append(comment);
+    const save = node("button", "button button-secondary", "Сохранить решение"), next = node("button", "text-button", "Следующий случай →"); save.type = "submit"; next.type = "button"; next.addEventListener("click", nextCase);
+    const status = node("span", "editor-state", reviewDrafts.has(group.key) ? "Не сохранено" : "");
+    const values = () => ({decision:editor.querySelector("input[type=radio]:checked")?.value || "",comment:comment.value.trim(),start_sec:start.value === "" ? null : Number(start.value),end_sec:end.value === "" ? null : Number(end.value)});
+    editor.addEventListener("input", () => { reviewDrafts.set(group.key,values()); markReviewDirty(); status.textContent = "Не сохранено"; });
+    editor.addEventListener("submit", async event => {
+      event.preventDefault(); const draft = values();
+      if (!draft.decision) return;
+      if ((draft.start_sec === null) !== (draft.end_sec === null) || draft.start_sec !== null && (!validCaseTime(draft.start_sec) || !validCaseTime(draft.end_sec) || draft.end_sec < draft.start_sec)) { message(ui["review-error"], "Укажите обе границы интервала: конец должен быть не раньше начала."); return; }
+      reviewDrafts.set(group.key,draft); markReviewDirty(); save.disabled = true;
+      try { await saveReviewState(); } finally { save.disabled = false; }
+    });
+    editor.append(choices,times,commentLabel,save,next,status); target.append(editor);
+  }
+  async function saveReviewState(extra = {}) {
+    if (!reviewState || reviewSaving) return false;
+    if (!ui["reviewer-name"].value.trim()) { message(ui["review-error"], "Укажите имя проверяющего перед сохранением."); ui["reviewer-section"].open = true; ui["reviewer-name"].focus(); return false; }
+    const next = {...structuredClone(reviewState),...reviewMetadata(),...extra};
+    if (manualFormDirty) {
+      const start = ui["missed-start"].value === "" ? null : Number(ui["missed-start"].value), end = ui["missed-end"].value === "" ? null : Number(ui["missed-end"].value), comment = ui["missed-comment"].value.trim(), type = ui["missed-type"].value;
+      if (!validCaseTime(start) || !validCaseTime(end) || end < start || !comment || !type) { message(ui["review-error"], "Завершите форму пропущенного события: тип, интервал и описание. Либо очистите форму."); return false; }
+      pendingManualId ||= newEventId();
+      next.missed_events = [...(next.missed_events || []).filter(value => value.event_id !== pendingManualId),{event_id:pendingManualId,type_id:type,start_sec:start,end_sec:end,comment}];
+    }
+    const decisions = new Map((next.decisions || []).map(decision => [decision.case_id,decision]));
+    for (const [key,draft] of reviewDrafts) {
+      const group = allCaseGroups.find(value => value.key === key); if (!group) continue;
+      if (!draft.decision) { message(ui["review-error"], "Выберите решение для изменённых строк перед сохранением."); return false; }
+      if ((draft.start_sec === null) !== (draft.end_sec === null) || draft.start_sec !== null && (!validCaseTime(draft.start_sec) || !validCaseTime(draft.end_sec) || draft.end_sec < draft.start_sec)) { message(ui["review-error"], "Проверьте границы интервалов в изменённых строках."); return false; }
+      for (const item of group.items) decisions.set(item.case_id,{case_id:item.case_id,...draft});
+    }
+    next.decisions = [...decisions.values()];
+    const job = currentJob; reviewSaving = true;
+    const locked = [...document.querySelectorAll("#api-key,#key-visibility,#reviewer-section input,#reviewer-section button,#case-filters button,#case-search,.review-editor input,.review-editor textarea,.review-editor button,#missed-event-form input,#missed-event-form select,#missed-event-form textarea,#missed-event-form button,#open-job-form button,#video-file,#remove-file,#history-items button")];
+    locked.forEach(element => { element.disabled = true; }); ui["review-save-status"].textContent = "Сохраняем…"; message(ui["review-error"], "");
+    try {
+      const saved = await json(`/api/ui/jobs/${encodeURIComponent(job)}/review`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(next)});
+      if (job !== currentJob) return false;
+      if (!Number.isSafeInteger(saved.revision) || !Array.isArray(saved.decisions)) throw new ApiError("Сервер вернул некорректные данные сохранения.",0);
+      lastDetails.review_state = saved; initializeReview(lastDetails); renderCaseDecisions(lastDetails,lastResult); loadHistory(); return true;
+    } catch (error) {
+      if (job !== currentJob) return false;
+      ui["review-save-status"].textContent = "Изменения не сохранены";
+      message(ui["review-error"], error.status === 409 ? "Сохранённая версия изменилась в другой вкладке. Ваши изменения остаются на экране. Загрузите сохранённую версию перед повторной проверкой." : "Не удалось сохранить. " + error.message);
+      display(ui["reload-review"], error.status === 409); return false;
+    } finally { reviewSaving = false; locked.forEach(element => { element.disabled = false; }); ui["save-review-meta"].disabled = !reviewState; syncSubmit(); }
+  }
+  function renderMissedEvents() {
+    ui["missed-events"].replaceChildren(...(reviewState?.missed_events || []).map(event => {
+      const row = node("li", "missed-event"), jump = node("button", "text-button", formatTime(event.start_sec) + "–" + formatTime(event.end_sec)); jump.type = "button"; jump.addEventListener("click", () => seek(event.start_sec));
+      row.append(node("strong", "", caseTitle(event.type_id)), document.createTextNode(" · "),jump,node("p", "", event.comment)); return row;
+    }));
+  }
+  function selectCase(key, move = true) {
+    if (reviewSaving) return;
+    if (key && !visibleCaseGroups.some(group => group.key === key) && allCaseGroups.some(group => group.key === key)) {
+      caseFilter = "all"; ui["case-search"].value = ""; selectedCaseKey = key; renderCaseDecisions(lastDetails,lastResult);
+    }
+    const group = allCaseGroups.find(value => value.key === key); selectedCaseKey = group?.key || null;
+    for (const row of ui["case-decisions"].querySelectorAll(".case-card")) { const selected = row.dataset.caseKey === selectedCaseKey; row.classList.toggle("is-selected",selected); row.setAttribute("aria-selected",String(selected)); }
+    for (const marker of ui["event-timeline"].querySelectorAll("button")) marker.setAttribute("aria-pressed",String(marker.dataset.caseKey === selectedCaseKey));
+    ui["selected-case-label"].textContent = group ? caseTitle(group.items[0].type_id) : "Выберите событие"; ui["play-context"].disabled = !group || group.start_sec === null;
+    ui["next-case"].disabled = visibleCaseGroups.length < 2;
+    if (move && group?.start_sec !== null && group) seek(group.start_sec);
+  }
+  function nextCase() {
+    if (!visibleCaseGroups.length) return;
+    const index = visibleCaseGroups.findIndex(group => group.key === selectedCaseKey), next = visibleCaseGroups[(index+1)%visibleCaseGroups.length]; selectCase(next.key);
+    const row = [...ui["case-decisions"].querySelectorAll(".case-card")].find(value => value.dataset.caseKey === next.key); row?.scrollIntoView({block:"nearest",behavior:"smooth"});
+  }
+  function renderTimeline() {
+    const duration = lastDetails.details?.coverage?.duration_sec;
+    const max = validCaseTime(duration) && duration > 0 ? duration : Math.max(1,...allCaseGroups.map(group => group.end_sec || 0));
+    ui["event-timeline"].replaceChildren(...allCaseGroups.filter(group => group.start_sec !== null).map((group,index) => {
+      const marker = node("button", "event-marker " + group.status); marker.type = "button"; marker.dataset.caseKey = group.key;
+      marker.style.left = Math.min(98,group.start_sec/max*100) + "%"; marker.style.width = Math.max(1.4,Math.min(100-group.start_sec/max*100,(group.end_sec-group.start_sec)/max*100)) + "%";
+      marker.style.top = (index%3)*12+6 + "px"; marker.title = caseTitle(group.items[0].type_id) + " · " + formatTime(group.start_sec) + "–" + formatTime(group.end_sec); marker.setAttribute("aria-label",marker.title); marker.setAttribute("aria-pressed",String(group.key === selectedCaseKey)); marker.addEventListener("click",() => selectCase(group.key)); return marker;
+    }));
+    display(ui["event-navigation"],allCaseGroups.length > 0);
+  }
+  function playContext() {
+    const group = allCaseGroups.find(value => value.key === selectedCaseKey); if (!group || group.start_sec === null || !sourceUrl) return;
+    const video = ui["source-video"], start = Math.max(0,group.start_sec-3), end = group.end_sec+3;
+    seek(start); contextEnd = Math.min(Number.isFinite(video.duration) ? video.duration : end,end); ui["play-context-status"].textContent = formatTime(start) + "–" + formatTime(contextEnd);
+    const playback = video.play(); if (playback?.catch) playback.catch(() => { ui["play-context-status"].textContent = "Нажмите воспроизведение в плеере"; });
+  }
+  async function downloadReport() {
+    if (!currentJob || reviewDirty) { message(ui["review-error"], "Сохраните изменения перед скачиванием отчёта."); return; }
+    const job = currentJob; ui["download-report"].disabled = true; message(ui["review-error"], "");
+    try {
+      const response = await request(`/api/ui/jobs/${encodeURIComponent(job)}/report.html`), blob = await response.blob();
+      if (!blob.type.startsWith("text/html")) throw new ApiError("Сервер вернул файл неизвестного формата.",0);
+      const url = URL.createObjectURL(blob), link = node("a"); link.href = url; link.download = "forte-review-" + job + ".html"; link.hidden = true; document.body.append(link); link.click(); setTimeout(() => { link.remove(); URL.revokeObjectURL(url); },60000);
+    } catch(error) { if (currentJob === job) message(ui["review-error"], "Не удалось скачать отчёт. " + error.message); }
+    finally { ui["download-report"].disabled = false; }
+  }
+  function scheduleHistory() {
+    clearTimeout(historyTimer); historyGeneration += 1;
+    const available = Boolean(ui["api-key"].value.trim()); display(ui["history-section"],available);
+    ui["history-items"].replaceChildren(); ui["history-status"].textContent = ""; display(ui["history-more"],false);
+    if (available) historyTimer = setTimeout(() => loadHistory(),400);
+  }
+  async function loadHistory(append = false) {
+    if (!ui["api-key"].value.trim()) return;
+    const generation = ++historyGeneration, offset = append ? historyOffset : 0; ui["history-status"].textContent = "Загружаем…";
+    try {
+      const history = await json(`/api/ui/history?query=${encodeURIComponent(ui["history-search"].value.trim())}&limit=20&offset=${offset}`);
+      if (generation !== historyGeneration) return;
+      const items = catalogEntries(history.items); if (!append) ui["history-items"].replaceChildren();
+      for (const item of items) {
+        if (typeof item.job_id !== "string") continue;
+        const open = node("button", "history-item"); open.type = "button";
+        const states = {done:"Готово",processing:"Обработка",failed:"Ошибка"};
+        open.append(node("strong", "",item.original_name || "Видео без названия"),node("span", "",(states[item.status] || "Статус неизвестен") + (item.review_revision ? " · проверка сохранена" : " · без решения человека")));
+        open.addEventListener("click", () => beginJob(item.job_id)); ui["history-items"].append(open);
+      }
+      historyOffset = offset+items.length; historyTotal = Number.isSafeInteger(history.total) ? history.total : historyOffset;
+      ui["history-status"].textContent = historyTotal ? "Найдено: " + historyTotal : "Сохранённых анализов нет"; display(ui["history-more"],historyOffset < historyTotal);
+    } catch(error) { if (generation === historyGeneration) ui["history-status"].textContent = "История недоступна. " + error.message; }
+  }
+  async function loadQuality() {
+    const generation = ++qualityGeneration; ui["quality-status"].textContent = "Загружаем проверенную разметку…";
+    try {
+      const data = await json("/api/ui/quality"); if (generation !== qualityGeneration) return;
+      ui["quality-status"].textContent = data.status === "no_reviewed_labels" ? "Проверенной разметки пока недостаточно для оценки качества." : "Предварительные метрики по сохранённым решениям человека";
+      const records = data.records || {}, grouping = data.grouping || {};
+      ui["quality-summary"].replaceChildren(node("p", "", "Анализов с разметкой: " + (records.with_review || 0) + ". Полностью проверено: " + (records.eligible_complete_coverage || 0) + "."),node("p", "", "Исходных групп: " + (grouping.source_families || 0) + "; без группы: " + (grouping.unknown_group_records || 0) + ". Варианты одного исходного видео должны оставаться в одной выборке."));
+      const rate = value => typeof value === "number" && Number.isFinite(value) ? (value*100).toFixed(1) + "%" : "Недостаточно данных";
+      ui["quality-items"].replaceChildren(...catalogEntries(data.per_type).map(item => {
+        const section = node("details", "quality-type"), automatic = item.automatic_decision || {}, coverage = item.event_coverage || {}, temporal = item.temporal_localization || {}, calibration = item.probability_evaluation || {};
+        section.append(node("summary", "",caseTitle(item.type_id)),node("p", "", "Точность срабатываний автоматики, проверенная часть: " + rate(automatic.precision)),node("p", "", "Ложные тревоги автоматики: " + (automatic.false_positive ?? "—") + "; подтверждённые человеком пропуски: " + (item.known_misses?.total ?? "—")),node("p", "", "Полнота событий: " + rate(coverage.recall) + (coverage.denominator_status !== "complete_reviewed_subset" ? " · нет полного знаменателя" : " · полностью проверенная часть")),node("p", "", "Совпадение интервалов (IoU): " + rate(temporal.mean_iou) + " · пар: " + (temporal.pairs || 0)),node("p", "", "Калибровка оценки: " + (calibration.samples || 0) + " примеров; Brier: " + (typeof calibration.brier_score === "number" ? calibration.brier_score.toFixed(3) : "—")));
+        return section;
+      }));
+      const limitations = [...(Array.isArray(data.limitations) ? data.limitations : []),...(Array.isArray(grouping.leakage_warnings) ? grouping.leakage_warnings : [])].filter(value => typeof value === "string");
+      ui["quality-limitations"].replaceChildren(...limitations.map(value => node("li", "",value)));
+    } catch(error) { if (generation === qualityGeneration) ui["quality-status"].textContent = "Метрики недоступны. " + error.message; }
+  }
+
   function hasIncompleteVerification(metadata) {
     const details = metadata.details || {}, coverage = details.coverage || {};
     return details.processing_status === "review_incomplete" || metadata.processing_status === "review_incomplete"
@@ -852,26 +1091,26 @@
     const flagged = events.length > 0;
     const verificationIncomplete = hasIncompleteVerification(metadata);
     display(ui["results"], true);
-    ui["status-title"].textContent = verificationIncomplete ? "Review incomplete" : "Review complete"; setBadge(verificationIncomplete ? "Incomplete" : "Complete", verificationIncomplete ? "queued" : "done");
-    ui["status-description"].textContent = verificationIncomplete ? "Some candidate checks were not completed within the processing budget." : "Your results are ready.";
+    ui["status-title"].textContent = verificationIncomplete ? "Анализ не завершён полностью" : "Анализ завершён"; setBadge(verificationIncomplete ? "Не завершено" : "Завершено", verificationIncomplete ? "queued" : "done");
+    ui["status-description"].textContent = verificationIncomplete ? "Часть кандидатов не проверена за отведённое время." : "Результаты готовы.";
     const reviewRequired = !flagged && hasPendingReview(metadata);
     ui["verdict-card"].classList.toggle("flagged", flagged); ui["verdict-card"].classList.toggle("review-required", reviewRequired);
     ui["verdict-icon"].textContent = flagged ? "!" : reviewRequired ? "?" : "✓";
-    ui["verdict-title"].textContent = flagged ? "Violation detected" : reviewRequired ? "Needs review" : "No violation detected";
+    ui["verdict-title"].textContent = flagged ? "Модель подтвердила нарушение" : reviewRequired ? "Требует проверки" : "Модель не подтвердила нарушений";
     const count = displayCaseGroups(reviewCases(metadata, result)).filter(group => group.status === "review_required").length;
-    ui["verdict-description"].textContent = flagged ? events.length + (events.length === 1 ? " finding needs human review." : " findings need human review.")
-      : verificationIncomplete ? "A violation is not confirmed. Some candidate checks were not completed within the processing budget."
-      : reviewRequired ? "A violation is not confirmed. " + (count ? count + (count === 1 ? " case needs a check." : " cases need a check.") : "Review details need a check.")
-      : "No supported violation was found in the sampled video.";
-    ui["jury-verdict"].textContent = `Jury API verdict: ${flagged ? "violation" : "no_violation"} · ${events.length} confirmed ${events.length === 1 ? "finding" : "findings"}. Unconfirmed cases and item boxes do not change this API verdict.`;
-    message(ui["details-warning"], metadata.details_unavailable ? "Review details could not be loaded. Case decisions, detected items, coverage and the unconfirmed queue may be missing. Use ‘Retry review details’ above before treating this review as complete." : "");
-    renderCaseDecisions(metadata, result); renderDetections(metadata);
+    ui["verdict-description"].textContent = flagged ? events.length + (events.length === 1 ? " событие требует проверки человеком." : " событий требуют проверки человеком.")
+      : verificationIncomplete ? "Нарушение не подтверждено. Часть кандидатов не проверена за отведённое время."
+      : reviewRequired ? "Нарушение не подтверждено. " + (count ? count + (count === 1 ? " случай требует проверки." : " случаев требуют проверки.") : "Подробности анализа требуют проверки.")
+      : "В проанализированных кадрах подтверждённое нарушение не найдено.";
+    ui["jury-verdict"].textContent = `Исходный итог API: ${flagged ? "violation" : "no_violation"} · подтверждено моделью: ${events.length}. Решения человека и рамки объектов сохраняются отдельно.`;
+    message(ui["details-warning"], metadata.details_unavailable ? "Подробности анализа не загрузились. Список проверок, найденные предметы, охват и наблюдения могут быть неполными. Повторите загрузку подробностей." : "");
+    initializeReview(metadata); renderCaseDecisions(metadata, result); renderDetections(metadata);
     const notes = [...new Set(notesFor(metadata))];
     ui["review-notes"].replaceChildren(...notes.map((note) => node("li", "", note))); display(ui["review-notes-section"], notes.length > 0);
     renderCoverage(metadata);
     renderAssessments(metadata);
     renderReviewQueue(metadata);
-    display(ui["findings-heading"], events.length > 0); ui["finding-count"].textContent = `${events.length} ${events.length === 1 ? "event" : "events"}`;
+    display(ui["findings-heading"], events.length > 0); ui["finding-count"].textContent = `${events.length} ${events.length === 1 ? "событие" : "событий"}`;
     const findings = metadata.details?.findings || metadata.findings || [];
     ui["findings"].replaceChildren(...events.map((event, index) => {
       const match = Array.isArray(findings) ? findings.find((finding) => (finding.type_id || finding.type) === event.type && Math.abs(Number(finding.timecode_sec ?? finding.timestamp_sec ?? finding.start_sec) - Number(event.timecode_sec)) < 3) || findings[index] || {} : {};
@@ -882,18 +1121,20 @@
     const card = node("article", "finding-card card");
     const policy = detail.basis === "workplace_policy" || detail.rule?.basis === "workplace_policy";
     const top = node("div", "finding-top"), heading = node("div");
-    heading.append(node("p", "finding-index", `EVENT ${String(index + 1).padStart(2, "0")}`), node("h3", "", detail.title || detail.type_name || friendly(event.type)));
-    if (policy) heading.append(node("p", "score-state", "Workplace policy violation"));
-    const time = node("button", "time-button", `▶ ${formatTime(event.timecode_sec)}`); time.type = "button"; time.setAttribute("aria-label", `Seek video to ${formatTime(event.timecode_sec)}`); time.addEventListener("click", () => seek(event.timecode_sec));
-    top.append(heading, time); card.append(top, node("p", "finding-description", event.description || "Review the evidence and applicable rule."));
+    heading.append(node("p", "finding-index", `СОБЫТИЕ ${String(index + 1).padStart(2, "0")}`), node("h3", "", caseTitle(event.type)));
+    if (policy) heading.append(node("p", "score-state", "Нарушение правила рабочего места"));
+    const time = node("button", "time-button", `▶ ${formatTime(event.timecode_sec)}`); time.type = "button"; time.setAttribute("aria-label", `Перейти в видео: ${formatTime(event.timecode_sec)}`); time.addEventListener("click", () => seek(event.timecode_sec));
+    top.append(heading, time);
+    const matched = reviewCases(lastDetails, lastResult).filter(item => item.type_id === event.type && validCaseTime(item.timecode_sec) && Math.abs(item.timecode_sec - event.timecode_sec) < 3);
+    card.append(top, node("p", "finding-description", caseJustification(matched.length ? [matched[0]] : [{status:"confirmed",checks:[]}])));
     const frames = Array.isArray(event.evidence_frames) ? event.evidence_frames.slice(0, 3) : [];
     const grid = node("div", "evidence-grid");
     for (const [frameIndex, frame] of frames.entries()) {
       const raw = String(frame.image_base64 || "").replace(/^data:image\/jpe?g;base64,/i, "").replace(/\s/g, "");
       if (!raw || raw.length > 24000000 || !/^[A-Za-z0-9+/]+=*$/.test(raw)) continue;
       const button = node("button", "evidence-button"); button.type = "button";
-      const image = node("img"); image.src = `data:image/jpeg;base64,${raw}`; image.alt = `Evidence ${frameIndex + 1} for event ${index + 1} at ${formatTime(frame.timestamp_sec)}`; image.loading = "lazy";
-      button.append(image, node("span", "", `${formatTime(frame.timestamp_sec)} · Evidence ${frameIndex + 1}`)); button.addEventListener("click", () => seek(frame.timestamp_sec));
+      const image = node("img"); image.src = `data:image/jpeg;base64,${raw}`; image.alt = `Кадр ${frameIndex + 1} события ${index + 1} в ${formatTime(frame.timestamp_sec)}`; image.loading = "lazy";
+      button.append(image, node("span", "", `${formatTime(frame.timestamp_sec)} · Кадр ${frameIndex + 1}`)); button.addEventListener("click", () => seek(frame.timestamp_sec));
       grid.append(button);
     }
     if (grid.childElementCount) card.append(grid);
@@ -903,37 +1144,67 @@
     const url = safeRuleUrl(detail.rule_url || detail.source_url || rule.url || rule.source_url);
     if (ruleName || paragraph || url) {
       const box = node("div", "rule-box"), content = node("div");
-      content.append(node("strong", "", ruleName || (policy ? "User-provided workplace policy" : "Applicable regulatory reference")));
-      if (paragraph) content.append(node("p", "", `${policy ? "Section" : "Paragraph"} ${paragraph}`));
+      content.append(node("strong", "", ruleName || (policy ? "Правило рабочего места от пользователя" : "Нормативное основание")));
+      if (paragraph) content.append(node("p", "", `${policy ? "Раздел" : "Пункт"} ${paragraph}`));
       if (detail.rule_explanation || rule.requirement) content.append(node("p", "", detail.rule_explanation || rule.requirement));
-      if (url) { const link = node("a", "", policy ? "Read workplace policy ↗" : "Read official source ↗"); link.href = url; link.target = "_blank"; link.rel = "noopener noreferrer"; content.append(link); }
+      if (url) { const link = node("a", "", policy ? "Открыть правило рабочего места ↗" : "Открыть официальный источник ↗"); link.href = url; link.target = "_blank"; link.rel = "noopener noreferrer"; content.append(link); }
       box.append(node("span", "rule-symbol", "§"), content); card.append(box);
     }
     const uncertainty = detail.uncertainty || detail.visibility_note;
-    if (typeof uncertainty === "string" && uncertainty.trim()) card.append(node("p", "uncertainty", `Review note: ${uncertainty}`));
+    if (typeof uncertainty === "string" && uncertainty.trim()) card.append(node("p", "uncertainty", `Примечание: ${uncertainty}`));
     return card;
   }
 
-  ui["api-key"].addEventListener("input", () => { scheduleActiveJobRecovery(); syncSubmit(); scheduleCatalog(); });
+  for (const button of ui["case-filters"].querySelectorAll("button")) button.addEventListener("click", () => { if (reviewSaving) return; caseFilter = button.dataset.filter; renderCaseDecisions(lastDetails,lastResult); });
+  ui["case-search"].addEventListener("input", () => { if (!reviewSaving) renderCaseDecisions(lastDetails,lastResult); });
+  for (const id of ["reviewer-name","review-camera","review-session","review-source-group","review-coverage"]) ui[id].addEventListener("input",markReviewDirty);
+  ui["save-review-meta"].addEventListener("click",() => saveReviewState());
+  ui["download-report"].addEventListener("click",downloadReport);
+  ui["next-case"].addEventListener("click",nextCase); ui["play-context"].addEventListener("click",playContext);
+  ui["reload-review"].addEventListener("click",async () => {
+    if (reviewSaving) return;
+    const job = currentJob, key = ui["api-key"].value.trim(); reviewSaving = true;
+    const locked = [...document.querySelectorAll("#api-key,#key-visibility,#reviewer-section input,#reviewer-section button,#case-filters button,#case-search,.review-editor input,.review-editor textarea,.review-editor button,#missed-event-form input,#missed-event-form select,#missed-event-form textarea,#missed-event-form button,#open-job-form button,#video-file,#remove-file,#history-items button")];
+    locked.forEach(element => { element.disabled = true; });
+    try { const metadata = await json(`/api/ui/jobs/${encodeURIComponent(job)}`); if (job === currentJob && key === ui["api-key"].value.trim()) { lastDetails = metadata; initializeReview(metadata); renderCaseDecisions(metadata,lastResult); } }
+    catch(error) { message(ui["review-error"],"Не удалось загрузить сохранённую версию. " + error.message); }
+    finally { reviewSaving = false; locked.forEach(element => { element.disabled = false; }); syncSubmit(); }
+  });
+  ui["missed-event-form"].addEventListener("submit",async event => {
+    event.preventDefault(); if (!reviewState || reviewSaving) return; manualFormDirty = true; markReviewDirty(); await saveReviewState();
+  });
+  ui["missed-event-form"].addEventListener("input",() => { if (!reviewSaving) { manualFormDirty = true; markReviewDirty(); } });
+  ui["cancel-missed-event"].addEventListener("click",() => {
+    if (reviewSaving) return; ui["missed-event-form"].reset(); manualFormDirty = false; pendingManualId = null;
+    const meta = reviewMetadata(), changed = Object.keys(meta).some(key => meta[key] !== (reviewState?.[key] ?? (key === "coverage_complete" ? false : "")));
+    reviewDirty = reviewDrafts.size > 0 || changed; ui["reviewer-section"].classList.toggle("has-unsaved",reviewDirty); ui["review-save-status"].textContent = reviewDirty ? "Есть несохранённые изменения" : "Изменения отменены"; syncSubmit();
+  });
+  ui["history-reload"].addEventListener("click",() => loadHistory()); ui["history-more"].addEventListener("click",() => loadHistory(true));
+  ui["history-search"].addEventListener("input",() => { clearTimeout(historyTimer); historyGeneration += 1; historyTimer = setTimeout(() => loadHistory(),250); });
+  ui["history-section"].addEventListener("toggle",() => { if (ui["history-section"].open) loadHistory(); });
+  ui["quality-reload"].addEventListener("click",loadQuality); ui["quality-section"].addEventListener("toggle",() => { if (ui["quality-section"].open) loadQuality(); });
+  ui["source-video"].addEventListener("timeupdate",() => { if (contextEnd !== null && ui["source-video"].currentTime >= contextEnd) { ui["source-video"].pause(); contextEnd = null; } });
+  window.addEventListener("beforeunload",event => { if (reviewDirty) { event.preventDefault(); event.returnValue = ""; } });
+  ui["api-key"].addEventListener("input", () => { scheduleActiveJobRecovery(); syncSubmit(); scheduleCatalog(); scheduleHistory(); display(ui["quality-section"], Boolean(ui["api-key"].value.trim())); });
   ui["catalog-reload"].addEventListener("click", loadCatalog);
   byId("assessment-toggle")?.addEventListener("click", () => { showAllAssessments = !showAllAssessments; renderAssessments(lastDetails); });
-  ui["key-visibility"].addEventListener("click", () => { const shown = ui["api-key"].type === "password"; ui["api-key"].type = shown ? "text" : "password"; ui["key-visibility"].textContent = shown ? "Hide" : "Show"; ui["key-visibility"].setAttribute("aria-label", shown ? "Hide API key" : "Show API key"); ui["key-visibility"].setAttribute("aria-pressed", String(shown)); });
+  ui["key-visibility"].addEventListener("click", () => { const shown = ui["api-key"].type === "password"; ui["api-key"].type = shown ? "text" : "password"; ui["key-visibility"].textContent = shown ? "Скрыть" : "Показать"; ui["key-visibility"].setAttribute("aria-label", shown ? "Скрыть ключ API" : "Показать ключ API"); ui["key-visibility"].setAttribute("aria-pressed", String(shown)); });
   ui["video-file"].addEventListener("change", () => selectFile(ui["video-file"].files[0]));
-  ui["remove-file"].addEventListener("click", () => { if (submitting || polling) return; file = null; ui["video-file"].value = ""; display(ui["selected-file"], false); display(ui["drop-zone"], true); clearSource(); syncSubmit(); });
+  ui["remove-file"].addEventListener("click", () => { if (submitting || polling) return; if (reviewDirty || reviewSaving) { message(ui["review-error"], "Сохраните изменения проверки перед удалением видео."); return; } file = null; ui["video-file"].value = ""; display(ui["selected-file"], false); display(ui["drop-zone"], true); clearSource(); syncSubmit(); });
   for (const eventName of ["dragenter", "dragover"]) ui["drop-zone"].addEventListener(eventName, (event) => { event.preventDefault(); ui["drop-zone"].classList.add("drag-over"); });
   for (const eventName of ["dragleave", "drop"]) ui["drop-zone"].addEventListener(eventName, (event) => { event.preventDefault(); ui["drop-zone"].classList.remove("drag-over"); });
   ui["drop-zone"].addEventListener("drop", (event) => selectFile(event.dataTransfer.files[0]));
   ui["upload-form"].addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!file || !ready || busy || submitting || polling) return;
+    if (!file || !ready || busy || submitting || polling || reviewDirty || reviewSaving) return;
     submitting = true; syncSubmit(); message(ui["form-error"], "");
     const data = new FormData(); data.append("file", file);
     try {
       const result = await json("/api/v1/analyze", { method: "POST", body: data });
-      if (typeof result.job_id !== "string" || !result.job_id) throw new ApiError("The service did not return a job ID. Check the service logs before retrying.", 0);
+      if (typeof result.job_id !== "string" || !result.job_id) throw new ApiError("Сервис не вернул ID анализа. Проверьте журнал сервиса перед повтором.", 0);
       beginJob(result.job_id, true);
     } catch (error) {
-      message(ui["form-error"], error.message + (error.retryAfter ? ` Retry after ${error.retryAfter} seconds.` : ""));
+      message(ui["form-error"], error.message + (error.retryAfter ? ` Повторите через ${error.retryAfter} сек.` : ""));
       if (error.status === 401) ui["api-key"].focus();
       if (error.status === 503) checkHealth();
       if (error.status === 429) { busy = true; recoverActiveJob(); }
@@ -941,15 +1212,15 @@
   });
   ui["open-job-form"].addEventListener("submit", (event) => {
     event.preventDefault(); const id = ui["job-input"].value.trim();
-    if (!ui["api-key"].value.trim()) { message(ui["form-error"], "Enter your service API key before opening a review."); ui["api-key"].focus(); return; }
+    if (!ui["api-key"].value.trim()) { message(ui["form-error"], "Введите ключ API перед открытием анализа."); ui["api-key"].focus(); return; }
     if (submitting) return;
     if (id) { display(ui["poll-button"], true); beginJob(id); }
   });
   ui["poll-button"].addEventListener("click", () => {
-    if (polling) { stopPolling(); ui["status-title"].textContent = "Updates paused"; ui["status-description"].textContent = "Only browser updates are paused. The server analysis continues; resume to retrieve its result."; }
-    else { ui["status-title"].textContent = "Checking review status"; resumePolling(); }
+    if (polling) { stopPolling(); ui["status-title"].textContent = "Обновления приостановлены"; ui["status-description"].textContent = "Приостановлены обновления страницы. Анализ на сервере продолжается; возобновите обновления для получения результата."; }
+    else { ui["status-title"].textContent = "Проверяем статус анализа"; resumePolling(); }
   });
-  ui["source-video"].addEventListener("error", () => { if (sourceUrl) message(ui["video-error"], "Video preview unavailable. Evidence frames are still available."); });
+  ui["source-video"].addEventListener("error", () => { if (sourceUrl) message(ui["video-error"], "Предпросмотр видео недоступен. Сохранённые кадры остаются доступны."); });
   ui["show-detections"].addEventListener("change", () => refreshDetectionOverlay());
   for (const name of ["loadedmetadata", "seeked", "timeupdate", "pause", "resize"]) ui["source-video"].addEventListener(name, () => refreshDetectionOverlay());
   ui["source-video"].addEventListener("seeking", () => { ui["detection-overlay"].replaceChildren(); display(ui["detection-overlay"], false); });
@@ -958,6 +1229,6 @@
     const presented = (_, metadata) => { refreshDetectionOverlay(metadata.mediaTime); ui["source-video"].requestVideoFrameCallback(presented); };
     ui["source-video"].requestVideoFrameCallback(presented);
   }
-  window.addEventListener("beforeunload", () => { stopPolling(); resetDetections(); clearTimeout(catalogTimer); clearTimeout(activeJobTimer); if (catalogController) catalogController.abort(); if (activeJobController) activeJobController.abort(); if (sourceUrl) URL.revokeObjectURL(sourceUrl); ui["api-key"].value = ""; });
+  window.addEventListener("pagehide", () => { stopPolling(); resetDetections(); clearTimeout(catalogTimer); clearTimeout(activeJobTimer); if (catalogController) catalogController.abort(); if (activeJobController) activeJobController.abort(); if (sourceUrl) URL.revokeObjectURL(sourceUrl); ui["api-key"].value = ""; });
   checkHealth(); setInterval(checkHealth, 10000);
 })();

@@ -13,6 +13,10 @@ class BusyError(RuntimeError):
     """An upload or another live worker already holds the single processing slot."""
 
 
+class ReviewConflictError(RuntimeError):
+    """Another reviewer saved a newer revision."""
+
+
 class JobStore:
     def __init__(self, db_path: str | Path, worker_stale_sec: int = 30):
         self.db_path = Path(db_path)
@@ -66,10 +70,20 @@ class JobStore:
                     ready INTEGER NOT NULL,
                     detail TEXT NOT NULL DEFAULT ''
                 );
+                CREATE TABLE IF NOT EXISTS job_reviews (
+                    job_id TEXT PRIMARY KEY REFERENCES jobs(id),
+                    revision INTEGER NOT NULL,
+                    updated_at REAL NOT NULL,
+                    state_json TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS job_sources (
+                    job_id TEXT PRIMARY KEY REFERENCES jobs(id),
+                    sha256 TEXT NOT NULL
+                );
             """)
 
     def create_job(self, job_id: str, video_path: str | Path, original_name: str,
-                   timeout_sec: int = 300) -> dict[str, Any]:
+                   timeout_sec: int = 300, source_sha256: str = "") -> dict[str, Any]:
         now = time.time()
         with self._connection(write=True) as connection:
             if connection.execute("SELECT 1 FROM jobs WHERE status='processing' LIMIT 1").fetchone():
@@ -79,6 +93,8 @@ class JobStore:
                 "VALUES (?,'processing','queued',?,?,?,?,?)",
                 (job_id, str(video_path), original_name, now, now + timeout_sec, now),
             )
+            if source_sha256:
+                connection.execute("INSERT INTO job_sources(job_id,sha256) VALUES(?,?)", (job_id, source_sha256))
             return dict(connection.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone())
 
     def get_job(self, job_id: str) -> dict[str, Any] | None:
@@ -90,6 +106,71 @@ class JobStore:
         with self._connection() as connection:
             row = connection.execute("SELECT * FROM jobs WHERE status='processing' LIMIT 1").fetchone()
             return dict(row) if row else None
+
+    def list_history(self, query: str = "", limit: int = 20, offset: int = 0) -> dict:
+        """Bounded literal substring search: SQL wildcards are not user operators."""
+        pattern = "%" + query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+        where = "WHERE j.original_name LIKE ? ESCAPE '\\' OR j.id LIKE ? ESCAPE '\\'"
+        with self._connection() as connection:
+            total = connection.execute("SELECT COUNT(*) FROM jobs j " + where, (pattern, pattern)).fetchone()[0]
+            rows = connection.execute(
+                "SELECT j.id,j.original_name,j.status,j.created_at,j.updated_at,j.result_json,"
+                "r.revision,r.state_json FROM jobs j LEFT JOIN job_reviews r ON r.job_id=j.id "
+                + where + " ORDER BY j.created_at DESC,j.id DESC LIMIT ? OFFSET ?",
+                (pattern, pattern, limit, offset)).fetchall()
+            items = []
+            for row in rows:
+                try:
+                    result = json.loads(row["result_json"] or "{}")
+                    review = json.loads(row["state_json"] or "{}")
+                except ValueError:
+                    result, review = {}, {}
+                items.append({"job_id": row["id"], "original_name": row["original_name"],
+                              "status": row["status"], "created_at": row["created_at"],
+                              "updated_at": row["updated_at"], "verdict": result.get("verdict"),
+                              "review_revision": row["revision"] or 0,
+                              "reviewer": review.get("reviewer", ""),
+                              "coverage_complete": review.get("coverage_complete", False)})
+            return {"items": items, "total": total, "limit": limit, "offset": offset}
+
+    def get_review(self, job_id: str) -> dict | None:
+        with self._connection() as connection:
+            row = connection.execute("SELECT state_json FROM job_reviews WHERE job_id=?", (job_id,)).fetchone()
+            return json.loads(row[0]) if row else None
+
+    def save_review(self, job_id: str, state: dict) -> dict:
+        """Compare and save the complete human state in one transaction."""
+        with self._connection(write=True) as connection:
+            job = connection.execute("SELECT status FROM jobs WHERE id=?", (job_id,)).fetchone()
+            if job is None or job["status"] != "done":
+                raise ValueError("Only completed jobs can be reviewed")
+            row = connection.execute("SELECT revision FROM job_reviews WHERE job_id=?", (job_id,)).fetchone()
+            revision = row[0] if row else 0
+            if state["revision"] != revision:
+                raise ReviewConflictError("The review changed; reload before saving")
+            saved = {**state, "revision": revision + 1, "updated_at": time.time()}
+            encoded = json.dumps(saved, ensure_ascii=False, allow_nan=False)
+            connection.execute(
+                "INSERT INTO job_reviews(job_id,revision,updated_at,state_json) VALUES(?,?,?,?) "
+                "ON CONFLICT(job_id) DO UPDATE SET revision=excluded.revision,"
+                "updated_at=excluded.updated_at,state_json=excluded.state_json",
+                (job_id, saved["revision"], saved["updated_at"], encoded))
+            return saved
+
+    def get_source_sha256(self, job_id: str) -> str:
+        with self._connection() as connection:
+            row = connection.execute("SELECT sha256 FROM job_sources WHERE job_id=?", (job_id,)).fetchone()
+            return row[0] if row else ""
+
+    def record_source_sha256(self, job_id: str, digest: str) -> None:
+        with self._connection(write=True) as connection:
+            connection.execute("INSERT OR IGNORE INTO job_sources(job_id,sha256) VALUES(?,?)", (job_id, digest))
+
+    def list_review_jobs(self) -> list[dict]:
+        with self._connection() as connection:
+            return [dict(row) for row in connection.execute(
+                "SELECT j.*,s.sha256 FROM jobs j LEFT JOIN job_sources s ON s.job_id=j.id "
+                "WHERE j.status='done' ORDER BY j.created_at DESC,j.id DESC")]
 
     def claim_next(self, owner: str) -> dict[str, Any] | None:
         now = time.time()
