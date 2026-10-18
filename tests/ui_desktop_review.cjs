@@ -33,7 +33,7 @@ const metadata = id => ({job_id:id,status:"done",original_name:id===job?"Кас�
   });
   await page.route("**/*",async route=>{
    const req=route.request(),url=new URL(req.url()); assert.equal(url.origin,"http://127.0.0.1:48123");
-   if (["/","/app.js","/style.css"].includes(url.pathname)) return route.fulfill({contentType:url.pathname.endsWith("js")?"text/javascript":url.pathname.endsWith("css")?"text/css":"text/html",body:fs.readFileSync(path.join(root,"web",url.pathname==="/"?"index.html":url.pathname.slice(1)))});
+   if (["/","/app.js","/style.css","/static/i18n.js","/static/i18n-catalog.js"].includes(url.pathname)) return route.fulfill({contentType:url.pathname.endsWith("js")?"text/javascript":url.pathname.endsWith("css")?"text/css":"text/html",body:fs.readFileSync(path.join(root,"web",url.pathname==="/"?"index.html":path.basename(url.pathname)))});
    if(url.pathname==="/api/v1/health")return route.fulfill({json:{ready:true,busy:false}});
    assert.equal(req.headers()["x-api-key"],"desktop-test-key","All protected endpoints use an in-memory authenticated header");
    if(url.pathname==="/api/ui/active-job")return route.fulfill({json:{job_id:null}});

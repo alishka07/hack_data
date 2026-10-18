@@ -1,6 +1,8 @@
 "use strict";
 
 (() => {
+  const l10n = window.ForteI18n;
+  const {setText, textNode, setAttribute:setAttr} = l10n;
   const byId = (id) => document.getElementById(id);
   const ui = Object.fromEntries([
     "report-section", "report-review-status", "report-error", "save-review-final",
@@ -56,11 +58,11 @@
     constructor(message, status, retryAfter) { super(message); this.status = status; this.retryAfter = retryAfter; }
   }
   function display(element, visible) { element.hidden = !visible; }
-  function message(element, value) { element.textContent = value || ""; display(element, Boolean(value)); }
-  function node(tag, className, content) {
+  function message(element, value) { setText(element, value || ""); display(element, Boolean(value)); }
+  function node(tag, className, content, localize = true) {
     const result = document.createElement(tag);
     if (className) result.className = className;
-    if (content !== undefined) result.textContent = String(content);
+    if (content !== undefined) setText(result, String(content), localize);
     return result;
   }
   function finite(value) { return value !== null && value !== "" && Number.isFinite(Number(value)); }
@@ -83,18 +85,18 @@
   function syncSubmit() {
     syncReportControls();
     ui["analyze-button"].disabled = !ready || busy || !file || !ui["api-key"].value.trim() || submitting || reviewDirty || reviewSaving || Boolean(currentJob && polling);
-    ui["analyze-button"].firstChild.textContent = submitting ? "Загружаем видео… " : "Анализировать видео ";
-    ui["admission-note"].textContent = !ready ? "Ожидание обработчика анализа." : submitting ? "Загрузка в локальный сервис." : currentJob && polling ? "Идёт анализ вашего видео." : busy ? "Сейчас выполняется анализ. Следующее видео можно загрузить после его завершения." : "Сервис готов к новому анализу.";
+    setText(ui["analyze-button"].firstChild, submitting ? "Загружаем видео… " : "Анализировать видео ");
+    setText(ui["admission-note"], !ready ? "Ожидание обработчика анализа." : submitting ? "Загрузка в локальный сервис." : currentJob && polling ? "Идёт анализ вашего видео." : busy ? "Сейчас выполняется анализ. Следующее видео можно загрузить после его завершения." : "Сервис готов к новому анализу.");
     if (busy && activeJobId && activeJobId !== currentJob && !submitting) {
       const open = node("button", "text-button", "Открыть текущий анализ"); open.type = "button"; open.id = "open-active-job";
       open.addEventListener("click", () => { message(ui["form-error"], ""); beginJob(activeJobId); });
-      ui["admission-note"].append(document.createTextNode(" "), open);
+      ui["admission-note"].append(textNode(" "), open);
     }
   }
   function syncReportControls() {
     ui["save-review-final"].disabled = !reviewState || !reviewDirty || reviewSaving;
     ui["download-report"].disabled = !currentJob || !lastResult || Boolean(lastDetails.details_unavailable) || reviewDirty || reviewSaving || reportDownloading;
-    ui["report-review-status"].textContent = reviewSaving ? "Сохраняем решения проверяющего…" : reviewDirty ? "Есть несохранённые правки. Сохраните их перед скачиванием отчёта." : reviewState?.revision ? "В отчёт войдут сохранённые решения · версия " + reviewState.revision + "." : "Проверьте результаты и сохраните решения, чтобы включить их в отчёт.";
+    setText(ui["report-review-status"], reviewSaving ? "Сохраняем решения проверяющего…" : reviewDirty ? "Есть несохранённые правки. Сохраните их перед скачиванием отчёта." : reviewState?.revision ? "В отчёт войдут сохранённые решения · версия " + reviewState.revision + "." : "Проверьте результаты и сохраните решения, чтобы включить их в отчёт.");
     ui["report-section"].classList.toggle("has-unsaved", reviewDirty);
   }
   async function request(path, options = {}, authenticated = true) {
@@ -198,7 +200,7 @@
       for (const ref of refs.slice(0, 3)) {
         if (typeof ref?.timestamp_sec !== "number" || !Number.isFinite(ref.timestamp_sec) || ref.timestamp_sec < 0) continue;
         const time = node("button", "text-button", sampleTime(ref.timestamp_sec)); time.type = "button";
-        time.setAttribute("aria-label", "Перейти к доказательству: " + sampleTime(ref.timestamp_sec));
+        setAttr(time, "aria-label", "Перейти к доказательству: " + sampleTime(ref.timestamp_sec));
         time.addEventListener("click", () => seek(ref.timestamp_sec)); moments.append(time);
       }
       if (moments.childElementCount) body.append(moments);
@@ -228,9 +230,9 @@
     const shown = showAllAssessments ? entries : relevant;
     ui["assessment-items"].replaceChildren(...shown.map((item) => scoreRow(item, false, episodes.filter((episode) => (episode.item_id || episode.id) === (item.item_id || item.id)))));
     const version = metadata.details?.catalog_version;
-    ui["assessments-version"].textContent = shown.length + " из " + entries.length + " проверок" + (typeof version === "string" || typeof version === "number" ? " · Версия каталога " + version : "");
+    setText(ui["assessments-version"], shown.length + " из " + entries.length + " проверок" + (typeof version === "string" || typeof version === "number" ? " · Версия каталога " + version : ""));
     const toggle = byId("assessment-toggle");
-    if (toggle) { toggle.textContent = showAllAssessments ? "Значимые проверки" : "Все проверки"; display(toggle, relevant.length < entries.length); }
+    if (toggle) { setText(toggle, showAllAssessments ? "Значимые проверки" : "Все проверки"); display(toggle, relevant.length < entries.length); }
     display(ui["assessments-section"], entries.length > 0);
   }
   async function loadCatalog() {
@@ -238,11 +240,11 @@
     if (catalogController) catalogController.abort();
     const generation = ++catalogGeneration;
     ui["catalog-items"].replaceChildren();
-    ui["catalog-version"].textContent = "";
+    setText(ui["catalog-version"], "");
     display(ui["catalog-table-wrap"], false);
     if (!ui["api-key"].value.trim()) { display(ui["catalog-section"], false); return; }
     display(ui["catalog-section"], true);
-    ui["catalog-status"].textContent = "Загружаем каталог проверок…";
+    setText(ui["catalog-status"], "Загружаем каталог проверок…");
     catalogController = new AbortController();
     try {
       const catalog = await json("/api/ui/catalog", {signal:catalogController.signal});
@@ -251,12 +253,12 @@
       const entries = catalogEntries(catalog.items);
       ui["missed-type"].replaceChildren(...entries.map(item => { const option = node("option", "", caseTitle(item.id || item.item_id)); option.value = item.id || item.item_id; return option; }));
       ui["catalog-items"].replaceChildren(...entries.map((item) => scoreRow(item, true)));
-      ui["catalog-version"].textContent = typeof catalog.version === "string" || typeof catalog.version === "number" ? `Версия каталога ${catalog.version}` : "";
+      setText(ui["catalog-version"], typeof catalog.version === "string" || typeof catalog.version === "number" ? `Версия каталога ${catalog.version}` : "");
       const automaticEvents = entries.filter((item) => item.scoring_kind === "event_occurrence" && item.automation === "automatic_when_supported").length;
-      ui["catalog-status"].textContent = entries.length ? `${entries.length} проверок в каталоге · ${automaticEvents} проверок событий с автоматическим подтверждением` : "В каталоге нет проверок.";
+      setText(ui["catalog-status"], entries.length ? `${entries.length} проверок в каталоге · ${automaticEvents} проверок событий с автоматическим подтверждением` : "В каталоге нет проверок.");
       display(ui["catalog-table-wrap"], entries.length > 0);
     } catch (error) {
-      if (error.name !== "AbortError" && generation === catalogGeneration) ui["catalog-status"].textContent = `Каталог недоступен. ${error.message}`;
+      if (error.name !== "AbortError" && generation === catalogGeneration) setText(ui["catalog-status"], `Каталог недоступен. ${error.message}`);
     }
   }
   function scheduleCatalog() {
@@ -264,10 +266,10 @@
     if (catalogController) catalogController.abort();
     catalogGeneration += 1;
     ui["catalog-items"].replaceChildren();
-    ui["catalog-version"].textContent = "";
+    setText(ui["catalog-version"], "");
     display(ui["catalog-table-wrap"], false);
     display(ui["catalog-section"], Boolean(ui["api-key"].value.trim()));
-    ui["catalog-status"].textContent = "Ожидание загрузки каталога…";
+    setText(ui["catalog-status"], "Ожидание загрузки каталога…");
     if (ui["api-key"].value.trim()) catalogTimer = setTimeout(loadCatalog, 400);
   }
   async function checkHealth() {
@@ -277,8 +279,8 @@
       busy = health.busy === true;
       if (!busy) activeJobId = null;
       ui["service-dot"].className = `dot ${ready ? "ready" : "failed"}`;
-      ui["service-label"].textContent = ready ? busy ? "Идёт анализ" : "Обработчик готов" : "Обработчик загружается / недоступен";
-    } catch (_) { ready = false; ui["service-dot"].className = "dot failed"; ui["service-label"].textContent = "Сервис недоступен"; }
+      setText(ui["service-label"], ready ? busy ? "Идёт анализ" : "Обработчик готов" : "Обработчик загружается / недоступен");
+    } catch (_) { ready = false; ui["service-dot"].className = "dot failed"; setText(ui["service-label"], "Сервис недоступен"); }
     syncSubmit();
     if (busy && ui["api-key"].value.trim()) recoverActiveJob();
   }
@@ -310,7 +312,7 @@
     sourceUrl = url;
     ui["source-video"].src = url;
     ui["source-video"].load();
-    ui["video-name"].textContent = name || "Исходное видео";
+    setText(ui["video-name"], name || "Исходное видео", !name);
     display(ui["source-video"], true); display(ui["video-empty"], false); display(ui["video-caption"], true);
     message(ui["video-error"], "");
   }
@@ -328,24 +330,24 @@
     if (selected.size === 0) { message(ui["form-error"], "Выбран пустой файл. Выберите другое видео."); return; }
     if (submitting || polling) { message(ui["form-error"], "Дождитесь текущего анализа или приостановите обновления перед выбором другого видео."); return; }
     stopPolling(); resetDetections(); currentJob = null; lastDetails = {}; lastResult = null; loadedJobVideo = null;
-    file = selected; ui["file-name"].textContent = file.name; ui["file-size"].textContent = formatSize(file.size);
+    file = selected; setText(ui["file-name"], file.name, false); setText(ui["file-size"], formatSize(file.size));
     display(ui["selected-file"], true); display(ui["drop-zone"], false);
     display(ui["results"], false); display(ui["job-controls"], false); display(ui["progress-section"], false);
-    ui["status-title"].textContent = "Видео выбрано"; ui["status-description"].textContent = "Начните анализ для проверки наблюдаемых действий.";
+    setText(ui["status-title"], "Видео выбрано"); setText(ui["status-description"], "Начните анализ для проверки наблюдаемых действий.");
     setBadge("Готово к анализу", ""); message(ui["form-error"], ""); message(ui["poll-error"], "");
     setSource(URL.createObjectURL(file), file.name); syncSubmit();
   }
-  function setBadge(text, className) { ui["status-badge"].textContent = text; ui["status-badge"].className = `status-badge ${className}`; }
+  function setBadge(text, className) { setText(ui["status-badge"], text); ui["status-badge"].className = `status-badge ${className}`; }
   function stopPolling() {
     polling = false; pollGeneration += 1;
     clearTimeout(pollTimer); clearInterval(elapsedTimer);
     if (pollController) pollController.abort();
-    pollController = null; ui["poll-button"].textContent = "Возобновить обновления";
+    pollController = null; setText(ui["poll-button"], "Возобновить обновления");
     syncSubmit();
   }
   function updateElapsed() {
-    if (!acceptedAt) { ui["elapsed-label"].textContent = ""; return; }
-    ui["elapsed-label"].textContent = `${formatTime((Date.now() - acceptedAt) / 1000)} прошло`;
+    if (!acceptedAt) { setText(ui["elapsed-label"], ""); return; }
+    setText(ui["elapsed-label"], `${formatTime((Date.now() - acceptedAt) / 1000)} прошло`);
   }
   function beginJob(id, localUpload = false) {
     if (localUpload) { busy = true; activeJobId = id; }
@@ -354,13 +356,13 @@
     stopPolling(); resetDetections(); showAllAssessments = false; currentJob = id; lastDetails = {}; lastResult = null;
     if (!localUpload) { file = null; display(ui["selected-file"], false); display(ui["drop-zone"], true); ui["video-file"].value = ""; clearSource(); loadedJobVideo = null; }
     acceptedAt = localUpload ? Date.now() : null;
-    ui["job-id"].textContent = id; display(ui["job-controls"], true); display(ui["poll-button"], true); display(ui["results"], false); display(ui["progress-section"], true);
-    ui["status-title"].textContent = "Идёт анализ"; ui["status-description"].textContent = "Обработчик проверяет видео и подготавливает доказательства.";
+    setText(ui["job-id"], id, false); display(ui["job-controls"], true); display(ui["poll-button"], true); display(ui["results"], false); display(ui["progress-section"], true);
+    setText(ui["status-title"], "Идёт анализ"); setText(ui["status-description"], "Обработчик проверяет видео и подготавливает доказательства.");
     setBadge("Обработка", "processing"); message(ui["poll-error"], ""); resumePolling();
   }
   function resumePolling() {
     if (!currentJob) return;
-    stopPolling(); polling = true; ui["poll-button"].textContent = "Приостановить обновления"; message(ui["poll-error"], "");
+    stopPolling(); polling = true; setText(ui["poll-button"], "Приостановить обновления"); message(ui["poll-error"], "");
     elapsedTimer = setInterval(updateElapsed, 1000); updateElapsed(); syncSubmit();
     poll(pollGeneration);
   }
@@ -371,7 +373,7 @@
     ui["progress-track"].classList.toggle("indeterminate", !known);
     if (known) { ui["progress-fill"].style.width = `${percent}%`; ui["progress-track"].setAttribute("aria-valuenow", String(Math.round(percent))); }
     else ui["progress-track"].removeAttribute("aria-valuenow");
-    ui["stage-label"].textContent = friendly(metadata.stage || "Обработка видео");
+    setText(ui["stage-label"], friendly(metadata.stage || "Обработка видео"));
     const began = metadata.accepted_at || metadata.created_at;
     const parsed = typeof began === "number" ? began * (began < 100000000000 ? 1000 : 1) : Date.parse(began);
     if (!acceptedAt && began && Number.isFinite(parsed)) acceptedAt = parsed;
@@ -386,13 +388,13 @@
       catch (error) { if (error.name === "AbortError" || error.status === 401 || error.status === 403) throw error; metadata = {details_unavailable:true}; }
       if (generation !== pollGeneration) return;
       lastDetails = metadata;
-      if (metadata.original_name) ui["video-name"].textContent = String(metadata.original_name);
+      if (metadata.original_name) setText(ui["video-name"], String(metadata.original_name), false);
       updateProgress(metadata);
       if (result.status === "done") {
         if (!["violation", "no_violation"].includes(result.verdict)) throw new ApiError("Ответ завершённого анализа не содержит корректного итога. Результат нельзя считать отсутствием нарушений.", 0);
         stopPolling(); lastResult = result;
         display(ui["progress-section"], false); display(ui["poll-button"], metadata.details_unavailable === true);
-        if (metadata.details_unavailable) ui["poll-button"].textContent = "Повторить загрузку подробностей";
+        if (metadata.details_unavailable) setText(ui["poll-button"], "Повторить загрузку подробностей");
         renderResult(result, metadata);
         checkHealth();
         if (!sourceUrl) await loadJobVideo(currentJob, metadata.original_name);
@@ -400,8 +402,8 @@
       }
       if (result.status === "failed") {
         stopPolling(); display(ui["progress-section"], false); display(ui["poll-button"], false); display(ui["results"], false);
-        setBadge("Ошибка", "failed"); ui["status-title"].textContent = "Не удалось завершить анализ";
-        ui["status-description"].textContent = "Итог не сформирован. Проверьте ошибку и загрузите видео снова, когда сервис будет готов.";
+        setBadge("Ошибка", "failed"); setText(ui["status-title"], "Не удалось завершить анализ");
+        setText(ui["status-description"], "Итог не сформирован. Проверьте ошибку и загрузите видео снова, когда сервис будет готов.");
         const error = metadata.error?.message || metadata.error || metadata.details?.error || "Обработчик сообщил об ошибке анализа.";
         message(ui["poll-error"], typeof error === "string" ? error : "Обработчик сообщил об ошибке анализа.");
         checkHealth();
@@ -416,8 +418,8 @@
     } catch (error) {
       if (error.name === "AbortError" || generation !== pollGeneration) return;
       stopPolling(); display(ui["poll-button"], true);
-      ui["status-title"].textContent = "Обновления приостановлены";
-      ui["status-description"].textContent = "Анализ на сервере может продолжаться. Возобновите обновления, чтобы получить результат.";
+      setText(ui["status-title"], "Обновления приостановлены");
+      setText(ui["status-description"], "Анализ на сервере может продолжаться. Возобновите обновления, чтобы получить результат.");
       message(ui["poll-error"], error.message); if (error.status === 401) ui["api-key"].focus();
     }
   }
@@ -547,7 +549,7 @@
       if (typeof entry.timecode_sec === "number" && Number.isFinite(entry.timecode_sec) && entry.timecode_sec >= 0) {
         const time = node("button", "time-button", `▶ ${formatTime(entry.timecode_sec)}`);
         time.type = "button";
-        time.setAttribute("aria-label", `Перейти к неподтверждённому наблюдению: ${formatTime(entry.timecode_sec)}`);
+        setAttr(time, "aria-label", `Перейти к неподтверждённому наблюдению: ${formatTime(entry.timecode_sec)}`);
         time.addEventListener("click", () => seek(entry.timecode_sec));
         heading.append(time);
       }
@@ -555,13 +557,13 @@
       card.append(node("p", "review-item-message", reviewExplanation(entry)));
       if (entry.visual_scenario_supported === true && typeof entry.observed_action === "string" && entry.observed_action.trim()) {
         const observation = node("p", "review-observation");
-        observation.append(node("strong", "", "Исходное наблюдение модели: "), document.createTextNode(entry.observed_action));
+        observation.append(node("strong", "", "Исходное наблюдение модели: "), textNode(entry.observed_action, false));
         card.append(observation);
       }
       return card;
     });
     ui["review-queue"].replaceChildren(...cards);
-    ui["review-queue-count"].textContent = `${entries.length} ${entries.length === 1 ? "объект" : "объектов"}`;
+    setText(ui["review-queue-count"], `${entries.length} ${entries.length === 1 ? "объект" : "объектов"}`);
     display(ui["review-queue-section"], entries.length > 0);
   }
   function resetDetections() {
@@ -592,7 +594,7 @@
     // Exact source-frame matches only. A sampled box must never become a track.
     const matches = detections.filter(item => Math.abs(item.timestamp_sec - time) <= .001);
     const shown = sourceUrl && ui["show-detections"].checked && matches.length && video.videoWidth > 0 && video.videoHeight > 0;
-    ui["overlay-status"].textContent = !ui["show-detections"].checked ? "Рамки скрыты" : matches.length ? matches.length + " найденных объектов в " + sampleTime(time) : "Этот момент не анализировался: рамок нет";
+    setText(ui["overlay-status"], !ui["show-detections"].checked ? "Рамки скрыты" : matches.length ? matches.length + " найденных объектов в " + sampleTime(time) : "Этот момент не анализировался: рамок нет");
     overlay.replaceChildren(); display(overlay, Boolean(shown));
     if (!shown) return;
     const scale = Math.min(video.clientWidth / video.videoWidth, video.clientHeight / video.videoHeight);
@@ -626,28 +628,28 @@
       const card = node("article", "detection-card"), top = node("div", "detection-card-heading");
       top.append(node("h4", "", item.label), node("span", "detection-confidence", confidenceText(item.confidence)));
       const time = node("button", "time-button", "▶ " + sampleTime(item.timestamp_sec)); time.type = "button";
-      time.setAttribute("aria-label", "Перейти к " + item.label + " в " + sampleTime(item.timestamp_sec));
+      setAttr(time, "aria-label", "Перейти к " + item.label + " в " + sampleTime(item.timestamp_sec));
       time.addEventListener("click", () => seek(item.timestamp_sec));
       card.append(top, node("p", "detection-kind", friendly(item.kind || "видимый предмет") + " · оценка модели"), time);
       const filename = item.evidence_frame?.filename;
       if (typeof filename === "string" && filename && !/[\\/]/.test(filename) && filename !== "." && filename !== "..") {
         const frame = node("div", "detection-frame"), image = node("img"), state = node("p", "detection-frame-state", "Загружаем исходный кадр…");
-        image.alt = item.label + " в исходном кадре: " + sampleTime(item.timestamp_sec);
+        setAttr(image, "alt", item.label + " в исходном кадре: " + sampleTime(item.timestamp_sec));
         display(image, false); frame.append(image); card.append(frame, state);
         image.addEventListener("load", () => { display(image, true); frame.append(detectionBox(item)); display(state, false); });
-        image.addEventListener("error", () => { state.textContent = "Не удалось показать кадр. Откройте соответствующий момент видео."; });
+        image.addEventListener("error", () => { setText(state, "Не удалось показать кадр. Откройте соответствующий момент видео."); });
         imageFor(filename).then(url => { if (url && generation === detectionGeneration) image.src = url; }).catch(error => {
-          if (error.name !== "AbortError" && generation === detectionGeneration) state.textContent = "Исходный кадр недоступен. Откройте соответствующий момент видео.";
+          if (error.name !== "AbortError" && generation === detectionGeneration) setText(state, "Исходный кадр недоступен. Откройте соответствующий момент видео.");
         });
       } else card.append(node("p", "detection-frame-state", "Предпросмотр кадра недоступен. Откройте соответствующий момент видео."));
       ui["detections"].append(card);
     }
     shown = Math.min(detections.length, shown + 24);
-    more.textContent = "Ещё найденные объекты (" + shown + " из " + detections.length + ")";
+    setText(more, "Ещё найденные объекты (" + shown + " из " + detections.length + ")");
     display(more, shown < detections.length); ui["detections"].append(more);
     };
     more.addEventListener("click", appendPage); appendPage();
-    ui["detection-count"].textContent = detections.length + " найденных " + (detections.length === 1 ? "объект" : "объектов");
+    setText(ui["detection-count"], detections.length + " найденных " + (detections.length === 1 ? "объект" : "объектов"));
     if (Array.isArray(supplied) && !detections.length) ui["detections"].append(node("p", "detection-frame-state", "В проанализированных кадрах объекты не локализованы. Это не доказывает их отсутствие."));
     display(ui["detections-section"], Array.isArray(supplied)); display(ui["detection-controls"], detections.length > 0);
     refreshDetectionOverlay();
@@ -776,7 +778,7 @@
   }
   function justificationNode(items) {
     const description = node("p", "case-justification");
-    description.append(node("strong", "", "Обоснование — "), document.createTextNode(caseJustification(items)));
+    description.append(node("strong", "", "Обоснование — "), textNode(caseJustification(items)));
     return description;
   }
   function appendCaseDetails(target, item) {
@@ -793,7 +795,7 @@
           const moments = node("span", "check-evidence");
           for (const ref of refs) {
             const time = node("button", "text-button", sampleTime(ref.timestamp_sec)); time.type = "button";
-            time.setAttribute("aria-label", "Перейти к доказательству: " + friendly(check.name) + " в " + sampleTime(ref.timestamp_sec));
+            setAttr(time, "aria-label", "Перейти к доказательству: " + friendly(check.name) + " в " + sampleTime(ref.timestamp_sec));
             time.addEventListener("click", () => seek(ref.timestamp_sec)); moments.append(time);
           }
           label.append(moments);
@@ -802,7 +804,7 @@
       }
       target.append(list);
     }
-    if (reasons.length) { const list = node("ul", "case-reasons"); list.append(...reasons.map(reason => node("li", "", /[А-Яа-яЁё]/.test(reason) ? reason : reviewExplanation(item)))); target.append(list); }
+    if (reasons.length) { const list = node("ul", "case-reasons"); list.append(...reasons.map(reason => node("li", "", /[А-Яа-яЁё]/.test(reason) ? reason : reviewExplanation(item), !/[А-Яа-яЁё]/.test(reason)))); target.append(list); }
     if (!checks.length && !reasons.length) target.append(node("p", "case-observation", "Дополнительные сведения о проверке не сохранены."));
   }
   function renderCaseDecisions(metadata, result) {
@@ -810,11 +812,15 @@
     for (const group of allCaseGroups) group.key = group.items.map(item => item.case_id || String(reviewCases(metadata, result).indexOf(item))).join("|");
     for (const button of ui["case-filters"].querySelectorAll("button")) {
       const count = button.dataset.filter === "all" ? allCaseGroups.length : allCaseGroups.filter(group => group.status === button.dataset.filter).length;
-      button.querySelector("span").textContent = count;
+      setText(button.querySelector("span"), count);
       button.setAttribute("aria-pressed", String(caseFilter === button.dataset.filter));
     }
     const query = ui["case-search"].value.trim().toLocaleLowerCase("ru");
-    const cases = allCaseGroups.filter(group => (caseFilter === "all" || group.status === caseFilter) && (!query || (caseTitle(group.items[0].type_id) + " " + caseJustification(group.items)).toLocaleLowerCase("ru").includes(query)));
+    const cases = allCaseGroups.filter(group => {
+      const source = caseTitle(group.items[0].type_id) + " " + caseJustification(group.items);
+      const english = l10n.english(caseTitle(group.items[0].type_id)) + " " + l10n.english(caseJustification(group.items));
+      return (caseFilter === "all" || group.status === caseFilter) && (!query || (source + " " + english).toLocaleLowerCase("ru").includes(query));
+    });
     visibleCaseGroups = cases;
     display(ui["case-empty"], !cases.length);
     ui["case-decisions"].replaceChildren(...cases.flatMap((group, index) => {
@@ -831,7 +837,7 @@
       const labels = {confirmed:"Подтверждено моделью",review_required:"Требует проверки",rejected:"Недостаточно данных"};
       const outcome = node("td", "case-outcome"), probability = node("td", "case-probability"), moment = node("td", "case-time"), detailCell = node("td", "case-detail-cell");
       for (const [cell, label, column] of [[outcome,"Модель","model"],[probability,"Оценка модели","estimate"],[moment,"Время","time"],[detailCell,"Подробности","details"]]) {
-        cell.dataset.label = label; cell.setAttribute("role", "cell"); cell.setAttribute("headers", "case-col-" + column + " " + name.id);
+        setAttr(cell, "data-label", label); cell.setAttribute("role", "cell"); cell.setAttribute("headers", "case-col-" + column + " " + name.id);
       }
       const active = needsCaseReview(item), supported = item.status === "confirmed";
       outcome.append(node("span", "case-status " + (supported ? "confirmed" : active ? "pending" : "rejected"), supported ? labels.confirmed : active ? labels.review_required : rejectedLabel(item)));
@@ -842,7 +848,7 @@
       const estimate = low === high ? low : low + "–" + high;
       probability.append(node("span", "case-probability-value", estimate === null ? "Нет оценки" : estimate));
       if (estimate !== null) {
-        probability.title = repeated ? "Диапазон отдельных некалиброванных оценок; не общая вероятность за интервал." : "Некалиброванная оценка модели для указанной проверки, не измеренная вероятность.";
+        setAttr(probability, "title", repeated ? "Диапазон отдельных некалиброванных оценок; не общая вероятность за интервал." : "Некалиброванная оценка модели для указанной проверки, не измеренная вероятность.");
         const scope = caseProbabilityScope(item);
         if (scope) probability.append(node("span", "case-probability-scope", scope));
         if (repeated) probability.append(node("span", "case-probability-scope", estimates.length < group.items.length ? estimates.length + " из " + group.items.length + " оценено" : "По отдельным наблюдениям"));
@@ -852,10 +858,10 @@
         const time = node("button", "time-button" + (range ? " case-time-range" : "")); time.type = "button";
         time.append(node("span", "", "▶ " + formatTime(group.start_sec)));
         if (range) time.append(node("span", "", "–" + formatTime(group.end_sec)));
-        time.setAttribute("aria-label", "Перейти к " + caseTitle(item.type_id) + " в " + sampleTime(group.start_sec) + (range ? "; наблюдения до " + sampleTime(group.end_sec) : ""));
-        if (range) time.title = "Диапазон наблюдений. Переход к первому кадру; отдельные моменты — в подробностях.";
+        setAttr(time, "aria-label", "Перейти к " + caseTitle(item.type_id) + " в " + sampleTime(group.start_sec) + (range ? "; наблюдения до " + sampleTime(group.end_sec) : ""));
+        if (range) setAttr(time, "title", "Диапазон наблюдений. Переход к первому кадру; отдельные моменты — в подробностях.");
         time.addEventListener("click", () => selectCase(group.key)); moment.append(time);
-      } else moment.textContent = "—";
+      } else setText(moment, "—");
       const corrected = groupDecisions(group);
       if (corrected.length && corrected.every(value => value && validCaseTime(value.start_sec) && validCaseTime(value.end_sec) && value.start_sec === corrected[0].start_sec && value.end_sec === corrected[0].end_sec)) moment.append(node("span", "human-interval", "Человек: " + formatTime(corrected[0].start_sec) + "–" + formatTime(corrected[0].end_sec)));
       const detail = node("details", "case-details");
@@ -870,7 +876,7 @@
         for (const member of group.items) {
           const occurrence = node("section", "case-occurrence"), heading = node("h4", "case-occurrence-heading");
           const time = node("button", "time-button", "▶ " + sampleTime(member.timecode_sec)); time.type = "button";
-          time.setAttribute("aria-label", "Перейти к наблюдению: " + caseTitle(member.type_id) + " в " + sampleTime(member.timecode_sec));
+          setAttr(time, "aria-label", "Перейти к наблюдению: " + caseTitle(member.type_id) + " в " + sampleTime(member.timecode_sec));
           time.addEventListener("click", () => seek(member.timecode_sec)); heading.append(time);
           const estimate = confidenceText(member.probability), scope = caseProbabilityScope(member);
           heading.append(node("span", "case-occurrence-probability", estimate === null ? "Нет оценки" : estimate + (scope ? " · " + scope : "")));
@@ -882,7 +888,7 @@
       detailRow.append(detailBody);
       return [card, detailRow];
     }));
-    ui["case-decision-count"].textContent = cases.length + (cases.length === 1 ? " проверка" : " проверок");
+    setText(ui["case-decision-count"], cases.length + (cases.length === 1 ? " проверка" : " проверок"));
     display(ui["case-decision-section"], allCaseGroups.length > 0);
     renderTimeline();
     if (selectedCaseKey && !cases.some(group => group.key === selectedCaseKey)) selectedCaseKey = null;
@@ -895,7 +901,7 @@
   }
   function markReviewDirty() {
     reviewDirty = true;
-    ui["review-save-status"].textContent = "Есть несохранённые изменения";
+    setText(ui["review-save-status"], "Есть несохранённые изменения");
     ui["reviewer-section"].classList.add("has-unsaved");
     syncSubmit();
   }
@@ -909,13 +915,13 @@
     ui["download-report"].disabled = Boolean(metadata.details_unavailable);
     for (const id of ["reviewer-name","review-camera","review-session","review-source-group","review-coverage","save-review-meta"]) ui[id].disabled = !available;
     if (!available) {
-      reviewState = null; ui["review-save-status"].textContent = "Сохранение решений недоступно для этой версии сервера. Обновите сервер и повторно откройте анализ."; syncSubmit(); return;
+      reviewState = null; setText(ui["review-save-status"], "Сохранение решений недоступно для этой версии сервера. Обновите сервер и повторно откройте анализ."); syncSubmit(); return;
     }
     reviewState = structuredClone(metadata.review_state);
     ui["reviewer-name"].value = reviewState.reviewer || ""; ui["review-camera"].value = reviewState.camera_id || "";
     ui["review-session"].value = reviewState.session_id || ""; ui["review-source-group"].value = reviewState.source_group || ""; ui["review-coverage"].checked = reviewState.coverage_complete === true;
     reviewDirty = false; reviewDrafts.clear(); pendingManualId = null; manualFormDirty = false; ui["missed-event-form"].reset(); ui["reviewer-section"].classList.remove("has-unsaved"); syncSubmit();
-    ui["review-save-status"].textContent = reviewState.revision ? "Сохранено · версия " + reviewState.revision : "Решения проверяющего ещё не сохранены";
+    setText(ui["review-save-status"], reviewState.revision ? "Сохранено · версия " + reviewState.revision : "Решения проверяющего ещё не сохранены");
     display(ui["reload-review"], false); message(ui["review-error"], ""); renderMissedEvents();
   }
   function groupDecisions(group) {
@@ -937,16 +943,16 @@
     const choices = node("div", "review-decision-choices");
     for (const [value,label] of [["confirmed","Подтвердить"],["dismissed","Отклонить"],["uncertain","Недостаточно данных"]]) {
       const choice = node("label", "review-decision-choice"), input = node("input"); input.type = "radio"; input.name = "human-decision-" + group.order; input.value = value; input.checked = saved.decision === value; input.required = true;
-      choice.append(input, document.createTextNode(label)); choices.append(choice);
+      choice.append(input, textNode(label)); choices.append(choice);
     }
     const times = node("div", "review-interval");
     const timeInput = (label,value,name) => { const wrap = node("label", "", label), input = node("input"); input.type = "number"; input.min = "0"; input.step = "0.01"; input.name = name; input.value = value ?? ""; wrap.append(input); times.append(wrap); return input; };
     const start = timeInput("Начало, сек.",saved.start_sec,"start_sec"), end = timeInput("Конец, сек.",saved.end_sec,"end_sec");
-    const commentLabel = node("label", "", "Комментарий проверяющего"), comment = node("textarea"); comment.name = "comment"; comment.maxLength = 2000; comment.rows = 2; comment.placeholder = "Кратко опишите наблюдаемое действие и основание решения"; comment.value = saved.comment || ""; commentLabel.append(comment);
+    const commentLabel = node("label", "", "Комментарий проверяющего"), comment = node("textarea"); comment.name = "comment"; comment.maxLength = 2000; comment.rows = 2; setAttr(comment, "placeholder", "Кратко опишите наблюдаемое действие и основание решения"); comment.value = saved.comment || ""; commentLabel.append(comment);
     const save = node("button", "button button-secondary", "Сохранить решение"), next = node("button", "text-button", "Следующий случай →"); save.type = "submit"; next.type = "button"; next.addEventListener("click", nextCase);
     const status = node("span", "editor-state", reviewDrafts.has(group.key) ? "Не сохранено" : "");
     const values = () => ({decision:editor.querySelector("input[type=radio]:checked")?.value || "",comment:comment.value.trim(),start_sec:start.value === "" ? null : Number(start.value),end_sec:end.value === "" ? null : Number(end.value)});
-    editor.addEventListener("input", () => { reviewDrafts.set(group.key,values()); markReviewDirty(); status.textContent = "Не сохранено"; });
+    editor.addEventListener("input", () => { reviewDrafts.set(group.key,values()); markReviewDirty(); setText(status, "Не сохранено"); });
     editor.addEventListener("submit", async event => {
       event.preventDefault(); const draft = values();
       if (!draft.decision) return;
@@ -976,7 +982,7 @@
     next.decisions = [...decisions.values()];
     const job = currentJob; reviewSaving = true; syncSubmit();
     const locked = [...document.querySelectorAll("#api-key,#key-visibility,#reviewer-section input,#reviewer-section button,#case-filters button,#case-search,.review-editor input,.review-editor textarea,.review-editor button,#missed-event-form input,#missed-event-form select,#missed-event-form textarea,#missed-event-form button,#open-job-form button,#video-file,#remove-file,#history-items button")];
-    locked.forEach(element => { element.disabled = true; }); ui["review-save-status"].textContent = "Сохраняем…"; message(ui["review-error"], "");
+    locked.forEach(element => { element.disabled = true; }); setText(ui["review-save-status"], "Сохраняем…"); message(ui["review-error"], "");
     try {
       const saved = await json(`/api/ui/jobs/${encodeURIComponent(job)}/review`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(next)});
       if (job !== currentJob) return false;
@@ -984,7 +990,7 @@
       lastDetails.review_state = saved; initializeReview(lastDetails); renderCaseDecisions(lastDetails,lastResult); loadHistory(); return true;
     } catch (error) {
       if (job !== currentJob) return false;
-      ui["review-save-status"].textContent = "Изменения не сохранены";
+      setText(ui["review-save-status"], "Изменения не сохранены");
       message(ui["review-error"], error.status === 409 ? "Сохранённая версия изменилась в другой вкладке. Ваши изменения остаются на экране. Загрузите сохранённую версию перед повторной проверкой." : "Не удалось сохранить. " + error.message);
       display(ui["reload-review"], error.status === 409); return false;
     } finally { reviewSaving = false; locked.forEach(element => { element.disabled = false; }); ui["save-review-meta"].disabled = !reviewState; syncSubmit(); }
@@ -992,7 +998,7 @@
   function renderMissedEvents() {
     ui["missed-events"].replaceChildren(...(reviewState?.missed_events || []).map(event => {
       const row = node("li", "missed-event"), jump = node("button", "text-button", formatTime(event.start_sec) + "–" + formatTime(event.end_sec)); jump.type = "button"; jump.addEventListener("click", () => seek(event.start_sec));
-      row.append(node("strong", "", caseTitle(event.type_id)), document.createTextNode(" · "),jump,node("p", "", event.comment)); return row;
+      row.append(node("strong", "", caseTitle(event.type_id)), textNode(" · "),jump,node("p", "", event.comment, false)); return row;
     }));
   }
   function selectCase(key, move = true) {
@@ -1003,7 +1009,7 @@
     const group = allCaseGroups.find(value => value.key === key); selectedCaseKey = group?.key || null;
     for (const row of ui["case-decisions"].querySelectorAll(".case-card")) { const selected = row.dataset.caseKey === selectedCaseKey; row.classList.toggle("is-selected",selected); row.setAttribute("aria-selected",String(selected)); }
     for (const marker of ui["event-timeline"].querySelectorAll("button")) marker.setAttribute("aria-pressed",String(marker.dataset.caseKey === selectedCaseKey));
-    ui["selected-case-label"].textContent = group ? caseTitle(group.items[0].type_id) : "Выберите событие";
+    setText(ui["selected-case-label"], group ? caseTitle(group.items[0].type_id) : "Выберите событие");
     if (group?.start_sec !== null && group) {
       const interval = formatTime(group.start_sec) + (group.end_sec > group.start_sec ? "–" + formatTime(group.end_sec) : "");
       ui["selected-case-label"].append(node("span", "event-selection-time", interval + (group.items.length > 1 ? " · диапазон наблюдений" : " · выбранное событие")));
@@ -1021,13 +1027,13 @@
     const duration = lastDetails.details?.coverage?.duration_sec;
     const max = validCaseTime(duration) && duration > 0 ? duration : Math.max(1,...allCaseGroups.map(group => group.end_sec || 0));
     const track = node("div", "event-track"), axis = node("div", "event-time-axis"), legend = node("div", "event-legend");
-    axis.setAttribute("aria-label", "Время от начала видео");
+    setAttr(axis, "aria-label", "Время от начала видео");
     for (const timestamp of [0,max/2,max]) axis.append(node("span", "", formatTime(timestamp)));
     for (const [status,label] of [["review_required","Требует проверки"],["confirmed","Подтверждено моделью"],["rejected","Другие результаты"]]) {
       const groups = allCaseGroups.filter(group => group.start_sec !== null && group.status === status).sort((a,b) => a.start_sec-b.start_sec || a.end_sec-b.end_sec);
       if (!groups.length) continue;
       const lane = node("div", "event-lane " + status), laneTrack = node("div", "event-lane-track");
-      lane.setAttribute("role", "group"); lane.setAttribute("aria-label", label);
+      lane.setAttribute("role", "group"); setAttr(lane, "aria-label", label);
       const rowEnds = [];
       for (const group of groups) {
         const start = Math.min(100,Math.max(0,group.start_sec/max*100)), end = Math.min(100,Math.max(start,group.end_sec/max*100));
@@ -1039,14 +1045,14 @@
         const marker = node("button", "event-marker " + status + (end > start ? " is-range" : "")); marker.type = "button"; marker.dataset.caseKey = group.key;
         marker.style.left = start + "%"; marker.style.width = (end-start) + "%"; marker.style.top = row*24+8 + "px";
         const interval = formatTime(group.start_sec) + (group.end_sec > group.start_sec ? "–" + formatTime(group.end_sec) : "");
-        marker.title = caseTitle(group.items[0].type_id) + " · " + interval + " · " + label + (group.items.length > 1 ? " · диапазон наблюдений" : "");
-        marker.setAttribute("aria-label", marker.title); marker.setAttribute("aria-pressed",String(group.key === selectedCaseKey));
+        setAttr(marker, "title", caseTitle(group.items[0].type_id) + " · " + interval + " · " + label + (group.items.length > 1 ? " · диапазон наблюдений" : ""));
+        setAttr(marker, "aria-label", l10n.sourceAttribute(marker, "title")); marker.setAttribute("aria-pressed",String(group.key === selectedCaseKey));
         const dot = node("span", "event-marker-dot"); dot.setAttribute("aria-hidden", "true"); marker.append(dot);
         marker.addEventListener("click",() => selectCase(group.key)); laneTrack.append(marker);
       }
       laneTrack.style.height = Math.max(28,rowEnds.length*24+12) + "px"; lane.append(laneTrack); track.append(lane);
       const item = node("span", "event-legend-item"), dot = node("span", "event-legend-dot " + status); dot.setAttribute("aria-hidden", "true");
-      item.append(dot,document.createTextNode(label + " · " + groups.length)); legend.append(item);
+      item.append(dot,textNode(label + " · " + groups.length)); legend.append(item);
     }
     ui["event-timeline"].replaceChildren(track,axis,legend);
     display(ui["event-navigation"],allCaseGroups.length > 0);
@@ -1054,8 +1060,8 @@
   function playContext() {
     const group = allCaseGroups.find(value => value.key === selectedCaseKey); if (!group || group.start_sec === null || !sourceUrl) return;
     const video = ui["source-video"], start = Math.max(0,group.start_sec-3), end = group.end_sec+3;
-    seek(start); contextEnd = Math.min(Number.isFinite(video.duration) ? video.duration : end,end); ui["play-context-status"].textContent = formatTime(start) + "–" + formatTime(contextEnd);
-    const playback = video.play(); if (playback?.catch) playback.catch(() => { ui["play-context-status"].textContent = "Нажмите воспроизведение в плеере"; });
+    seek(start); contextEnd = Math.min(Number.isFinite(video.duration) ? video.duration : end,end); setText(ui["play-context-status"], formatTime(start) + "–" + formatTime(contextEnd));
+    const playback = video.play(); if (playback?.catch) playback.catch(() => { setText(ui["play-context-status"], "Нажмите воспроизведение в плеере"); });
   }
   async function downloadReport() {
     if (!currentJob || !lastResult || reviewDirty || reviewSaving || reportDownloading || lastDetails.details_unavailable) { message(ui["report-error"], "Сохраните изменения перед скачиванием отчёта."); return; }
@@ -1072,12 +1078,12 @@
   function scheduleHistory() {
     clearTimeout(historyTimer); historyGeneration += 1;
     const available = Boolean(ui["api-key"].value.trim()); display(ui["history-section"],available);
-    ui["history-items"].replaceChildren(); ui["history-status"].textContent = ""; display(ui["history-more"],false);
+    ui["history-items"].replaceChildren(); setText(ui["history-status"], ""); display(ui["history-more"],false);
     if (available) historyTimer = setTimeout(() => loadHistory(),400);
   }
   async function loadHistory(append = false) {
     if (!ui["api-key"].value.trim()) return;
-    const generation = ++historyGeneration, offset = append ? historyOffset : 0; ui["history-status"].textContent = "Загружаем…";
+    const generation = ++historyGeneration, offset = append ? historyOffset : 0; setText(ui["history-status"], "Загружаем…");
     try {
       const history = await json(`/api/ui/history?query=${encodeURIComponent(ui["history-search"].value.trim())}&limit=20&offset=${offset}`);
       if (generation !== historyGeneration) return;
@@ -1086,18 +1092,18 @@
         if (typeof item.job_id !== "string") continue;
         const open = node("button", "history-item"); open.type = "button";
         const states = {done:"Готово",processing:"Обработка",failed:"Ошибка"};
-        open.append(node("strong", "",item.original_name || "Видео без названия"),node("span", "",(states[item.status] || "Статус неизвестен") + (item.review_revision ? " · проверка сохранена" : " · без решения человека")));
+        open.append(node("strong", "",item.original_name || "Видео без названия", !item.original_name),node("span", "",(states[item.status] || "Статус неизвестен") + (item.review_revision ? " · проверка сохранена" : " · без решения человека")));
         open.addEventListener("click", () => beginJob(item.job_id)); ui["history-items"].append(open);
       }
       historyOffset = offset+items.length; historyTotal = Number.isSafeInteger(history.total) ? history.total : historyOffset;
-      ui["history-status"].textContent = historyTotal ? "Найдено: " + historyTotal : "Сохранённых анализов нет"; display(ui["history-more"],historyOffset < historyTotal);
-    } catch(error) { if (generation === historyGeneration) ui["history-status"].textContent = "История недоступна. " + error.message; }
+      setText(ui["history-status"], historyTotal ? "Найдено: " + historyTotal : "Сохранённых анализов нет"); display(ui["history-more"],historyOffset < historyTotal);
+    } catch(error) { if (generation === historyGeneration) setText(ui["history-status"], "История недоступна. " + error.message); }
   }
   async function loadQuality() {
-    const generation = ++qualityGeneration; ui["quality-status"].textContent = "Загружаем проверенную разметку…";
+    const generation = ++qualityGeneration; setText(ui["quality-status"], "Загружаем проверенную разметку…");
     try {
       const data = await json("/api/ui/quality"); if (generation !== qualityGeneration) return;
-      ui["quality-status"].textContent = data.status === "no_reviewed_labels" ? "Проверенной разметки пока недостаточно для оценки качества." : "Предварительные метрики по сохранённым решениям человека";
+      setText(ui["quality-status"], data.status === "no_reviewed_labels" ? "Проверенной разметки пока недостаточно для оценки качества." : "Предварительные метрики по сохранённым решениям человека");
       const records = data.records || {}, grouping = data.grouping || {};
       ui["quality-summary"].replaceChildren(node("p", "", "Анализов с разметкой: " + (records.with_review || 0) + ". Полностью проверено: " + (records.eligible_complete_coverage || 0) + "."),node("p", "", "Исходных групп: " + (grouping.source_families || 0) + "; без группы: " + (grouping.unknown_group_records || 0) + ". Варианты одного исходного видео должны оставаться в одной выборке."));
       const rate = value => typeof value === "number" && Number.isFinite(value) ? (value*100).toFixed(1) + "%" : "Недостаточно данных";
@@ -1108,7 +1114,7 @@
       }));
       const limitations = [...(Array.isArray(data.limitations) ? data.limitations : []),...(Array.isArray(grouping.leakage_warnings) ? grouping.leakage_warnings : [])].filter(value => typeof value === "string");
       ui["quality-limitations"].replaceChildren(...limitations.map(value => node("li", "",value)));
-    } catch(error) { if (generation === qualityGeneration) ui["quality-status"].textContent = "Метрики недоступны. " + error.message; }
+    } catch(error) { if (generation === qualityGeneration) setText(ui["quality-status"], "Метрики недоступны. " + error.message); }
   }
 
   function hasIncompleteVerification(metadata) {
@@ -1138,18 +1144,18 @@
     const flagged = events.length > 0;
     const verificationIncomplete = hasIncompleteVerification(metadata);
     display(ui["results"], true);
-    ui["status-title"].textContent = verificationIncomplete ? "Анализ не завершён полностью" : "Анализ завершён"; setBadge(verificationIncomplete ? "Не завершено" : "Завершено", verificationIncomplete ? "queued" : "done");
-    ui["status-description"].textContent = verificationIncomplete ? "Часть кандидатов не проверена за отведённое время." : "Результаты готовы.";
+    setText(ui["status-title"], verificationIncomplete ? "Анализ не завершён полностью" : "Анализ завершён"); setBadge(verificationIncomplete ? "Не завершено" : "Завершено", verificationIncomplete ? "queued" : "done");
+    setText(ui["status-description"], verificationIncomplete ? "Часть кандидатов не проверена за отведённое время." : "Результаты готовы.");
     const reviewRequired = !flagged && hasPendingReview(metadata);
     ui["verdict-card"].classList.toggle("flagged", flagged); ui["verdict-card"].classList.toggle("review-required", reviewRequired);
-    ui["verdict-icon"].textContent = flagged ? "!" : reviewRequired ? "?" : "✓";
-    ui["verdict-title"].textContent = flagged ? "Модель подтвердила нарушение" : reviewRequired ? "Требует проверки" : "Модель не подтвердила нарушений";
+    setText(ui["verdict-icon"], flagged ? "!" : reviewRequired ? "?" : "✓");
+    setText(ui["verdict-title"], flagged ? "Модель подтвердила нарушение" : reviewRequired ? "Требует проверки" : "Модель не подтвердила нарушений");
     const count = displayCaseGroups(reviewCases(metadata, result)).filter(group => group.status === "review_required").length;
-    ui["verdict-description"].textContent = flagged ? events.length + (events.length === 1 ? " событие требует проверки человеком." : " событий требуют проверки человеком.")
+    setText(ui["verdict-description"], flagged ? events.length + (events.length === 1 ? " событие требует проверки человеком." : " событий требуют проверки человеком.")
       : verificationIncomplete ? "Нарушение не подтверждено. Часть кандидатов не проверена за отведённое время."
       : reviewRequired ? "Нарушение не подтверждено. " + (count ? count + (count === 1 ? " случай требует проверки." : " случаев требуют проверки.") : "Подробности анализа требуют проверки.")
-      : "В проанализированных кадрах подтверждённое нарушение не найдено.";
-    ui["jury-verdict"].textContent = `Исходный итог API: ${flagged ? "violation" : "no_violation"} · подтверждено моделью: ${events.length}. Решения человека и рамки объектов сохраняются отдельно.`;
+      : "В проанализированных кадрах подтверждённое нарушение не найдено.");
+    setText(ui["jury-verdict"], `Исходный итог API: ${flagged ? "violation" : "no_violation"} · подтверждено моделью: ${events.length}. Решения человека и рамки объектов сохраняются отдельно.`);
     message(ui["details-warning"], metadata.details_unavailable ? "Подробности анализа не загрузились. Список проверок, найденные предметы, охват и наблюдения могут быть неполными. Повторите загрузку подробностей." : "");
     initializeReview(metadata); renderCaseDecisions(metadata, result); renderDetections(metadata);
     const notes = [...new Set(notesFor(metadata))];
@@ -1157,7 +1163,7 @@
     renderCoverage(metadata);
     renderAssessments(metadata);
     renderReviewQueue(metadata);
-    display(ui["findings-heading"], events.length > 0); ui["finding-count"].textContent = `${events.length} ${events.length === 1 ? "событие" : "событий"}`;
+    display(ui["findings-heading"], events.length > 0); setText(ui["finding-count"], `${events.length} ${events.length === 1 ? "событие" : "событий"}`);
     const findings = metadata.details?.findings || metadata.findings || [];
     ui["findings"].replaceChildren(...events.map((event, index) => {
       const match = Array.isArray(findings) ? findings.find((finding) => (finding.type_id || finding.type) === event.type && Math.abs(Number(finding.timecode_sec ?? finding.timestamp_sec ?? finding.start_sec) - Number(event.timecode_sec)) < 3) || findings[index] || {} : {};
@@ -1170,7 +1176,7 @@
     const top = node("div", "finding-top"), heading = node("div");
     heading.append(node("p", "finding-index", `СОБЫТИЕ ${String(index + 1).padStart(2, "0")}`), node("h3", "", caseTitle(event.type)));
     if (policy) heading.append(node("p", "score-state", "Нарушение правила рабочего места"));
-    const time = node("button", "time-button", `▶ ${formatTime(event.timecode_sec)}`); time.type = "button"; time.setAttribute("aria-label", `Перейти в видео: ${formatTime(event.timecode_sec)}`); time.addEventListener("click", () => seek(event.timecode_sec));
+    const time = node("button", "time-button", `▶ ${formatTime(event.timecode_sec)}`); time.type = "button"; setAttr(time, "aria-label", `Перейти в видео: ${formatTime(event.timecode_sec)}`); time.addEventListener("click", () => seek(event.timecode_sec));
     top.append(heading, time);
     const matched = reviewCases(lastDetails, lastResult).filter(item => item.type_id === event.type && validCaseTime(item.timecode_sec) && Math.abs(item.timecode_sec - event.timecode_sec) < 3);
     card.append(top, node("p", "finding-description", caseJustification(matched.length ? [matched[0]] : [{status:"confirmed",checks:[]}])));
@@ -1180,7 +1186,7 @@
       const raw = String(frame.image_base64 || "").replace(/^data:image\/jpe?g;base64,/i, "").replace(/\s/g, "");
       if (!raw || raw.length > 24000000 || !/^[A-Za-z0-9+/]+=*$/.test(raw)) continue;
       const button = node("button", "evidence-button"); button.type = "button";
-      const image = node("img"); image.src = `data:image/jpeg;base64,${raw}`; image.alt = `Кадр ${frameIndex + 1} события ${index + 1} в ${formatTime(frame.timestamp_sec)}`; image.loading = "lazy";
+      const image = node("img"); image.src = `data:image/jpeg;base64,${raw}`; setAttr(image, "alt", `Кадр ${frameIndex + 1} события ${index + 1} в ${formatTime(frame.timestamp_sec)}`); image.loading = "lazy";
       button.append(image, node("span", "", `${formatTime(frame.timestamp_sec)} · Кадр ${frameIndex + 1}`)); button.addEventListener("click", () => seek(frame.timestamp_sec));
       grid.append(button);
     }
@@ -1191,14 +1197,16 @@
     const url = safeRuleUrl(detail.rule_url || detail.source_url || rule.url || rule.source_url);
     if (ruleName || paragraph || url) {
       const box = node("div", "rule-box"), content = node("div");
-      content.append(node("strong", "", ruleName || (policy ? "Правило рабочего места от пользователя" : "Нормативное основание")));
+      content.append(node("strong", "", ruleName || (policy ? "Правило рабочего места от пользователя" : "Нормативное основание"), !ruleName));
       if (paragraph) content.append(node("p", "", `${policy ? "Раздел" : "Пункт"} ${paragraph}`));
-      if (detail.rule_explanation || rule.requirement) content.append(node("p", "", detail.rule_explanation || rule.requirement));
+      if (detail.rule_explanation || rule.requirement) content.append(node("p", "", detail.rule_explanation || rule.requirement, false));
       if (url) { const link = node("a", "", policy ? "Открыть правило рабочего места ↗" : "Открыть официальный источник ↗"); link.href = url; link.target = "_blank"; link.rel = "noopener noreferrer"; content.append(link); }
       box.append(node("span", "rule-symbol", "§"), content); card.append(box);
     }
     const uncertainty = detail.uncertainty || detail.visibility_note;
-    if (typeof uncertainty === "string" && uncertainty.trim()) card.append(node("p", "uncertainty", `Примечание: ${uncertainty}`));
+    if (typeof uncertainty === "string" && uncertainty.trim()) {
+      const note = node("p", "uncertainty"); note.append(textNode("Примечание: "), textNode(uncertainty, false)); card.append(note);
+    }
     return card;
   }
 
@@ -1209,7 +1217,7 @@
   ui["download-report"].addEventListener("click",downloadReport);
   ui["save-review-final"].addEventListener("click",async () => {
     message(ui["report-error"], "");
-    if (!await saveReviewState()) message(ui["report-error"], ui["review-error"].textContent || "Не удалось сохранить изменения. Проверьте введённые данные.");
+    if (!await saveReviewState()) message(ui["report-error"], l10n.sourceText(ui["review-error"]) || "Не удалось сохранить изменения. Проверьте введённые данные.");
   });
   ui["next-case"].addEventListener("click",nextCase); ui["play-context"].addEventListener("click",playContext);
   ui["reload-review"].addEventListener("click",async () => {
@@ -1228,7 +1236,7 @@
   ui["cancel-missed-event"].addEventListener("click",() => {
     if (reviewSaving) return; ui["missed-event-form"].reset(); manualFormDirty = false; pendingManualId = null;
     const meta = reviewMetadata(), changed = Object.keys(meta).some(key => meta[key] !== (reviewState?.[key] ?? (key === "coverage_complete" ? false : "")));
-    reviewDirty = reviewDrafts.size > 0 || changed; ui["reviewer-section"].classList.toggle("has-unsaved",reviewDirty); ui["review-save-status"].textContent = reviewDirty ? "Есть несохранённые изменения" : "Изменения отменены"; syncSubmit();
+    reviewDirty = reviewDrafts.size > 0 || changed; ui["reviewer-section"].classList.toggle("has-unsaved",reviewDirty); setText(ui["review-save-status"], reviewDirty ? "Есть несохранённые изменения" : "Изменения отменены"); syncSubmit();
   });
   ui["history-reload"].addEventListener("click",() => loadHistory()); ui["history-more"].addEventListener("click",() => loadHistory(true));
   ui["history-search"].addEventListener("input",() => { clearTimeout(historyTimer); historyGeneration += 1; historyTimer = setTimeout(() => loadHistory(),250); });
@@ -1239,7 +1247,7 @@
   ui["api-key"].addEventListener("input", () => { scheduleActiveJobRecovery(); syncSubmit(); scheduleCatalog(); scheduleHistory(); display(ui["quality-section"], Boolean(ui["api-key"].value.trim())); });
   ui["catalog-reload"].addEventListener("click", loadCatalog);
   byId("assessment-toggle")?.addEventListener("click", () => { showAllAssessments = !showAllAssessments; renderAssessments(lastDetails); });
-  ui["key-visibility"].addEventListener("click", () => { const shown = ui["api-key"].type === "password"; ui["api-key"].type = shown ? "text" : "password"; ui["key-visibility"].textContent = shown ? "Скрыть" : "Показать"; ui["key-visibility"].setAttribute("aria-label", shown ? "Скрыть ключ API" : "Показать ключ API"); ui["key-visibility"].setAttribute("aria-pressed", String(shown)); });
+  ui["key-visibility"].addEventListener("click", () => { const shown = ui["api-key"].type === "password"; ui["api-key"].type = shown ? "text" : "password"; setText(ui["key-visibility"], shown ? "Скрыть" : "Показать"); setAttr(ui["key-visibility"], "aria-label", shown ? "Скрыть ключ API" : "Показать ключ API"); ui["key-visibility"].setAttribute("aria-pressed", String(shown)); });
   ui["video-empty"].addEventListener("click", () => {
     if (reviewDirty || reviewSaving) { message(ui["review-error"], "Сохраните изменения проверки перед выбором другого видео."); ui["reviewer-section"].scrollIntoView({block:"center"}); return; }
     if (submitting || polling) { message(ui["form-error"], "Дождитесь текущего анализа или приостановите обновления перед выбором другого видео."); return; }
@@ -1273,8 +1281,8 @@
     if (id) { display(ui["poll-button"], true); beginJob(id); }
   });
   ui["poll-button"].addEventListener("click", () => {
-    if (polling) { stopPolling(); ui["status-title"].textContent = "Обновления приостановлены"; ui["status-description"].textContent = "Приостановлены обновления страницы. Анализ на сервере продолжается; возобновите обновления для получения результата."; }
-    else { ui["status-title"].textContent = "Проверяем статус анализа"; resumePolling(); }
+    if (polling) { stopPolling(); setText(ui["status-title"], "Обновления приостановлены"); setText(ui["status-description"], "Приостановлены обновления страницы. Анализ на сервере продолжается; возобновите обновления для получения результата."); }
+    else { setText(ui["status-title"], "Проверяем статус анализа"); resumePolling(); }
   });
   ui["source-video"].addEventListener("error", () => { if (sourceUrl) message(ui["video-error"], "Предпросмотр видео недоступен. Сохранённые кадры остаются доступны."); });
   ui["show-detections"].addEventListener("change", () => refreshDetectionOverlay());

@@ -79,7 +79,7 @@ async function assertFormControls(page,label) {
   });
   await page.route("**/*",async route=>{
    const request=route.request(),url=new URL(request.url());assert.equal(url.origin,origin,"Synthetic requests stay on the test origin");
-   if(["/","/app.js","/style.css"].includes(url.pathname))return route.fulfill({contentType:url.pathname.endsWith("js")?"text/javascript":url.pathname.endsWith("css")?"text/css":"text/html",body:fs.readFileSync(path.join(root,"web",url.pathname==="/"?"index.html":url.pathname.slice(1)))});
+   if(["/","/app.js","/style.css","/static/i18n.js","/static/i18n-catalog.js"].includes(url.pathname))return route.fulfill({contentType:url.pathname.endsWith("js")?"text/javascript":url.pathname.endsWith("css")?"text/css":"text/html",body:fs.readFileSync(path.join(root,"web",url.pathname==="/"?"index.html":path.basename(url.pathname)))});
    if(url.pathname==="/api/v1/health")return route.fulfill({json:{ready:true,busy:false}});
    assert.equal(request.headers()["x-api-key"],"responsive-test-key","Protected requests retain their authenticated header");
    if(url.pathname==="/api/v1/analyze"){analyzeRequests++;return route.fulfill({status:500,json:{detail:"Unexpected implicit upload"}});}

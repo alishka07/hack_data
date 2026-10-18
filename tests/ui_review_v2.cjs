@@ -136,8 +136,8 @@ const pageErrors = [];
       const url = new URL(route.request().url());
       assert.equal(url.origin,"http://forte-synthetic.test","All requests must stay on the synthetic origin");
       const pathname = url.pathname;
-      if (["/","/app.js","/style.css"].includes(pathname)) {
-        const filename = pathname === "/" ? "index.html" : pathname.slice(1);
+      if (["/","/app.js","/style.css","/static/i18n.js","/static/i18n-catalog.js"].includes(pathname)) {
+        const filename = pathname === "/" ? "index.html" : path.basename(pathname);
         return route.fulfill({status:200,contentType:filename.endsWith("js")?"text/javascript":filename.endsWith("css")?"text/css":"text/html",body:fs.readFileSync(path.join(root,"web",filename))});
       }
       if (pathname === "/api/v1/health") return route.fulfill({json:{worker_ready:true,status:"ready",busy:healthBusy}});

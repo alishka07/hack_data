@@ -532,7 +532,26 @@ textarea { resize: vertical; }
 #report-review-status { margin-top: 12px; font-size: 11px; overflow-wrap: anywhere; }
 .report-section .message { margin-top: 12px; }
 
+/* Keep the language choice available without moving the review workspace. */
+.topbar { gap: 20px; }
+.topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 20px; min-width: 0; }
+.language-switcher { display: inline-grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; flex: none; padding: 3px; border: 1px solid var(--border); border-radius: 11px; background: var(--soft); }
+.language-switcher button { min-height: 36px; padding: 8px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 650; line-height: 1.4; white-space: nowrap; }
+.language-switcher button:hover { color: var(--navy); background: var(--surface); }
+.language-switcher button[aria-pressed="true"] { background: var(--pink); color: #fff; box-shadow: 0 2px 6px #d90c6b18; }
+.language-switcher button:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; position: relative; z-index: 1; }
+
+@media (max-width: 760px) {
+  .topbar { height: auto; flex-wrap: wrap; align-items: center; padding-top: 12px; padding-bottom: 12px; gap: 10px; }
+  .topbar-actions { flex-basis: 100%; justify-content: space-between; gap: 12px; }
+  .topbar-actions .service-indicator { flex: 1; max-width: none; align-items: center; }
+  .topbar-actions .service-indicator .dot { margin-top: 0; }
+  .language-switcher button { min-height: 44px; padding: 9px 11px; }
+}
+
 @media (prefers-color-scheme: dark) {
+  .drop-zone { background: var(--soft); color: var(--navy); transition: border-color .15s; }
+  .button-secondary { background: #303044; color: var(--navy); border-color: #484459; transition: border-color .15s, transform .15s; }
   .event-lane.review_required::before, .event-legend-dot.review_required,
   .event-marker.review_required { background: #d4a052; }
   .event-lane.confirmed::before, .event-legend-dot.confirmed,

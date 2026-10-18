@@ -6,12 +6,20 @@
   <meta name="color-scheme" content="light dark">
   <title>Forte · Проверка кассы</title>
   <link rel="stylesheet" href="/style.css">
+  <script src="/static/i18n-catalog.js" defer></script>
+  <script src="/static/i18n.js" defer></script>
   <script src="/app.js" defer></script>
 </head>
 <body>
   <header class="topbar">
     <a href="/" class="brand" aria-label="Forte — проверка кассы"><span class="brand-mark" aria-hidden="true">f.</span><span>Forte<span class="brand-divider">/</span><span class="brand-product">Проверка кассы</span></span></a>
-    <div class="service-indicator" role="status"><span id="service-dot" class="dot"></span><span id="service-label">Проверяем сервис</span></div>
+    <div class="topbar-actions">
+      <div class="service-indicator" role="status"><span id="service-dot" class="dot"></span><span id="service-label">Проверяем сервис</span></div>
+      <div id="language-switcher" class="language-switcher" role="group" aria-label="Язык / Language" data-no-i18n>
+        <button type="button" data-language="ru" lang="ru" aria-pressed="true">Русский</button>
+        <button type="button" data-language="en" lang="en" aria-pressed="false">English</button>
+      </div>
+    </div>
   </header>
   <main>
     <section class="intro"><div><h1>Проверка работы кассы</h1><p class="intro-copy">Видео, доказательства и решения проверяющего в одном рабочем пространстве.</p></div></section>
