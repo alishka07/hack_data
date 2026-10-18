@@ -668,12 +668,83 @@
   function caseProbabilityScope(item) {
     return ({joint_checks:"All rule checks",action_only:"Visible action only",procedure_completion:"Procedure completed",event_occurrence:"Event occurs"})[item.probability_scope] || "";
   }
+  function caseObservationFacts(item) {
+    const checks = new Map();
+    for (const check of Array.isArray(item.checks) ? item.checks : []) {
+      if (!check || !["action", "context"].includes(check.stage) || typeof check.name !== "string") continue;
+      if (!checks.has(check.name)) checks.set(check.name, []);
+      checks.get(check.name).push(check);
+    }
+    const sources = name => {
+      const rows = checks.get(name);
+      if (!rows || rows.some(check => check.status !== "yes")) return new Set();
+      const perCheck = rows.map(check => new Set((Array.isArray(check.evidence_refs) ? check.evidence_refs : [])
+        .filter(ref => Number.isSafeInteger(ref?.source_index) && ref.source_index >= 0 && validCaseTime(ref.timestamp_sec))
+        .map(ref => ref.source_index + ":" + ref.timestamp_sec)));
+      return perCheck.some(refs => !refs.size) ? new Set() : new Set(perCheck.flatMap(refs => [...refs]));
+    };
+    const timestamp = ref => Number(ref.slice(ref.indexOf(":") + 1));
+    const temporalBlocked = Array.isArray(item.reason_codes) && item.reason_codes.some(code => ["source_timestamp_gap", "scene_change_context", "insufficient_before_after"].includes(code));
+    const sequence = refs => !temporalBlocked && new Set([...refs].map(ref => ref.split(":")[0])).size >= 2 && new Set([...refs].map(timestamp)).size >= 2;
+    const departures = ["actual_workstation_departure", "workstation_departure_observed", "workstation_departure"].map(sources).filter(sequence);
+    const afterDeparture = refs => refs.size && departures.some(before => Math.min(...[...refs].map(timestamp)) >= Math.max(...[...before].map(timestamp)));
+    // Curated descriptions report only source-linked positive checks. Labels,
+    // reason strings and unrestricted model prose cannot become observed facts.
+    const phrases = [
+      {family:"food",names:["food_item_visually_identified", "food_on_cashier_work_surface"],shared:true,text:"На рабочем столе видны продукты питания."},
+      {family:"food",names:["personal_food_on_work_table"],text:"На рабочем столе видны продукты питания."},
+      {family:"food",names:["food_item_visually_identified"],text:"В кадре видны продукты питания."},
+      {family:"object",names:["non_cash_object_visually_supported", "object_cash_area_relationship_visible"],shared:true,text:"В кассовой зоне виден предмет, не относящийся к наличным."},
+      {family:"object",names:["non_cash_object_visually_supported"],text:"В кадре виден предмет, не относящийся к наличным."},
+      {family:"departure",names:["actual_workstation_departure"],sequence:true,text:"Человек покидает рабочее место."},
+      {family:"departure",names:["workstation_departure_observed"],sequence:true,text:"Человек покидает рабочее место."},
+      {family:"departure",names:["workstation_departure"],sequence:true,text:"Человек покидает рабочее место."},
+      {family:"screen",names:["same_screen_visibly_on_after_departure"],text:afterDeparture(sources("same_screen_visibly_on_after_departure")) ? "После ухода человека экран виден включённым." : "Экран компьютера виден включённым."},
+      {family:"computer",names:["computer_at_workstation_identified"],text:"На рабочем месте виден компьютер."},
+      {family:"unattended",names:["workstation_unattended_after_departure"],text:afterDeparture(sources("workstation_unattended_after_departure")) ? "После ухода человека рабочее место видно без оператора." : "Рабочее место видно без оператора."},
+      {family:"cash",names:["cash_on_work_surface_observed"],text:"Вне контейнера видны предметы, похожие на банкноты."},
+      {family:"cash",names:["cash_outside_designated_storage"],text:"Наличные видны вне места хранения."},
+      {family:"handover",names:["cash_handover_observed"],text:"Видна передача предметов, похожих на банкноты."},
+      {family:"cash",names:["cash_acceptance_or_count_observed"],text:"Видна работа с предметами, похожими на банкноты."},
+      {family:"cash",names:["cash_handling_observed"],text:"Видна работа с предметами, похожими на банкноты."},
+      {family:"cash",names:["cash_processing_observed"],text:"Видна обработка предметов, похожих на банкноты."},
+      {family:"cash",names:["loose_cash_established"],text:"В кадре видны неупакованные наличные."},
+      {family:"client",names:["client_area_visible", "client_absence_visually_supported"],shared:true,text:"В обозреваемой клиентской зоне клиент не виден."},
+      {family:"client",names:["client_area_visible", "client_demonstrably_absent"],shared:true,text:"В обозреваемой клиентской зоне клиент не виден."},
+      {family:"key",names:["key_or_stamp_visually_supported"],text:"В кадре виден предмет, похожий на ключ или штамп."},
+      {family:"storage",names:["cash_storage_relationship_observed"],text:"У места хранения видны предметы, похожие на банкноты."},
+      {family:"storage",names:["storage_relationship_visible"],text:"Видно расположение предметов, похожих на банкноты."},
+      {family:"storage",names:["storage_container_visible"],text:"В кадре виден контейнер или место хранения."},
+      {family:"eating",names:["food_consumption_visibly_observed"],text:"Человек принимает пищу."}
+    ];
+    return phrases.filter(phrase => {
+      const refs = phrase.names.map(sources);
+      return refs.every(values => values.size) && (!phrase.sequence || refs.every(sequence))
+        && (!phrase.shared || [...refs[0]].some(ref => refs.every(values => values.has(ref))));
+    });
+  }
+  function caseJustification(items) {
+    const facts = items.map(caseObservationFacts);
+    const shared = facts[0].filter(fact => facts.every(rows => rows.some(other => other.text === fact.text)));
+    const families = new Set(), sentences = [];
+    for (const fact of shared) {
+      if (families.has(fact.family)) continue;
+      families.add(fact.family); sentences.push(fact.text);
+      if (sentences.length === 2) break;
+    }
+    return sentences.join(" ") || (items.length > 1 && facts.some(rows => rows.length)
+      ? "Наблюдения в этом диапазоне различаются; подробности — в «View»."
+      : items.every(item => item.status === "confirmed") ? "Для описания действия недостаточно сохранённых данных; проверьте кадры."
+      : "По доступным кадрам действие не подтверждено.");
+  }
+  function justificationNode(items) {
+    const description = node("p", "case-justification");
+    description.append(node("strong", "", "Обоснование — "), document.createTextNode(caseJustification(items)));
+    return description;
+  }
   function appendCaseDetails(target, item) {
-    const supported = item.status === "confirmed";
     const reasons = Array.isArray(item.reasons) ? item.reasons.filter(reason => typeof reason === "string" && reason.trim()) : [];
-    const hasObservation = (supported || item.visual_scenario_supported === true || item.action_decision === "supported")
-      && typeof item.observed_action === "string" && item.observed_action.trim();
-    if (hasObservation) target.append(node("p", "case-observation", item.observed_action));
+    target.append(justificationNode([item]));
     const checks = Array.isArray(item.checks) ? item.checks.filter(check => check && typeof check.name === "string") : [];
     if (checks.length) {
       const list = node("ul", "case-checks");
@@ -695,7 +766,7 @@
       target.append(list);
     }
     if (reasons.length) { const list = node("ul", "case-reasons"); list.append(...reasons.map(reason => node("li", "", reason))); target.append(list); }
-    if (!checks.length && !reasons.length && !hasObservation) target.append(node("p", "case-observation", "No additional check details were saved."));
+    if (!checks.length && !reasons.length) target.append(node("p", "case-observation", "No additional check details were saved."));
   }
   function renderCaseDecisions(metadata, result) {
     const cases = displayCaseGroups(reviewCases(metadata, result));
@@ -703,9 +774,7 @@
       const item = group.items[0], repeated = group.items.length > 1;
       const card = node("tr", "case-card"), name = node("th", "check-name", caseTitle(item.type_id));
       name.setAttribute("scope", "row");
-      const reasons = Array.isArray(item.reasons) ? item.reasons.filter(reason => typeof reason === "string" && reason.trim()) : [];
-      const short = reasons[0] || reviewExplanation(item);
-      if (short) name.append(node("p", "case-reason-short", short.length > 110 ? short.slice(0, 107) + "…" : short));
+      name.append(justificationNode(group.items));
       if (repeated) name.append(node("p", "case-observation-count", group.items.length + " observations"));
       const labels = {confirmed:"Violation",review_required:"Needs review",rejected:"Not supported"};
       const outcome = node("td"), probability = node("td", "case-probability"), moment = node("td", "case-time"), detailCell = node("td");

@@ -52,7 +52,9 @@ h1 { font-size: 30px; letter-spacing: -1px; }
 .case-probability-scope { display: block; margin-top: 4px; font-size: 10px; line-height: 1.4; color: var(--muted); }
 .case-results-table .case-card { border: 0; margin: 0; padding: 0; }
 .case-results-table .check-name { font-weight: 650; line-height: 1.5; overflow-wrap: anywhere; }
-.case-reason-short { margin-top: 5px; font-size: 10px; font-weight: 400; color: var(--muted); line-height: 1.5; }
+.case-justification { margin: 6px 0 0; font-size: 11px; font-weight: 400; color: var(--muted); line-height: 1.6; overflow-wrap: anywhere; }
+.case-justification strong { font-weight: 650; color: var(--navy); }
+.case-detail-body .case-justification { margin-bottom: 12px; }
 .case-results-table .case-status { display: inline-block; padding: 4px 6px; font-size: 10px; white-space: normal; }
 .case-results-table .time-button { margin: 0; padding: 5px 6px; font-size: 10px; }
 .case-details { font-size: 11px; color: var(--muted); }
@@ -134,7 +136,7 @@ footer { max-width: 1240px; padding: 18px max(3vw, 20px); }
   .case-results-table thead th:nth-child(3) { width: 21%; }
   .case-results-table thead th:nth-child(4) { width: 17%; }
   .case-results-table thead th:nth-child(5) { width: 13%; }
-  .case-reason-short { font-size: 9px; }
+  .check-name .case-justification { font-size: 10px; }
   .case-results-table .case-status { font-size: 9px; padding: 3px 4px; }
   .case-results-table .time-button { font-size: 9px; padding: 4px 2px; }
   .case-details { font-size: 10px; }

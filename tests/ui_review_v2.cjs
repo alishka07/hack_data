@@ -53,6 +53,7 @@ ids.probability = "01234567-0123-4123-8123-012345678906";
 ids.screen = "01234567-0123-4123-8123-012345678907";
 ids.grouped = "01234567-0123-4123-8123-012345678908";
 ids.groupedProbability = "01234567-0123-4123-8123-012345678909";
+ids.justification = "01234567-0123-4123-8123-012345678910";
 const probabilityDetails = {assessments:[{...assessments[0],item_id:"active_intake_departure",score:99,model_confidence:.99}],case_decision:{status:"review_required",cases:[
   ...[0,1,null,true,"0.9",NaN,-.01,1.01].map((probability,index) => ({...caseDecision.cases[0],episode_id:"separate-episode-" + index,timecode_sec:index,probability,probability_scope:index === 0 ? "event_occurrence" : "joint_checks"})),
   {...caseDecision.cases[0],episode_id:"procedure-episode",probability:.82,probability_scope:"procedure_completion"},
@@ -74,6 +75,20 @@ const groupedProbabilityDetails = {case_decision:{status:"review_required",cases
   {...groupedDetails.case_decision.cases[2],timecode_sec:12,probability:.95,probability_scope:"joint_checks"},
   {...groupedDetails.case_decision.cases[2],timecode_sec:null,probability:null},
   {...groupedDetails.case_decision.cases[2],timecode_sec:null,probability:null}
+]}};
+const justificationDetails = {case_decision:{status:"review_required",cases:[
+  {type_id:"active_intake_departure",episode_id:"source-backed",status:"review_required",requires_review:true,timecode_sec:1,action_decision:"supported",observed_action:'The employee stole money intentionally <img src=x onerror="window.__justificationInjected=true">',checks:[{stage:"action",name:"actual_workstation_departure",status:"yes",evidence_refs:[{source_index:15,timestamp_sec:.5},{source_index:30,timestamp_sec:1}]},{stage:"context",name:"unfinished_intake",status:"unknown",evidence_refs:[]}],reasons:["Speculative ownership and intention must not become justification."]},
+  {type_id:"active_intake_departure",episode_id:"no-citation",status:"review_required",requires_review:true,timecode_sec:2,action_decision:"supported",observed_action:"The employee stole money intentionally.",checks:[{stage:"action",name:"actual_workstation_departure",status:"yes",evidence_refs:[]}],reasons:[]},
+  {type_id:"active_intake_departure",episode_id:"invalid-citation",status:"review_required",requires_review:true,timecode_sec:3,action_decision:"supported",observed_action:"The employee stole money intentionally.",checks:[{stage:"action",name:"actual_workstation_departure",status:"yes",evidence_refs:[{source_index:90,timestamp_sec:null},{source_index:91,timestamp_sec:-1},{source_index:92,timestamp_sec:"3"}]}],reasons:[]},
+  {type_id:"active_intake_departure",episode_id:"unknown-check",status:"review_required",requires_review:true,timecode_sec:4,observed_action:"The employee stole money intentionally.",checks:[{stage:"action",name:"speculative_model_inference",status:"yes",evidence_refs:[{source_index:120,timestamp_sec:4}]}],reasons:[]},
+  {type_id:"active_intake_departure",episode_id:"invalid-source-index",status:"review_required",requires_review:true,timecode_sec:4.25,action_decision:"supported",observed_action:"The employee stole money intentionally.",checks:[{stage:"action",name:"actual_workstation_departure",status:"yes",evidence_refs:[{source_index:null,timestamp_sec:4.25},{source_index:-1,timestamp_sec:4.25},{source_index:1.5,timestamp_sec:4.25}]}],reasons:[]},
+  {type_id:"active_intake_departure",episode_id:"conflicting-checks",status:"review_required",requires_review:true,timecode_sec:4.5,action_decision:"supported",observed_action:"The employee stole money intentionally.",checks:[{stage:"action",name:"actual_workstation_departure",status:"yes",evidence_refs:[{source_index:135,timestamp_sec:4.5}]},{stage:"context",name:"actual_workstation_departure",status:"no",evidence_refs:[{source_index:135,timestamp_sec:4.5}]}],reasons:[]},
+  {type_id:"active_intake_departure",episode_id:"single-frame-motion",status:"review_required",requires_review:true,timecode_sec:4.75,action_decision:"supported",checks:[{stage:"action",name:"actual_workstation_departure",status:"yes",evidence_refs:[{source_index:142,timestamp_sec:4.75}]}],reasons:[]},
+  {type_id:"workstation_departure_screen_left_on",episode_id:"single-snapshot-screen",status:"review_required",requires_review:true,timecode_sec:4.8,checks:[{stage:"action",name:"workstation_departure_observed",status:"yes",evidence_refs:[{source_index:144,timestamp_sec:4.8}]},{stage:"action",name:"same_screen_visibly_on_after_departure",status:"yes",evidence_refs:[{source_index:144,timestamp_sec:4.8}]}],reasons:[]},
+  {type_id:"active_intake_departure",episode_id:"source-gap",status:"review_required",requires_review:true,timecode_sec:4.9,reason_codes:["source_timestamp_gap"],checks:[{stage:"action",name:"actual_workstation_departure",status:"yes",evidence_refs:[{source_index:120,timestamp_sec:4},{source_index:147,timestamp_sec:4.9}]}],reasons:[]},
+  {type_id:"active_intake_departure",episode_id:"negative-check",status:"rejected",requires_review:false,timecode_sec:5,observed_action:"The employee stole money intentionally.",checks:[{stage:"action",name:"actual_workstation_departure",status:"no",evidence_refs:[{source_index:150,timestamp_sec:5}]}],reasons:[]},
+  ...[6,7].map((time,index) => ({type_id:"personal_belongings_in_cash_unit",episode_id:"different-facts-"+index,status:"review_required",requires_review:true,timecode_sec:time,checks:[{stage:"action",name:index===0?"non_cash_object_visually_supported":"object_cash_area_relationship_visible",status:"yes",evidence_refs:[{source_index:time*30,timestamp_sec:time}]}],reasons:[]})),
+  ...[8,9].map((time,index) => ({type_id:"personal_food_at_workstation",episode_id:"shared-facts-"+index,status:"review_required",requires_review:true,timecode_sec:time,checks:[{stage:"action",name:"food_item_visually_identified",status:"yes",evidence_refs:[{source_index:time*30,timestamp_sec:time}]},{stage:"action",name:"food_on_cashier_work_surface",status:index===0?"yes":"unknown",evidence_refs:index===0?[{source_index:time*30,timestamp_sec:time}]:[]}],reasons:[]}))
 ]}};
 const incompleteDetails = {processing_status:"review_incomplete",coverage:{...details.coverage,verification_complete:false,unverified_candidate_count:3},case_decision:{status:"no_supported_violation",cases:[]},review_queue:[{...hostQueue[0],status:"diagnostic",requires_review:false,reason_codes:["verification_budget_exhausted"]}]};
 const denseDetections = Array.from({length:50},(_,index) => {
@@ -164,6 +179,7 @@ const pageErrors = [];
         if (id === runningId) return route.fulfill({json:{job_id:id,status:"processing",stage:"verifying",progress:.54}});
         if (screen) return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:screenDetails}});
         if (id === ids.groupedProbability) return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:groupedProbabilityDetails}});
+        if (id === ids.justification) return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:justificationDetails}});
         if (food) return route.fulfill({json:{job_id:id,status:"done",stage:"done",progress:1,original_name:"synthetic.mov",details:id === ids.food ? foodDetails : {...foodDetails,findings:[{...foodDetails.findings[0],rule_url:unsafePolicyUrl}]}}});
         if (id === ids.unavailable && unavailableDetails) return route.fulfill({status:500,json:{detail:"Synthetic details failure"}});
         if ([ids.incomplete,ids.incompleteFlagged,ids.incompleteMarker,ids.incompleteStatus,ids.incompleteCount].includes(id)) {
@@ -216,6 +232,7 @@ const pageErrors = [];
       assert.equal(await row.evaluate(element => element.tagName),"TR");
       assert.equal(await row.locator("th,td").count(),5);
       assert.equal(await row.locator(".case-details").evaluate(element => element.open),false);
+      assert.equal(await row.locator(".case-justification strong").textContent(),"Обоснование — ","Every result exposes a plainly labelled factual justification");
     }
     assert.match(await page.locator(".case-probability").nth(0).textContent(),/^74%.*Visible action only/);
     assert.match(await page.locator(".case-probability").nth(1).textContent(),/^12%.*All rule checks/,"A rejected proposal's estimate must not be inverted into confidence that the rejection is true");
@@ -354,6 +371,7 @@ const pageErrors = [];
     await open(ids.grouped);
     assert.equal(await page.locator(".case-card").count(),6,"Repeated presence checks should share one row while independent actions and conflicting results remain separate");
     assert.deepEqual(await page.locator(".case-card .case-status").allTextContents(),["Needs review","Needs review","Needs review","Violation","Not supported","Not supported"],"Needs-review checks must precede violations and unsupported results even when the source list starts with a rejected check");
+    assert.match(await page.locator(".case-card").nth(3).locator(".case-justification").textContent(),/недостаточно сохранённых данных/,"A confirmed saved result without descriptive evidence must explain the missing data rather than silently reverse the finding");
     assert.match(await page.locator("#case-decision-count").textContent(),/^6 checks$/,"The header counts displayed result rows");
     const groupedCard = page.locator(".case-card").first();
     assert.match(await groupedCard.locator(".check-name").textContent(),/^Personal belongings in cash unit/);
@@ -382,6 +400,8 @@ const pageErrors = [];
       assert.equal(await page.locator("#source-video").evaluate(video=>video.currentTime),time,"Every original observation keeps its own working source timestamp");
     }
     assert.doesNotMatch(await groupBody.textContent(),/Uncertain synthetic text must stay hidden/);
+    assert.equal(await groupedCard.locator(".case-justification").count(),1,"Repeated presence has one summary justification");
+    assert.equal(await groupBody.locator(".case-occurrence .case-justification").count(),4,"Grouped results retain the justification for each sampled moment");
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1),"Grouped intervals and expanded observations fit a mobile viewport");
     await page.locator("#case-decision-section").screenshot({path:path.join(root,"tmp","ui-grouped-results-mobile.png")});
     await open(ids.groupedProbability);
@@ -392,6 +412,31 @@ const pageErrors = [];
     assert.equal(await page.locator(".case-card .case-time .time-button").count(),2,"Missing timestamps must not become zero-second intervals");
     await page.locator(".case-details > summary").first().click();
     assert.deepEqual(await page.locator(".case-detail-body").first().locator(".case-occurrence-probability").allTextContents(),["60% · Visible action only","80% · Visible action only"],"Member estimates keep their target scope in Details");
+    await open(ids.justification);
+    const justifications = page.locator(".case-card .case-justification");
+    assert.equal(await justifications.count(),12,"Independent checks and the two presence groups each expose one justification");
+    assert.doesNotMatch((await justifications.allTextContents()).join(" "),/stole|intentionally|ownership|speculative|<img/i,"Model prose, reasons and uncertain ownership or intent cannot become factual justifications");
+    assert.equal(await page.locator(".case-justification img").count(),0,"Justifications must use safe text nodes");
+    assert.match(await justifications.nth(0).textContent(),/покида|покин|уход|уходит/i,"A named affirmative action with source evidence is described in plain Russian");
+    await page.locator(".case-details > summary").first().click();
+    const sourcedDetails = page.locator(".case-detail-body").first();
+    assert.doesNotMatch(await sourcedDetails.textContent(),/The employee stole money intentionally|<img src=x onerror=/,"Unsupported free-form observed_action prose must not become a displayed observed action");
+    assert.equal(await sourcedDetails.locator("img").count(),0);
+    for (const index of [1,2,3,4,5,6,8,11]) assert.match(await justifications.nth(index).textContent(),/По доступным кадрам действие не подтверждено\./,"Missing or invalid citations, unknown or conflicting predicates, single-frame motion, source gaps and a negative check must not be turned into observed actions: " + index);
+    assert.equal(await justifications.nth(7).textContent(),"Обоснование — Экран компьютера виден включённым.","A single screen snapshot can describe the screen state without inventing a preceding departure or continuity");
+    const differentFacts = page.locator(".case-card").nth(9);
+    assert.match(await differentFacts.locator(".case-justification").textContent(),/Наблюдения в этом диапазоне различаются/,"Grouped summaries must not combine separate observations into a fact that no individual sample supports");
+    await differentFacts.locator(".case-details > summary").click();
+    const differentFactDetails = page.locator(".case-detail-body").nth(9);
+    assert.equal(await differentFactDetails.locator(".case-occurrence .case-justification").count(),2);
+    const perMomentText = await differentFactDetails.locator(".case-occurrence .case-justification").allTextContents();
+    assert.notEqual(perMomentText[0],perMomentText[1],"Each occurrence keeps its own supported facts");
+    const sharedFacts = page.locator(".case-card").nth(10);
+    const sharedJustification = await sharedFacts.locator(".case-justification").textContent();
+    assert.match(sharedJustification,/пищ|ед[ауы]|продукт/i,"An identical source-backed predicate remains visible in a grouped justification");
+    assert.doesNotMatch(sharedJustification,/на рабочем столе|на столе кассира|рабочей поверхности/i,"A group cannot borrow a food location confirmed at only one sampled moment");
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth+1),"Russian justifications and expanded occurrences fit the mobile viewport");
+    await page.locator("#case-decision-section").screenshot({path:path.join(root,"tmp","ui-justification-mobile.png")});
     await open(ids.clear);
     assert.equal(await page.locator("#verdict-title").textContent(),"No violation detected");
     assert.match(await page.locator("#detections").textContent(),/No items were localized/);
@@ -519,6 +564,7 @@ const pageErrors = [];
     assert.deepEqual(await page.locator("#case-decision-section thead th").allTextContents(),["Check","Result","Probability","Time","Details"]);
     assert.match(await page.locator(".case-card .check-name").textContent(),/^Personal belongings at workplace \(food\)/);
     assert.equal(await page.locator(".case-card .case-status").textContent(),"Violation");
+    assert.equal(await page.locator(".case-card .case-justification").textContent(),"Обоснование — На рабочем столе видны продукты питания.","The food justification states the supported visible object and location without an eating or ownership assumption");
     assert.match(await page.locator(".case-probability").textContent(),/^94%.*Event occurs/);
     assert.equal(await page.locator(".case-card .time-button").count(),1);
     await page.locator(".case-card .time-button").click();
@@ -534,6 +580,8 @@ const pageErrors = [];
     assert.doesNotMatch(await page.locator(".finding-card").textContent(),/NBK|Paragraph|official source|regulatory reference/);
     assert.match(await page.locator(".case-card .check-name").textContent(),/^Workstation left with computer screen on/);
     assert.equal(await page.locator(".case-card .case-status").textContent(),"Violation");
+    assert.match(await page.locator(".case-card .case-justification").textContent(),/Человек покидает рабочее место\./);
+    assert.match(await page.locator(".case-card .case-justification").textContent(),/После ухода человека экран виден включённым\./,"The screen justification describes the sourced departure and post-departure screen state");
     assert.match(await page.locator(".case-probability").textContent(),/^91%/);
     await page.locator(".case-card .time-button").click();
     assert.equal(await page.locator("#source-video").evaluate(video=>video.currentTime),16,"Screen-on violation pinpoints the post-departure source moment");
@@ -640,6 +688,6 @@ const pageErrors = [];
     assert.equal(await page.locator("#job-id").textContent(),"");
     assert.equal(await page.locator("#open-active-job").count(),0,"Stale authenticated discoveries must be discarded after a key edit");
     assert.deepEqual(pageErrors,[]);
-    console.log("Synthetic UI checks passed: concise decision-first layout, review-first grouped presence intervals with original observations and estimate scopes retained, folded technical/catalog/item details, support estimates without baseline false certainty, expandable cases, food-belongings and screen-on workplace-policy findings, source links and seeking, legacy/retry behavior, safe authenticated frames, mobile layout, dense pagination, hybrid coverage, busy admission, authenticated running-job recovery, paused/completed/file-selection preservation, 429 races, and stale discovery protection.");
+    console.log("Synthetic UI checks passed: concise decision-first layout, source-backed Russian justifications without speculative model prose or unsupported grouped facts, review-first grouped presence intervals with original observations and estimate scopes retained, folded technical/catalog/item details, support estimates without baseline false certainty, expandable cases, food-belongings and screen-on workplace-policy findings, source links and seeking, legacy/retry behavior, safe authenticated frames, mobile layout, dense pagination, hybrid coverage, busy admission, authenticated running-job recovery, paused/completed/file-selection preservation, 429 races, and stale discovery protection.");
   } finally { await browser.close(); }
 })().catch(error=>{console.error(error.stack || error.message);process.exitCode=1;});
