@@ -1,5 +1,7 @@
 # ForteBank local video review
 
+**Для жюри: [простая инструкция на русском — README_JURY_RU.txt](README_JURY_RU.txt).** Как открыть демонстрацию, загрузить видео, проверить результаты и скачать отчёт. Устанавливать проект для работы через сайт не нужно; ключ API команда передаёт отдельно.
+
 For a fresh laptop, follow the [portable setup guide](docs/local-setup.md). The setup downloads public model weights separately; private videos, API keys and saved jobs are not part of this repository.
 
 The [Russian reviewer workspace](docs/reviewer-workflow.md) keeps the video beside filtered results and an event timeline on wide screens. Tablets and phones use stacked panels and labelled result cards, with the same saved decisions and controls. Saved reviews are searchable by video name. A reviewer can confirm, dismiss or leave a case uncertain, correct its interval, add missed events and record full-video coverage. Human decisions use durable, versioned storage separate from immutable model results. **Download report** exports one self-contained HTML file with embedded JPEG evidence; there are no additional report formats to install.
